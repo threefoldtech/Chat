@@ -4,6 +4,7 @@ const asyncHandler = require('express-async-handler')
 const config = require('../../config')
 
 const rewrite = require('../../rewrite')
+const logger = require('../../logger')
 
 async function rewriteRoles(content, info){
     
@@ -13,7 +14,6 @@ async function rewriteRoles(content, info){
     if(info.port != 80 && info.port != 443){
         host = `${scheme}://${info.host}:${info.port}`
     }
-    var res = content
 
     for(var item in rewrite){
         if (item == 'load'){
@@ -40,11 +40,11 @@ async function update(req) {
     prc.stdout.on('data', function (data) {
         var str = data.toString()
         var lines = str.split(/(\r?\n)/g);
-        console.log(lines.join(""));
+        logger.info(`${req.method} - ${lines.join("")}  - ${req.originalUrl} - ${req.ip}`);
     });
 
     prc.on('close', function (code) {
-        console.log('process exit code ' + code);
+        logger.info(`${req.method} - process exit code ${code}  - ${req.originalUrl} - ${req.ip}`);
     });
     
     spawn2 = require('child_process').spawn;
@@ -59,11 +59,11 @@ async function update(req) {
     prc2.stdout.on('data', function (data) {
         var str = data.toString()
         var lines = str.split(/(\r?\n)/g);
-        console.log(lines.join(""));
+        logger.info(`${req.method} - ${lines.join("")}  - ${req.originalUrl} - ${req.ip}`);
     });
 
     prc2.on('close', function (code) {
-        console.log('process exit code ' + code);
+        logger.info(`${req.method} - process exit code ${code}  - ${req.originalUrl} - ${req.ip}`);
     });
 
 }
@@ -109,8 +109,8 @@ async function handleWebsiteFile(req, res, info){
             content = await(rewriteRoles(content, info))
         return res.send(content)
     } catch (e) {
-        console.log(e)
-        return res.status(404).json('');
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
     }
 }
 
@@ -172,7 +172,7 @@ async function handleWikiFile(req, res, info){
     }
 
     if(!driveObj){
-        return res.status(404).json('');
+        return res.status(404).send(`Wiki not found`);;
     }
 
     // `/${req.params.wikiname}/${req.params.filename}`
@@ -207,10 +207,10 @@ async function handleWikiFile(req, res, info){
                 content = await(rewriteRoles(content, info))
                 return res.send(content)
             }catch(e){
-                return res.status(404).send('File not found');
+                return res.status(404).send(`File not found : ${filepath}`);
             }            
         }
-        return res.status(404).send('File not found');
+        return res.status(404).send(`File not found : ${filepath}`);
     }
 }
 
@@ -269,8 +269,8 @@ router.get('/', asyncHandler(async (req, res) =>  {
          content = await(rewriteRoles(content, info))
          return res.send(content)
      } catch (e) {
-         console.log(e)
-         return res.status(404).json('');
+            logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+            return res.status(404).send(`Site not found : ${info.alias}`);
      }    
 }))
 
@@ -319,8 +319,8 @@ router.get('/:website', asyncHandler(async (req, res) =>  {
          content = await(rewriteRoles(content, info))
          return res.send(content)
      } catch (e) {
-         console.log(e)
-         return res.status(404).json('');
+         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+         return res.status(404).send(`File not found : ${filepath}`);
      }
 }))
 
@@ -335,8 +335,8 @@ router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
         var content = await  driveObj.promises.readFile(filepath, 'utf8');
         return res.send(content)
     } catch (e) {
-        console.log(e)
-        return res.status(404).json('');
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
     }
 }))
 
@@ -346,7 +346,7 @@ router.get('/:website/flexsearch', asyncHandler(async (req, res) => {
     var info = req.info
 
     if(info.status != 200){
-        return res.status(info.status).json({"err": info.err});
+        return res.status(info.status).send(info.err);
     }
 
     var driveObj = info.drive
@@ -358,8 +358,8 @@ router.get('/:website/flexsearch', asyncHandler(async (req, res) => {
         res.type("application/json");
         return res.send(content)
     } catch (e) {
-        console.log(e)
-        return res.status(404).json('');
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
     }
 }))
 
@@ -392,8 +392,8 @@ router.get('/info/:wiki/errors', asyncHandler(async (req, res) => {
         res.render('sites/errors.mustache', {site_name: wikiname, site_errors : errors.site_errors, page_errors: errors.page_errors});
        
     } catch (e) {
-        console.log(e)
-        return res.status(404).json('');
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
     }
 }))
 

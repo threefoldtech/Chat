@@ -8,6 +8,12 @@ const cors = require('cors');
 const sites = require('./web/sites')
 const threebot = require('./web/threebot')
 
+var morgan = require('morgan')
+var logger = require('../logger')
+
+var path = require('path')
+var rfs = require('rotating-file-stream') 
+
 let app = express()
 
 // Session
@@ -27,6 +33,15 @@ app.use(session(sess))
 
 app.engine('mustache', mustacheExpress());
 app.set('view engine', 'mustache');
+
+// logging (rotating fs)
+var accessLogStream = rfs.createStream('access.log', {
+  interval: '1d', // rotate daily
+  path: path.join(__dirname, '..', 'logs')
+})
+
+app.use(morgan('combined', { stream: accessLogStream }))
+
 
 // req info
 app.use(function (req, res, next) {
@@ -115,9 +130,12 @@ app.use(function (req, res, next) {
   }
 })
 
+
+
 app.use(express.json());
 
 app.use(threebot)
 app.use(sites);
 app.use(cors());
+
 module.exports = app
