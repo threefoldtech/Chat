@@ -17,3 +17,13 @@ export const setNewavater = async selectedFile => {
         console.log(e);
     }
 };
+
+export const isUserAuthenticated = async () => {
+    const url = `${config.baseUrl}api/auth/authenticated`;
+    try {
+        const result = await axios.get(url);
+        return result.data;
+    } catch (e) {
+        console.log(e);
+    }
+};

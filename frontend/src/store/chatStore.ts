@@ -103,14 +103,19 @@ const addGroupchat = (name: string, contacts: Contact[]) => {
 };
 
 const acceptChat = id => {
-    axios.post(`${config.baseUrl}api/chats?id=${id}`).then(res => {
-        const index = state.chatRequests.findIndex(c => c.chatId == id);
-        state.chatRequests[index].acceptedChat = true;
-        addChat(state.chatRequests[index]);
-        const { user } = useAuthState();
-        sendMessage(id, `${user.id} accepted invitation`, 'SYSTEM');
-        state.chatRequests.splice(index, 1);
-    });
+    axios
+        .post(`${config.baseUrl}api/chats?id=${id}`)
+        .then(res => {
+            const index = state.chatRequests.findIndex(c => c.chatId == id);
+            state.chatRequests[index].acceptedChat = true;
+            addChat(state.chatRequests[index]);
+            const { user } = useAuthState();
+            sendMessage(id, `${user.id} accepted invitation`, 'SYSTEM');
+            state.chatRequests.splice(index, 1);
+        })
+        .catch(error => {
+            console.log('Got an error: ', error);
+        });
 };
 
 const updateChat = (chat: Chat) => {

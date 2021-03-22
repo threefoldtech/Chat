@@ -19,7 +19,9 @@
         name: 'Home',
         setup() {
             const router = useRouter();
+
             const loginAndPush = async () => {
+                console.log('Attempting to login ...');
                 await login();
                 await router.push('/chat');
             };

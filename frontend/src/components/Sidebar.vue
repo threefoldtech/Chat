@@ -24,6 +24,7 @@
                     </div> -->
                 </div>
             </div>
+            <br />
             <div
                 v-for="app in apps"
                 :key="app.name"
