@@ -1,273 +1,257 @@
 <template>
-  <div
-      @mouseover="showActions = true"
-      @mouseleave="showActions = false"
-      class="flex"
-      :class="{
-      'justify-end': isMine,
-      'my-1': !disabled,
-    }"
-  >
-    <AvatarImg small class="mr-2 self-center" v-if="!isMine && isGroup && !disabled" :id="message.from"></AvatarImg>
     <div
-        class=" relative rounded-lg"
+        class="flex flex-col items-start"
         :class="{
-        'p-2': !disabled,
-        'bg-white': !disabled,
-        'bg-gray-100': disabled,
-        'bg-gray-200': message.type === 'SYSTEM',
-        'bg-blue-200': !disabled && isMine && message.type !== 'SYSTEM',
-      }"
-        style="min-width: 5rem; max-width: 60%"
-    >
-      <pre v-if="config.showdebug">{{ message }}</pre>
-      <div v-if="isGroup &&  !isMine && !disabled">
-        <b>{{ message.from }}</b>
-      </div>
-      <div
-          v-if="showActions"
-          class="btn-group absolute -bottom-2 right-0 text-xs rounded-full bg-icon text-white px-2"
-      >
-        <button
-            class="mx-0"
-            v-if="
-               isMine && (message.type == 'EDIT' || message.type == 'STRING') && !disabled
-            "
-            @click="setEditMessage"
-        >
-          <i class="fas fa-pen"></i>
-        </button>
-        <button class="mx-0" @click="setQuoteMessage" v-if="!disabled">
-          <i class="fas fa-reply-all"></i>
-        </button>
-        <button
-            class="mx-0"
-            v-if="isMine && message.type !== 'DELETE' && !disabled && ! message.type ==='SYSTEM'"
-            @click="sendUpdateMessage(true)"
-        >
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
-      <span v-if="message.type === 'FILE'">
-        <audio
-            controls
-            class="max-w-full"
-            v-if="message.body.filename.indexOf('.WebM') !== -1"
-            :src="fileUrl"
-        ></audio>
-
-        <img
-            v-if="message.body.filename.indexOf('.gif') !== -1"
-            :src="fileUrl"
-        />
-        <br/>
-        <a
-            class="py-2 px-2 bg-blue-300 border-r-2"
-            :href="fileUrl"
-            download
-        >{{ message.body.filename }}</a
-        >
-      </span>
-      <div v-else-if="message.type === 'GIF'">
-        <img :src="message.body"/>
-      </div>
-      <div v-else-if="message.type === 'SYSTEM'">
-       <span>{{ message.body }}</span>
-      </div>
-      <div v-else-if="message.type === 'GROUP_UPDATE'">
-        <span v-if="message.body.type === 'REMOVEUSER'">
-          <b>{{ message.body.contact.id }}</b> removed from the group.
-        </span>
-        <span v-else-if="message.body.type === 'ADDUSER'">
-          <b>{{ message.body.contact.id }}</b> added to the group.
-        </span>
-      </div>
-      <div v-else-if="message.type === 'QUOTE'">
-        <div class="bg-gray-100 py-1 px-1" v-if="showQuoted">
-          <b>{{ message.body.quotedMessage.from }} said: </b> <br/>
-          <MessageCard
-              :message="message.body.quotedMessage"
-              :chat-id="chatId"
-              disabled
-              isGroup="false"
-              :showQuoted="false"
-          />
-        </div>
-        {{ message.body.message }}
-      </div>
-      <div v-else>
-        {{ message.body }}
-      </div>
-      <div v-if="quoteMessage" class="flex">
-        <input class="col-span-6" stype="text" v-model="quoteMessageValue"/>
-        <button class="px-2 py-8" @click="sendQuoteMessage(false)">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-      <div v-if="editMessage" class="flex">
-        <input class="col-span-6" stype="text" v-model="editMessageValue"/>
-        <button class="px-2 py-8" @click="sendUpdateMessage(false)">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-      <p
-          class="font-thin"
-          :class="{
-          'text-right': isMine,
+            'items-start': messageBlock.user !== user?.id,
+            'items-end': messageBlock.user === user?.id,
         }"
-      >
-        <span v-if="message.type == 'EDIT'"> edited </span>
-        <span v-if="message.type == 'DELETE'"> deleted  </span>
+    >
+        <div class="flex justify-start pt-4 pb-2 w-18 mr-4">
+            <AvatarImg :id="messageBlock.user" :showOnlineStatus="false" />
+        </div>
 
-<!--        <small class="font-thin text-right" v-if="isread">is read</small>-->
-        <!--        {{ m(message.timeStamp).fromNow() }}-->
-      </p>
+        <div v-for="message in messageBlock.messages" :key="message">
+            <div
+                style="position: relative;"
+                class="card flex flex-row flex-wrap"
+                :class="{
+                    'flex-row-reverse': messageBlock.user === user?.id,
+                }"
+            >
+                <div
+                    class="flex rounded-xl mb-1 pr-4 border-2"
+                    :class="{
+                        'bg-gray-200': messageBlock.user === user?.id,
+                        'bg-white': messageBlock.user !== user?.id,
+                        'border-black': messageToReplyTo?.id === message?.id,
+                    }"
+                >
+                    <main
+                        class="msgcard flex justify-between pt-2 pl-4 pb-2"
+                        :class="{
+                            'flex-row-reverse': messageBlock.user === user?.id,
+                        }"
+                    >
+                        <MessageContent :message="message"></MessageContent>
+                    </main>
+                </div>
+
+                <div
+                    style="margin-top: auto;"
+                    class="actions pb-4 pl-4 flex"
+                    :class="{
+                        'flex-row-reverse': messageBlock.user === user?.id,
+                    }"
+                >
+                    <span
+                        class="reply text-xs pr-4"
+                        @click="toggleSendReplyMessage(message)"
+                    >
+                        <i class="fa fa-reply"></i>
+                        <span class="text-gray-600"> Reply</span>
+                    </span>
+                    <div class="pr-4 text-gray-600 date inline-block text-xs">
+                        {{ moment(message.timeStamp).fromNow() }}
+                        <!-- {{ message }} -->
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="flex flex-col mb-4"
+                :class="{
+                    'mr-4 border-r-2 pr-2': messageBlock.user === user?.id,
+                    'ml-4 border-l-2 pl-2': messageBlock.user !== user?.id,
+                }"
+                v-if="message.replies.length > 0"
+            >
+                <div
+                    class="text-gray-400"
+                    :class="{
+                        'self-end': messageBlock.user === user?.id,
+                        'self-start': messageBlock.user !== user?.id,
+                    }"
+                >
+                    Replies:
+                </div>
+                <div
+                    v-for="reply in message.replies"
+                    :key="reply.id"
+                    class="card flex"
+                    :class="{
+                        'ml-auto flex-row-reverse':
+                            messageBlock.user === user?.id,
+                        'mr-auto': messageBlock.user !== user?.id,
+                    }"
+                >
+                    <AvatarImg
+                        :class="{
+                            'ml-4': messageBlock.user === user?.id,
+                            'mr-4': messageBlock.user !== user?.id,
+                        }"
+                        :id="reply.from"
+                        :showOnlineStatus="false"
+                    />
+
+                    <div
+                        class="flex rounded-xl mb-1 overflow-hidden pr-4"
+                        :class="{
+                            'bg-gray-200': reply.from === user?.id,
+                            'bg-white': reply.from !== user?.id,
+                        }"
+                    >
+                        <main
+                            class="replymsg flex justify-between pt-2 pl-4 pb-2"
+                            :class="{
+                                'flex-row-reverse':
+                                    messageBlock.user === user?.id,
+                            }"
+                        >
+                            <MessageContent :message="reply"></MessageContent>
+                        </main>
+                    </div>
+
+                    <div
+                        style="margin-top: auto;"
+                        class="actions pb-4 pl-4 flex"
+                        :class="{
+                            'flex-row-reverse': messageBlock.user === user?.id,
+                        }"
+                    >
+                        <div
+                            class="pr-4 text-gray-600 date inline-block text-xs"
+                        >
+                            {{ moment(message.timeStamp).fromNow() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script lang="ts">
-import {defineComponent, nextTick, ref, watch} from "vue";
-import {useAuthState} from "../store/authStore";
-import moment from "moment";
-import {usechatsActions} from "../store/chatStore";
-import {Message, MessageBodyType, QuoteBodyType} from "../types/index";
-import {uuidv4} from "@/common";
-import config from "../../public/config/config";
-import AvatarImg from "@/components/AvatarImg.vue";
-import { calculateBaseUrl } from "@/services/urlService";
+    import { defineComponent, onMounted, ref } from 'vue';
+    import moment from 'moment';
+    import AvatarImg from '@/components/AvatarImg.vue';
+    import MessageContent from '@/components/MessageContent.vue';
+    import { Message, StringMessageType } from '@/types';
+    import { uuidv4 } from '@/common';
+    import { useAuthState } from '@/store/authStore';
+    import { usechatsActions } from '@/store/chatStore';
+    import { messageToReplyTo } from '@/services/replyService';
+    import { useScrollActions } from '@/store/scrollStore';
 
-export default defineComponent({
-  name: "MessageCard",
-  components: {AvatarImg},
-  props: {
-    message: Object,
-    chatId: String,
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-    isread: {
-      type: Boolean,
-      default: false,
-    },
-    isreadbyme: {
-      type: Boolean,
-      default: false,
-    },
-    isGroup: {
-      type: Boolean,
-      default: false,
-    },
-    isMine: {
-      type: Boolean,
-      default: false,
-    },
-    showQuoted: {
-      type: Boolean,
-      default: true
-    }
-  },
-  setup(props) {
-    const showActions = ref(false);
-    const m = (val) => moment(val);
+    export default defineComponent({
+        name: 'MessageCard',
+        components: { MessageContent, AvatarImg },
+        props: {
+            message: Object,
+            messageBlock: Object,
+            chatId: String,
+            isMine: Boolean,
+            isGroup: Boolean,
+            isreadbyme: Boolean,
+            isread: Boolean,
+        },
+        setup(props) {
+            const { user } = useAuthState();
 
-    const editMessage = ref(false);
-    const editMessageValue = ref("");
+            const toggleEditMessage = () => {
+                console.log('toggleEditMessage');
+            };
 
-    const quoteMessage = ref(false);
-    const quoteMessageValue = ref("");
-    const {sendMessageObject} = usechatsActions();
+            const editMessage = () => {
+                console.log('editMessage');
+            };
 
-    const setEditMessage = () => {
-      editMessage.value = true;
-      editMessageValue.value = props.message.body;
-    };
-    const sendUpdateMessage = (isDelete: Boolean) => {
-      editMessage.value = false;
-      if (props.message.value != editMessageValue.value) {
-        const {sendMessageObject} = usechatsActions();
-        const oldmessage = props.message;
-        console.log(props.message);
-        const updatedMessage: Message<String> = {
-          id: oldmessage.id,
-          from: oldmessage.from,
-          to: oldmessage.to,
-          body: isDelete ? "Message has been deleted" : editMessageValue.value,
-          timeStamp: oldmessage.timeStamp,
-          type: isDelete ? "DELETE" : "EDIT",
-        };
-        sendMessageObject(props.chatId, updatedMessage);
-        console.log(props.chatId);
-        console.log(props.message);
-      }
-      props.message.value = editMessageValue.value;
-    };
-    const setQuoteMessage = () => {
-      quoteMessage.value = true;
-    };
-    const sendQuoteMessage = () => {
-      console.log("quote");
-      if (quoteMessageValue.value !== "") {
-        quoteMessage.value = false;
-        const {user} = useAuthState();
-        const messageToQuote = props.message;
-        // from: user.id,
-        // to: chatId,
-        // timeStamp: new Date(),
-        // type: "STRING"
+            const toggleSendForwardMessage = () => {
+                console.log('toggleSendForwardMessage');
+            };
 
-        const newMessage: Message<QuoteBodyType> = {
-          id: uuidv4(),
-          from: user.id,
-          to: props.chatId,
-          body: <QuoteBodyType>{
-            message: quoteMessageValue.value,
-            quotedMessage: <Message<MessageBodyType>>messageToQuote,
-          },
-          timeStamp: new Date(),
-          type: "QUOTE",
-        };
-        sendMessageObject(props.chatId, newMessage);
-      }
-      props.message.value = editMessageValue.value;
-    };
+            const sendForwardMessage = () => {
+                console.log('sendQuoteMessage');
+            };
 
-    const read = () => {
-      const {readMessage} = usechatsActions();
-      readMessage(props.chatId, props.message.id);
-    };
-    if (!props.isreadbyme) {
-      read();
-    }
+            const toggleSendReplyMessage = message => {
+                if (
+                    messageToReplyTo.value &&
+                    messageToReplyTo.value.id === message.id
+                ) {
+                    messageToReplyTo.value = '';
+                } else {
+                    messageToReplyTo.value = message;
+                }
+            };
 
-    const fromId = props.message.from.replace(
-            'localhost:8080',
-            'localhost:3000'
-    )
-    const baseurl = calculateBaseUrl(fromId)
-    const fileUrl = props.message.body?.filename ? `${baseurl}/api/files/${props.message.to}/${props.message.body.filename}` : false
+            const sendReplyMessage = () => {
+                console.log('sendReplyMessage');
 
+                const { user } = useAuthState();
 
-    return {
-      showActions,
-      isMine: props.isMine,
-      m,
-      setEditMessage,
-      setQuoteMessage,
-      editMessage,
-      editMessageValue,
-      sendUpdateMessage,
-      quoteMessage,
-      quoteMessageValue,
-      sendQuoteMessage,
-      config,
-      read,
-      fileUrl,
-      isGroup: props.isGroup,
-      showQuoted: props.showQuoted
-    };
-  },
-});
+                const newMessage: Message<StringMessageType> = {
+                    id: uuidv4(),
+                    from: user.id,
+                    to: props.chatId,
+                    body: <StringMessageType>null,
+                    timeStamp: new Date(),
+                    type: 'STRING',
+                    replies: [],
+                    subject: props.message.id,
+                };
+
+                const { sendMessageObject } = usechatsActions();
+
+                sendMessageObject(props.chatId, newMessage);
+                messageToReplyTo.value = null;
+            };
+
+            const { addScrollEvent } = useScrollActions();
+
+            onMounted(() => {
+                addScrollEvent();
+            });
+
+            return {
+                moment,
+                toggleSendForwardMessage,
+                sendReplyMessage,
+                toggleSendReplyMessage,
+                toggleEditMessage,
+                user,
+                messageToReplyTo,
+            };
+        },
+    });
 </script>
+<style lang="css" scoped>
+    .text-message * {
+        word-wrap: break-word;
+        max-width: 100%;
+        white-space: pre-wrap;
+    }
 
+    .threefold-color {
+        background: #44a687;
+    }
+
+    .actions {
+        visibility: hidden;
+    }
+
+    .card:hover > .actions,
+    .card:hover > .actions {
+        visibility: visible;
+    }
+
+    .reply:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .msgcard,
+    .replymsg {
+        max-width: 500px;
+        word-break: break-word;
+    }
+</style>

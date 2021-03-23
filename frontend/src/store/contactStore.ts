@@ -1,15 +1,14 @@
-import { reactive } from "@vue/reactivity";
-import { toRefs } from "vue";
-import axios from "axios";
-import moment from 'moment'
-import { Contact } from '../types'
-import config from "../../public/config/config"
-import {uuidv4} from "../../src/common/index"
-import { Chat } from "../types";
-import {usechatsActions, usechatsState} from "./chatStore"
+import { reactive } from '@vue/reactivity';
+import { toRefs } from 'vue';
+import axios from 'axios';
+import moment from 'moment';
+import { Contact } from '../types';
+import config from '../../public/config/config';
+import { uuidv4 } from '../../src/common/index';
+import { Chat } from '../types';
+import { usechatsActions, usechatsState } from './chatStore';
 import { useAuthState } from './authStore';
-import { Message, PersonChat, DtId } from "../types/index"
-
+import { Message, PersonChat, DtId } from '../types/index';
 
 // const state = reactive<State>({
 //     contacts:[]
@@ -36,43 +35,51 @@ import { Message, PersonChat, DtId } from "../types/index"
 //     return isAvailable
 // }
 
-const addContact = (username:DtId, location, dontCheck = false) => {
-    const {user} = useAuthState()
-    const addMessage:Message<String> = {
+const addContact = (username: DtId, location, dontCheck = false) => {
+    const { user } = useAuthState();
+    const addMessage: Message<String> = {
         id: uuidv4(),
         body: `Request has been sent to ${username}`,
         from: user.id,
         to: username,
         timeStamp: new Date(),
-        type:"SYSTEM"
-    }
-    const chatname:String = username
-    axios.post(`${config.baseUrl}api/contacts`, {id:username,location,message:addMessage}).then( (res) => {
-    })
-}
+        type: 'SYSTEM',
+        replies: [],
+        subject: null,
+    };
+    const chatname: String = username;
+    axios
+        .post(`${config.baseUrl}api/contacts`, {
+            id: username,
+            location,
+            message: addMessage,
+        })
+        .then(res => {});
+};
 
 const calculateContacts = () => {
-    const { chats }  = usechatsState()
-    const { user } = useAuthState()
-    const contacts = chats.value.filter(chat => !chat.isGroup && chat.acceptedChat).map(chat => chat.contacts.find(contact => contact.id !== user.id))
-    return contacts
-}
-
+    const { chats } = usechatsState();
+    const { user } = useAuthState();
+    const contacts = chats.value
+        .filter(chat => !chat.isGroup && chat.acceptedChat)
+        .map(chat => chat.contacts.find(contact => contact.id !== user.id));
+    return contacts;
+};
 
 export const useContactsState = () => {
     return {
-        contacts: calculateContacts()
+        contacts: calculateContacts(),
         // ...toRefs(state),
-    }
-}
+    };
+};
 
 export const useContactsActions = () => {
     return {
         // retrieveContacts,
         // setLastMessage,
-        addContact
-    }
-}
+        addContact,
+    };
+};
 
 // interface State {
 //     contacts: Contact[]

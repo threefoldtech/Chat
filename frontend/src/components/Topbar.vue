@@ -1,154 +1,184 @@
 <template>
-  <div class="grid grid-cols-3 md:grid-cols-7 h-12 items-center p-4">
-    <img src="/TFN-black.svg" alt="TF-Logo" class="h-full hidden md:block col-end-3" />
-    <img src="/TF-small-black.svg" alt="TF-Logo" class="h-12 md:hidden col-span-1" />
     <div
-      class="md:col-end-13 col-span-2 text-right text-gray-500 flex items-center justify-end"
+        class="items-center bg-gradient flex justify-between md:topgrid relative h-full px-4 md:px-0"
     >
-      <AvatarImg :id="user.id" />
-      <span class="ml-2">{{ user.id }}</span>
-      <button @click="showDialog = true">
-        <i class="fas fa-cog text-gray-500"></i>
-      </button>
-    </div>
-    <jdialog v-model="showDialog" @close="showDialog = false" noActions>
-      <template v-slot:title>
-        <h1>Profile settings</h1>
-      </template>
-      <div>
-        <div
-          class="relative flex justify-center h-52"
-          @mouseover="showEditPic = true"
-          @mouseleave="showEditPic = false"
-        >
-          <transition name="fade">
-            <div
-              @click.stop="selectFile"
-              v-if="showEditPic"
-              class="grid cursor-pointer place-items-center bg-black bg-opacity-75 absolute w-full h-full top-0 left-0"
-            >
-              <button class="text-white">
-                <i class="fas fa-pen"></i>
-              </button>
+        <div class="flex">
+            <div class="h-5 ml-4 items-center">
+                <button
+                    class="text-lg text-white md:hidden w-12"
+                    @click="backOrMenu"
+                    :class="{ 'md:hidden': !(route.meta && route.meta.back) }"
+                >
+                    <i
+                        :class="
+                            `fas ${
+                                route.meta && route.meta.back
+                                    ? 'fa-chevron-left'
+                                    : 'fa-bars'
+                            }`
+                        "
+                    ></i>
+                </button>
+                <img
+                    src="/TFN.svg"
+                    alt="TF-Logo"
+                    class="md:ml-4 h-full hidden md:flex"
+                />
             </div>
-          </transition>
-          <img class="h-full w-52 bg-black" :src="user.image" />
-        </div>
-        <h1 class="text-center my-4">{{ user.id }}</h1>
-        <div
-          class="relative w-full h-full"
-          @mouseover="showEdit = true"
-          @mouseleave="showEdit = false"
-        >
-          <transition name="fade">
-            <button
-              v-if="!isEditingStatus"
-              :class="showEdit ? 'block' : 'hidden'"
-              class="absolute top-0 right-0"
-              @click="setEditStatus(true)"
-            >
-              <i class="fas fa-pen"></i>
-            </button>
-          </transition>
 
-          <transition name="fade">
-            <button
-              v-if="isEditingStatus"
-              class="absolute top-1 right-0"
-              @click="sendNewStatus"
+            <div
+                class="h-5 flex items-center col-span-3 md:col-span-1 md:hidden"
             >
-              <i class="fas fa-check"></i>
-            </button>
-          </transition>
-          <textarea
-            v-model="userStatus"
-            class="w-full"
-            :disabled="!isEditingStatus"
-            :placeholder="user.status"
-          ></textarea>
+                <slot>
+                    <img
+                        src="/digitaltwin.svg"
+                        alt="TF-Logo"
+                        class="md:hidden md:ml-4 h-full"
+                    />
+                </slot>
+            </div>
         </div>
-        <input
-          class="hidden"
-          type="file"
-          id="fileinput"
-          ref="fileinput"
-          accept="image/*"
-          @change="changeFile"
-        />
-      </div>
-    </jdialog>
-  </div>
+
+        <div
+            class="pr-4 text-right text-gray-500 flex items-center justify-begin"
+        >
+            <div
+                class="h-5 md:flex text-black items-center col-span-3 md:col-span-1 hidden"
+            >
+                <slot>
+                    <img
+                        src="/TFN.svg"
+                        alt="TF-Logo"
+                        class="md:hidden md:ml-4 h-full"
+                    />
+                </slot>
+            </div>
+
+            <slot name="actions"></slot>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
-import { useAuthState } from "../store/authStore";
-import { useSocketActions } from "../store/socketStore";
-import Dialog from "./Dialog.vue";
-import AvatarImg from "@/components/AvatarImg.vue";
+    import { computed, defineComponent, onBeforeMount, ref } from 'vue';
+    import { useAuthState } from '../store/authStore';
+    import { useSocketActions } from '../store/socketStore';
+    import Dialog from './Dialog.vue';
+    import AvatarImg from '@/components/AvatarImg.vue';
+    import {
+        deleteBlockedEntry,
+        getBlockList,
+        initBlocklist,
+    } from '@/store/blockStore';
+    import { setNewavater } from '@/store/userStore';
+    import { fetchStatus } from '@/store/statusStore';
+    import { useRoute, useRouter } from 'vue-router';
+    import { showUserConfigDialog } from '@/services/dialogService';
 
-export default defineComponent({
-  name: "Topbar",
-  components: { AvatarImg, jdialog: Dialog },
-  setup() {
-    const { user } = useAuthState();
-    const showDialog = ref(false);
-    const showEdit = ref(false);
-    const showEditPic = ref(false);
-    const fileinput = ref();
-    const file = ref();
-    const userStatus = ref("");
-    const isEditingStatus = ref(false);
+    export default defineComponent({
+        name: 'Topbar',
+        components: { AvatarImg, jdialog: Dialog },
+        emits: ['addUser'],
+        setup({}, ctx) {
+            const { user } = useAuthState();
+            const showEdit = ref(false);
+            const showEditPic = ref(false);
+            const fileinput = ref();
+            const file = ref();
+            const userStatus = ref('');
+            const isEditingStatus = ref(false);
+            const router = useRouter();
+            const route = useRoute();
+            const backOrMenu = () => {
+                if (route.meta && route.meta.back) {
+                    router.push({ name: <any>route.meta.back });
+                    return;
+                }
 
-    const selectFile = () => {
-      fileinput.value.click();
-    };
-    const changeFile = () => {
-      file.value = fileinput.value?.files[0];
-      sendNewAvatar()
-    };
-    const removeFile = () => {
-      file.value = null;
-    };
+                showUserConfigDialog.value = true;
+            };
 
-    const sendNewAvatar = async () => {
-      const { sendSocketAvatar } = useSocketActions();
-      const buffer = await file.value.arrayBuffer();
-      sendSocketAvatar(buffer).then(b => alert('refresh for new avatar'));
-      showDialog.value = false;
-    };
+            const selectFile = () => {
+                fileinput.value.click();
+            };
+            const changeFile = () => {
+                file.value = fileinput.value?.files[0];
+                sendNewAvatar();
+            };
+            const removeFile = () => {
+                file.value = null;
+            };
 
-    const setEditStatus = (edit: boolean) => {
-      console.log(edit);
-      isEditingStatus.value = edit;
-      userStatus.value = user.status;
-    };
-    const sendNewStatus = async () => {
-      const { sendSocketUserStatus } = useSocketActions();
-      sendSocketUserStatus(userStatus.value);
-      user.status = userStatus.value;
-      isEditingStatus.value = false;
-    };
+            const sendNewAvatar = async () => {
+                const newUrl = await setNewavater(file.value);
+                await fetchStatus(user.id);
+                showUserConfigDialog.value = false;
+            };
 
-    return {
-      user,
-      showEditPic,
-      showEdit,
-      showDialog,
-      fileinput,
-      file,
-      selectFile,
-      changeFile,
-      removeFile,
-      sendNewAvatar,
-      sendNewStatus,
-      userStatus,
-      setEditStatus,
-      isEditingStatus,
-    };
-  },
-});
+            const setEditStatus = (edit: boolean) => {
+                isEditingStatus.value = edit;
+                userStatus.value = user.status;
+            };
+            const sendNewStatus = async () => {
+                const { sendSocketUserStatus } = useSocketActions();
+                sendSocketUserStatus(userStatus.value);
+                user.status = userStatus.value;
+                isEditingStatus.value = false;
+            };
+
+            const blockedUsers = computed(() => {
+                return getBlockList();
+            });
+            // @todo: config
+
+            onBeforeMount(() => {
+                initBlocklist();
+            });
+
+            const unblockUser = async user => {
+                await deleteBlockedEntry(user);
+                showUserConfigDialog.value = false;
+            };
+
+            const addUser = () => {
+                ctx.emit('addUser');
+            };
+
+            return {
+                addUser,
+                backOrMenu,
+                user,
+                showEditPic,
+                showEdit,
+                fileinput,
+                file,
+                selectFile,
+                changeFile,
+                removeFile,
+                sendNewAvatar,
+                sendNewStatus,
+                userStatus,
+                setEditStatus,
+                isEditingStatus,
+                blockedUsers,
+                unblockUser,
+                route,
+            };
+        },
+    });
 </script>
 
 <style scoped>
+    @tailwind base;
+    @tailwind components;
+    @tailwind utilities;
+
+    @layer utilities {
+        @variants responsive {
+            .topgrid {
+                display: grid !important;
+                grid-template-columns: 500px 2fr 1fr !important;
+            }
+        }
+    }
 </style>

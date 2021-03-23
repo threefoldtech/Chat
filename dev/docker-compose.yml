@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+  development-digitaltwin:
+    container_name: development-chat
+    build:
+      context: ../
+      dockerfile: ./dev/Dockerfile
+    restart: always
+    environment:
+      - USER_ID=development
+    volumes:
+      - ../frontend:/frontend
+      - ../backend:/backend
+      - ./appdata:/appdata
+      # - ./dev/logs:/var/log/
+      # - ./dev/logs:/var/log
+
+    networks:
+      - chatnet
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+
+  singlecore007-digitaltwin:
+    container_name: singlecore007-chat
+    build:
+      context: ../
+      dockerfile: ./dev/Dockerfile
+    restart: always
+    environment:
+      - USER_ID=singlecore007
+    volumes:
+      - ../frontend:/frontend
+      - ../backend:/backend
+      - ./appdata1:/appdata
+      # - ./dev/logs:/var/log/
+      # - ./dev/logs:/var/log
+
+    networks:
+      - chatnet
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+
+networks:
+  chatnet:
+    external: true

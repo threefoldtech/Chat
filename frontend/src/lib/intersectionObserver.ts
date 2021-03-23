@@ -45,6 +45,6 @@ export const useIntersectionObserver = (
         isIntersecting,
         isFullyInView,
         observe,
-        unobserve
+        unobserve,
     };
 };

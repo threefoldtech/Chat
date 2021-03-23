@@ -1,81 +1,72 @@
+const chalk = require("chalk");
 
-const chalk = require('chalk');
-const process = require('process');
+const config = require("./config");
+const app = require("./http/app.js");
+const process = require("process");
+const dnsserver = require("./servers/dns");
+const letsencrypt = require("./letsencrypt");
 
-const config = require('./config')
-const localDrive = require('./drive/local')
-const hyperdrive = require('./drive/hyperdrive');
-const utils = require('./drive/utils')
-const dnsserver = require("./servers/dns")
-var rewrite = require('./rewrite')
-
-// const letsencrypt = require('./letsencrypt')
-
-async function init(){
-    var domainsList = []
-
-    await config.load()
-    await rewrite.load()
-
-    domainsList.push(...await localDrive.load())
-    
-    var cleanup = function () {}
-
-    if(config.hyperdrive.enabled){
-      const {_, cleanup } = await hyperdrive.start();
-      domainsList.push(...await hyperdrive.load())
-    }
-    var aliases = await utils.reduce(domainsList)
-    
-    config.aliases = aliases
-    return cleanup
+async function init() {
+  const drive = require("./drive.js");
+  const { _, cleanup } = await drive.ensureHyperSpace();
+  await drive.load();
+  return { _, cleanup };
 }
 
-async function main(){
-  
-    const cleanup = await init().catch((e)=>{console.log(e);process.exit(1)})
+async function main() {
+  var host = config.http.host;
+  var port = config.http.port;
+  var httpport = config.http.port;
+  var httpsport = config.http.httpsPort;
+  var dnsport = config.dns.port;
 
-    if(config.dns.enabled){
-      console.log(chalk.green(`✓ (DNS Server) : ${config.dns.port}`));
-      dnsserver.listen(config.dns.port);
-    }
+  // S
 
-    // HTTP(s) Server
-    var server = null
-    process.on('SIGINT', () => {
-        cleanup()
-        dnsserver.close()
-        server.close(() => {
-            console.log(chalk.red(`✓ ALL Closed `));
-        })
-    })
-    const app = require('./http/app.js')
+  const { _, cleanup } = await init();
 
-    if (!config.nodejs.production){
-      var port = config.http.port
-      server = app.listen(port, "localhost", () => {	
-        console.log(chalk.green(`✓ (HTTP Server) : http://localhost:${port}`));
-      })
-    }else{
-      
-      // write new config
-      // letsencrypt.process()
+  // DNS
 
-      require('greenlock-express').init({
+  if (config.development) {
+    dnsserver.listen(dnsport);
+  } else {
+    dnsserver.listen(53);
+  }
+
+  console.log(chalk.green(`✓ (DNS Server) : ${dnsport}`));
+
+  // HTTP(s) Server
+  process.on("SIGINT", () => {
+    cleanup();
+    server.close(() => {
+      console.log(chalk.green(`✓ (HTTP Server) http://${host}:${httpport}`));
+      console.log(chalk.green(`✓ (HTTPS Server) https://${host}:${httpsport}`));
+      console.log(chalk.green(`✓ (DNS Server) : ${dnsport}`));
+      console.log(chalk.red(`\t✓ closed`));
+    });
+  });
+
+  if (config.development) {
+    const server = app.listen(port, host, () => {
+      console.log(chalk.green(`✓ (HTTP Server) : http://${host}:${port}`));
+    });
+  } else {
+    // write new config
+    letsencrypt.process();
+
+    require("greenlock-express")
+      .init({
         packageRoot: __dirname,
         // contact for security and critical bug notices
         maintainerEmail: "hamdy.a.farag@gmail.com",
         // where to look for configuration
-        configDir: './greenlock.d',
+        configDir: "./greenlock.d",
         // whether or not to run at cloudscale
-        cluster: false
-    })
-    // Serves on 80 and 443
-    // Get's SSL certificates magically!
-    .serve(app);
-    }
+        cluster: false,
+      })
+      // Serves on 80 and 443
+      // Get's SSL certificates magically!
+      .serve(app);
+  }
+}
 
-   
-    }
-
-main()
+main();

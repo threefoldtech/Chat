@@ -1,7 +1,8 @@
+let spawnerurl = window.location.host.split('.');
+spawnerurl.shift();
 let config = {
-    baseUrl: "http://localhost:3000/",
-    spawnerUrl: "http://localhost:9000/",
-    giphyApiKey: "uk3XRSO0vYrPDEQKDPZJ2wGz33qzIxST",
-    showdebug: false,
-}
-export default config
+    baseUrl: `${window.location.origin}/`,
+    spawnerUrl: `https://${spawnerurl.join('.')}/`,
+    giphyApiKey: `uk3XRSO0vYrPDEQKDPZJ2wGz33qzIxST`,
+};
+export default config;

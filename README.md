@@ -11,7 +11,10 @@ In later phases, file management, video group chats, and wiki will be integrated
 export HOST_IP={PUBLIC_IP}
 export SECRET={secret}
 
-
-to run node we need to run 
+to run node we need to run
 
 `NODE_ENV=production node server` as root
+
+## Contribute
+
+You can use the documentation inside the ./dev folder in order to setup a local dev environment
