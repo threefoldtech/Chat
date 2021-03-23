@@ -14,16 +14,13 @@ async function rewriteRoles(content, info){
     if(info.port != 80 && info.port != 443){
         host = `${scheme}://${info.host}:${info.port}`
     }
-
     for(var item in rewrite){
         if (item == 'load'){
             continue
         }
         var suff = rewrite[item]
-        if(suff == "/"){
-            suff = ""
-        }
-        content = content.replace(new RegExp(item, "g"), `${host}${suff}`)
+        content = content.replace(new RegExp("threefold/", "g"), "")
+        content = content.replace(new RegExp(item, "g"), `${suff}`)
     }
     return content
 }
@@ -72,6 +69,7 @@ async function handleWebsiteFile(req, res, info){
     driveObj = info.drive
     var url = req.url.replace(`/${info.alias}/`, "")
     var filepath = `${info.dir}/${url}`
+    
     var encoding = 'utf-8'
     if(filepath.endsWith('png')){
         res.type("image/png")
@@ -303,6 +301,11 @@ router.get('/info', asyncHandler(async (req, res) =>  {
 }))
 
 router.get('/:website', asyncHandler(async (req, res) =>  {
+     if(req.params.website == 'update'){
+        await update(req)
+        return res.redirect('/')
+     }
+
      if(req.params.website == 'update'){
         await update(req)
         return res.redirect('/')
