@@ -9,7 +9,6 @@ const sites = require('./web/sites')
 const threebot = require('./web/threebot')
 
 var morgan = require('morgan')
-var logger = require('../logger')
 
 var path = require('path')
 var rfs = require('rotating-file-stream') 
@@ -71,23 +70,12 @@ app.use(function (req, res, next) {
 
   var info = null
 
-  for (var alias in config.aliases.websites){
-    if (alias == '/'){
-      info = config.aliases.websites['/']
-      break
-    }
-  }
-  
+ 
   if(req.url == '/'){
+    info = config.aliases.websites['/'] || config.aliases.wikis['/']
     if(!info){
-      for (var alias in config.aliases.wikis){
-        if (alias == '/'){
-          info = config.aliases.wikis['/']
-          break
-        }
-      }
+      return res.status(404).content("No alias found for /")
     }
-
 
   }else{
     for (var alias in config.aliases.websites){
@@ -103,10 +91,17 @@ app.use(function (req, res, next) {
         break
       }
     }
-  }
 
-  if(!info){
-    return res.status(404).json("");
+    if(!info){
+      info = config.aliases.wikis['/'] || config.aliases.websites['/']
+      var splitted = req.url.split("/")
+      // var pass = ["flexsearch.json", "favicon.ico"] 
+      if(splitted.length == 2){
+        const clone = Object.assign({}, info);
+        clone.dir = path.join(info.dir,  splitted[1])
+        info = clone
+      }
+    }
   }
   req.info = info
   req.info.host = host
