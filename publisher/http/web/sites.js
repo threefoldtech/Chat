@@ -19,7 +19,7 @@ async function rewriteRoles(content, info){
             continue
         }
         var suff = rewrite[item]
-        content = content.replace(new RegExp("threefold/", "g"), "")
+        content = content.replace(new RegExp(`${config.homeAlias.alias}/`, "g"), "")
         content = content.replace(new RegExp(item, "g"), `${suff}`)
     }
     return content
