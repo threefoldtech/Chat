@@ -16,7 +16,7 @@ export const parseMessage = (
 ): MessageInterface<MessageBodyTypeInterface> => {
     const type: MessageTypes = <MessageTypes>msg.type;
 
-    console.log('MESSAGE: ', msg);
+    // console.log('MESSAGE: ', msg);
 
     switch (type) {
         case MessageTypes.STRING:
@@ -72,7 +72,12 @@ export const parseMessage = (
                 msg?.subject
             );
         case MessageTypes.FILE_UPLOAD:
-            const url = saveFile(msg.to, msg.id ,msg.body.name, msg.body.parsedFile);
+            const url = saveFile(
+                msg.to,
+                msg.id,
+                msg.body.name,
+                msg.body.parsedFile
+            );
 
             return new Message<FileMessageType>(
                 msg.from,
@@ -179,7 +184,7 @@ export const editMessage = (
 };
 
 export const handleRead = (message: Message<StringMessageTypeInterface>) => {
-    console.log('reading');
+    // console.log('reading');
 
     let chatId = determinChatId(message);
     const chat = getChat(chatId);

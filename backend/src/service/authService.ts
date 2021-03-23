@@ -20,6 +20,8 @@ export const getAppLoginUrl = async (
     return login.generateLoginUrl(loginState);
 };
 export const appCallback = async (request: Request): Promise<string> => {
+    console.log('Going to login now ...');
+
     const login = new ThreefoldLogin(
         config.appBackend,
         config.appId,
@@ -43,12 +45,17 @@ export const appCallback = async (request: Request): Promise<string> => {
         )?.profile;
 
         delete request.session.state;
+
         const doubleName: string = <string>profileData.doubleName;
         let userId = doubleName.replace('.3bot', '');
+
         if (userId !== config.userid) {
             return '/unauthorized';
         }
+
         request.session.userId = userId;
+        request.session.profileData = profileData;
+
         return '/callback';
     } catch (e) {
         throw new Error(e.message);

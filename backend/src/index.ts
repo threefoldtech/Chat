@@ -31,17 +31,20 @@ app.use(
 
 app.use(cors(corsOptions));
 
-app.enable('trust proxy');
+// app.enable('trust proxy');
+app.set('trust proxy', 1);
+
 app.use(
     session({
+        name: 'sessionId',
         secret: 'secretpassphrase',
         resave: false,
         saveUninitialized: false,
         proxy: true,
         cookie: {
-            path: '/api',
-            secure: true,
-            httpOnly: true,
+            path: '/',
+            httpOnly: false,
+            secure: false,
         },
     })
 );

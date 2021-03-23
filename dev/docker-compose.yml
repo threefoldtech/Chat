@@ -25,14 +25,14 @@ services:
     devices:
       - /dev/net/tun
 
-  doublename-digitaltwin:
-    container_name: doublename-chat
+  singlecore007-digitaltwin:
+    container_name: singlecore007-chat
     build:
       context: ../
       dockerfile: ./dev/Dockerfile
     restart: always
     environment:
-      - USER_ID=doublename
+      - USER_ID=singlecore007
     volumes:
       - ../frontend:/frontend
       - ../backend:/backend
