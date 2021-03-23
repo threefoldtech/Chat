@@ -29,3 +29,4 @@ package-lock.json
 .greenlockrci
 publisher/greenlock.d/config.json*
 *.log
+dev/
