@@ -2,6 +2,9 @@ var express = require("express");
 var router = express.Router();
 const asyncHandler = require("express-async-handler");
 
+var drive = require("../../drive/hyperdrive");
+const config = require("../../config");
+
 var drive = require("../../drive.js");
 const cache = require("../../cache.js");
 

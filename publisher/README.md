@@ -63,3 +63,7 @@ using `pkg` tool
 # dns
 
 dig @127.0.0.1 -p5333 lsong.org
+
+# ssl
+
+npx greenlock add --subject new.threefold.io --altnames new.threefold.io

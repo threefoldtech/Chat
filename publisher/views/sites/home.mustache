@@ -5,24 +5,25 @@
    </head>
    
    <body>
-      <b>Sites</b>
-      <div>
-      {{#sites}}
-         <div >
-            <a href="//{{.}}:{{port}}">{{.}}:{{port}}</a>
-         </div>
+     <div>
+     <b>Domains</b> <br/>
 
-         {{/sites}}
+      {{#domains}}
+            {{#websites.length}}
+            &nbsp;&nbsp;&nbsp;&nbsp; <b>{{domain}}</b><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>websites</b><br/>
+            {{#websites}}
+               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="//{{url}}"> {{name}}</a><br>
+            {{/websites}}
+            <br/>
+            {{/websites.length}}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>wikis</b><br/>
+            {{#wikis}}
+               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="//{{url}}"> {{name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="//{{url}}/errors"> errors</a><br> 
+            {{/wikis}}
+   
+         {{/domains}}
       </div>
 
-      <b>Wikis</b>
-      <div>
-      {{#wikis}}
-         <div >
-            <a href="//{{.}}:{{port}}">{{.}}:{{port}}</a>
-         </div>
-
-         {{/wikis}}
-      </div>
    </body>
 </html>

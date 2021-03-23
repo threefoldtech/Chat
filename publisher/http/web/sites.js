@@ -1,222 +1,352 @@
 var express = require("express");
 var router = express.Router();
-const asyncHandler = require("express-async-handler");
+const asyncHandler = require('express-async-handler')
+const config = require('../../config')
 
-var drive = require("../../drive.js");
-var cache = require("../../cache");
+const rewrite = require('../../rewrite')
+const logger = require('../../logger')
 
-async function getRequestInfo(req) {
-  var domains = cache.domains;
-  var port = 443;
-  var host = "";
-  var err = "";
-  var driveObj = null;
-  var status = 200;
-  var dir = "";
+async function rewriteRoles(content, info){
+    
+    var scheme = info.secure ? 'https' : 'http'
 
-  if (req.headers.host) {
-    var splitted = req.headers.host.split(":");
-    if (splitted.length > 1) {
-      port = splitted[1];
-      host = splitted[0];
-    }
-  }
-
-  if (host === "") {
-    status = 500;
-    err = "Host is missing from headers";
-  } else if (!(host in domains)) {
-    status = 404;
-    err = "Host is unknown";
-  }
-
-  driveObj = await drive.get(domains[host]["drive"]);
-  dir = domains[host]["dir"];
-
-  return {
-    status: status,
-    err: err,
-    drive: drive,
-    port: port,
-    host: host,
-    drive: driveObj,
-    dir: dir,
-  };
-}
-
-async function handleWebsiteFile(req, res, info) {
-  driveObj = info.drive;
-  var filepath = `${info.dir}/${req.url}`;
-  var encoding = "utf-8";
-  if (
-    filepath.endsWith("png") ||
-    filepath.endsWith("jpg") ||
-    filepath.endsWith("jpeg")
-  ) {
-    encoding = "binary";
-  } else if (filepath.endsWith("js")) {
-    res.type("text/javascript");
-  } else if (filepath.endsWith("css")) {
-    res.type("text/css");
-  } else if (filepath.endsWith("json")) {
-    res.type("application/json");
-  }
-
-  var entry = null;
-  try {
-    entry = await driveObj.promises.stat(filepath);
-    if (entry.isDirectory()) {
-      filepath = filepath + "/index.html";
-      entry = await driveObj.promises.stat(filepath);
+    host = `${scheme}://${info.host}`
+    if(info.port != 80 && info.port != 443){
+        host = `${scheme}://${info.host}:${info.port}`
     }
 
-    var content = await driveObj.promises.readFile(filepath, encoding);
-    return res.send(content);
-  } catch (e) {
-    console.log(e);
-    return res.status(404).json("");
-  }
+    for(var item in rewrite){
+        if (item == 'load'){
+            continue
+        }
+        var suff = rewrite[item]
+        if(suff == "/"){
+            suff = ""
+        }
+        content = content.replace(new RegExp(item, "g"), `${host}${suff}`)
+    }
+    return content
 }
 
-async function handleWikiFile(req, res, info) {
-  var filepath = `${info.dir}/${req.url}`;
-  var filename = req.url.substring(1);
-  var wikiname = info.dir.substring(1);
+async function update(req) {
+    var info = req.info
+    var repo = info.repo
 
-  var encoding = "utf-8";
-  if (filename.startsWith("file__") || filename.startsWith("page__")) {
-    var splitted = filename.split("__");
-    if (splitted.length != 3) {
-      return res.status(404).json("");
+    var spawn = require('child_process').spawn;
+    var prc = spawn('publishtools',  ['pull', '--repo', repo]);
+    
+    //noinspection JSUnresolvedFunction
+    prc.stdout.setEncoding('utf8');
+    prc.stdout.on('data', function (data) {
+        var str = data.toString()
+        var lines = str.split(/(\r?\n)/g);
+        logger.info(`${req.method} - ${lines.join("")}  - ${req.originalUrl} - ${req.ip}`);
+    });
+
+    prc.on('close', function (code) {
+        logger.info(`${req.method} - process exit code ${code}  - ${req.originalUrl} - ${req.ip}`);
+    });
+    
+    spawn2 = require('child_process').spawn;
+    
+    if (repo.startsWith("www")){
+        var prc2 = spawn('publishtools',  ['build', '--repo', repo, '--pathprefix']);
+    }else{
+        var prc2 = spawn('publishtools',  ['flatten', '--repo', repo, '--pathprefix']);
+    }
+    //noinspection JSUnresolvedFunction
+    prc2.stdout.setEncoding('utf8');
+    prc2.stdout.on('data', function (data) {
+        var str = data.toString()
+        var lines = str.split(/(\r?\n)/g);
+        logger.info(`${req.method} - ${lines.join("")}  - ${req.originalUrl} - ${req.ip}`);
+    });
+
+    prc2.on('close', function (code) {
+        logger.info(`${req.method} - process exit code ${code}  - ${req.originalUrl} - ${req.ip}`);
+    });
+
+}
+
+async function handleWebsiteFile(req, res, info){
+    driveObj = info.drive
+    var url = req.url.replace(`/${info.alias}/`, "")
+    var filepath = `${info.dir}/${url}`
+    var encoding = 'utf-8'
+    if(filepath.endsWith('png')){
+        res.type("image/png")
+        encoding = 'binary'
+    }else if(filepath.endsWith('jpg')){
+        res.type("image/jpg")
+        encoding = 'binary'
+    }else if(filepath.endsWith('jpeg')){
+        encoding = 'binary'
+        res.type('image/jpeg')
+    }else if(filepath.endsWith('svg')){
+        encoding = 'binary'
+        res.type('image/svg+xml')
+    }else if (filepath.endsWith("js")){
+        res.type("text/javascript");
+    }else if (filepath.endsWith("css")){
+            res.type("text/css");
+    }else if (filepath.endsWith("json")){
+        res.type("application/json");
+    }else if(filepath.endsWith('pdf')){
+        encoding = 'binary'
+        res.type('application/pdf')
+    }
+
+    var entry = null
+    try {
+        entry = await driveObj.promises.stat(filepath)
+        if(entry.isDirectory()){
+            filepath = filepath + "/index.html"
+            entry = await driveObj.promises.stat(filepath)
+        }
+
+        var content = await  driveObj.promises.readFile(filepath, encoding);
+        if(encoding != 'binary')
+            content = await(rewriteRoles(content, info))
+        return res.send(content)
+    } catch (e) {
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
+    }
+}
+
+async function handleWikiFile(req, res, info){
+    var filename = req.url.replace(`/info`, "").replace(`/${info.alias}/`, "")
+    var wikiname = info.dir.substring(1)
+
+    if(filename.includes("__")){
+        var splitted = filename.split("__")
+        filename = splitted[1]
+        wikiname = `wiki_${splitted[0]}` 
+    }
+ 
+    var encoding = 'utf-8'  
+    
+    if (filename == "_sidebar.md"){
+        filename = "sidebar.md"
+    }
+
+    if (filename == "_navbar.md"){
+        filename = "navbar.md"
+    }
+
+    if (filename == "README.md"){
+        filename = "readme.md"
     }
     if (filename.startsWith("file__")) {
       encoding = "binary";
     }
 
-    filename = splitted[2];
-    wikiname = `wiki_${splitted[1]}`;
-  } else if (filename.startsWith("html__")) {
-    var splitted = filename.split("__");
-
-    if (splitted.length < 3) {
-      return res.status(404).json("");
+    if(filename.endsWith('png')){
+        res.type("image/png")
+        encoding = 'binary'
+    }else if(filename.endsWith('jpg')){
+        res.type("image/jpg")
+        encoding = 'binary'
+    }else if(filename.endsWith('jpeg')){
+        encoding = 'binary'
+        res.type('image/jpeg')
+    }else if(filename.endsWith('svg')){
+        encoding = 'binary'
+        res.type('image/svg+xml')
+    }else if(filename.endsWith('pdf')){
+            encoding = 'binary'
+            res.type('application/pdf')
+    }else if(filename.endsWith("md") ){
+        encoding = 'utf-8'  
     }
 
-    wikiname = `wiki_${splitted[1]}`;
-    splitted.shift();
-    splitted.shift();
-    filename = splitted.join("__");
-  } else if (filename == "_sidebar.md") {
-    filename = "sidebar.md";
-  }
-
-  var splitted = filename.split("/");
-  if (splitted.length > 1) {
-    filename = splitted[splitted.length - 1];
-  }
-
-  if (
-    filename.endsWith("jpeg") ||
-    filename.endsWith("jpg") ||
-    filename.endsWith("gif") ||
-    filename.endsWith("png")
-  ) {
-    encoding = "binary";
-  }
-
-  filepath = `/${wikiname}/${filename}`;
-  driveObj = null;
-
-  var domains = cache.domains;
-  for (var key in domains) {
-    var item = domains[key];
-    if (item.dir == `/${wikiname}`) {
-      try {
-        driveObj = await drive.get(item.drive);
-      } catch (e) {}
+    filepath = `/${wikiname}/${filename}`
+    driveObj = null
+    for(var alias in config.aliases.wikis){
+        var item = config.aliases.wikis[alias]
+        if(item.dir == `/${wikiname}`){
+            driveObj =  item.drive
+        }
     }
-  }
 
-  if (!driveObj) {
-    return res.status(404).json("");
-  }
+    if(!driveObj){
+        return res.status(404).send(`Wiki not found`);;
+    }
 
-  // `/${req.params.wikiname}/${req.params.filename}`
-  var entry = null;
-  try {
-    entry = await driveObj.promises.stat(filepath);
-    var content = await driveObj.promises.readFile(filepath, encoding);
-    return res.send(content);
-  } catch (e) {
-    if (filename == "README.md") {
-      filepath = `/${wikiname}/readme.md`;
-      try {
-        entry = await driveObj.promises.stat(filepath);
-        var content = await driveObj.promises.readFile(filepath, encoding);
-        return res.send(content);
-      } catch (e) {
-        var content = `# ${wikiname}`;
-        return res.send(content);
-      }
+    // `/${req.params.wikiname}/${req.params.filename}`
+    var entry = null
+    try {
+        entry = await driveObj.promises.stat(filepath)
+        var content = await  driveObj.promises.readFile(filepath, encoding);
+        if(encoding != 'binary')
+            content = await(rewriteRoles(content, info))
+        return res.send(content)
+       
+    } catch (e) {
+        
+        newfilename = filename.replace(".md", "")
+        var def = config.aliases.defs[newfilename]
+       
+        if (def){
+            wikiname = `wiki_${def.wikiname}`
+            filename = `${def.pagename}.md`
+            filepath = `/${wikiname}/${filename}`
+
+            for(var alias in config.aliases.wikis){
+                var item = config.aliases.wikis[alias]
+                if(item.dir == `/${wikiname}`){
+                    driveObj =  item.drive
+                }
+            }
+            
+            try{
+                entry = await driveObj.promises.stat(filepath)
+                var content = await  driveObj.promises.readFile(filepath, encoding);
+                content = await(rewriteRoles(content, info))
+                return res.send(content)
+            }catch(e){
+                return res.status(404).send(`File not found : ${filepath}`);
+            }            
+        }
+        return res.status(404).send(`File not found : ${filepath}`);
     }
     return res.status(404).json("");
   }
 }
 
 // Home (list of wikis and sites)
-router.get(
-  "/",
-  asyncHandler(async (req, res) => {
-    var info = await getRequestInfo(req);
+router.get('/publishtools/list', asyncHandler(async (req, res) =>  {
+        var info = req.info
+        var domains = []
 
-    if (info.status != 200) {
-      return res.status(info.status).json({ err: info.err });
-    }
+        var wikis = new Set()
+        var sites = new Set()
 
-    var domains = cache.domains;
+        for(var w in config.aliases.websites){
+            var item = config.aliases.websites[w]
+            var d = `${info.host}`
+            if(info.port != 80 && info.port != 443){
+                d = `${d}:${info.port}`
+            }
+            if(w == '/'){
+                w = ""
+            }
 
-    // Local listing page
-    if (info.host == "localhost" || info.host == "127.0.0.1") {
-      var wikis = [];
-      var sites = [];
-      for (var item in domains) {
-        if (domains[item]["dir"].startsWith("/wiki")) {
-          wikis.push(item);
-        } else {
-          sites.push(item);
+            sites.add({"name": item.alias, "url": `${d}/${w}`})
         }
-      }
-      res.render("sites/home.mustache", {
-        sites: sites,
-        wikis: wikis,
-        port: info.port,
-      });
-      return;
-    } else {
-      // Handle website or wiki
-      var driveObj = info.drive;
-      var dir = info.dir;
-      var filepath = `${dir}/index.html`;
-      var entry = null;
-      try {
-        entry = await driveObj.promises.stat(filepath);
-        var content = await driveObj.promises.readFile(filepath, "utf8");
-        return res.send(content);
-      } catch (e) {
-        console.log(e);
-        return res.status(404).json("");
-      }
+
+        for(var w in config.aliases.wikis){
+            var item = config.aliases.wikis[w]
+            var d = `${info.host}`
+            if(info.port != 80 && info.port != 443){
+                d = `${d}:${info.port}`
+            }
+            if(w == '/'){
+                w = ""
+            }
+
+            wikis.add({"name": item.alias, "url": `${d}/info/${w}`})
+        }
+
+        domains.push({"domain": info.host, "websites": Array.from(sites), "wikis": Array.from(wikis)})
+
+        res.render('sites/home.mustache', {
+            domains : domains,
+            port: info.port
+        });       
+    }
+))
+
+router.get('/', asyncHandler(async (req, res) =>  {
+    var info = req.info
+     var driveObj = info.drive
+     var dir = info.dir
+     var filepath = `${dir}/index.html`
+     var entry = null
+     try {
+         entry = await driveObj.promises.stat(filepath)
+         var content = await  driveObj.promises.readFile(filepath, 'utf8');
+         content = await(rewriteRoles(content, info))
+         return res.send(content)
+     } catch (e) {
+            logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+            return res.status(404).send(`Site not found : ${info.alias}`);
+     }    
+}))
+
+router.get('/info', asyncHandler(async (req, res) =>  {
+    var info = req.info
+        var domains = []
+
+        var wikis = new Set()
+
+        for(var w in config.aliases.wikis){
+            var item = config.aliases.wikis[w]
+            var d = `${info.host}`
+            if(info.port != 80 && info.port != 443){
+                d = `${d}:${info.port}`
+            }
+            if(w == '/'){
+                w = ""
+            }
+
+            wikis.add({"name": item.alias, "url": `${d}/info/${w}`})
+        }
+
+        domains.push({"domain": info.host, "websites": [], "wikis": Array.from(wikis)})
+
+        res.render('sites/home.mustache', {
+            domains : domains,
+            port: info.port
+        });       
+    
+}))
+
+router.get('/:website', asyncHandler(async (req, res) =>  {
+     if(req.params.website == 'update'){
+        await update(req)
+        return res.redirect('/')
+     }
+
+     var info = req.info
+     var driveObj = info.drive
+     var dir = info.dir
+     var filepath = `${dir}/index.html`
+     var entry = null
+     try {
+         entry = await driveObj.promises.stat(filepath)
+         var content = await  driveObj.promises.readFile(filepath, 'utf8');
+         content = await(rewriteRoles(content, info))
+         return res.send(content)
+     } catch (e) {
+         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+         return res.status(404).send(`File not found : ${filepath}`);
+     }
+}))
+
+router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
+    var info = req.info
+    var driveObj = info.drive
+    var dir = info.dir
+    var filepath = `${dir}/index.html`
+    var entry = null
+    try {
+        entry = await driveObj.promises.stat(filepath)
+        var content = await  driveObj.promises.readFile(filepath, 'utf8');
+        return res.send(content)
+    } catch (e) {
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
     }
   })
 );
 
-router.get(
-  "/flexsearch",
-  asyncHandler(async (req, res) => {
-    var info = await getRequestInfo(req);
 
-    if (info.status != 200) {
-      return res.status(info.status).json({ err: info.err });
+router.get('/:website/flexsearch', asyncHandler(async (req, res) => {
+    var info = req.info
+
+    if(info.status != 200){
+        return res.status(info.status).send(info.err);
     }
 
     var driveObj = info.drive;
@@ -228,8 +358,8 @@ router.get(
       res.type("application/json");
       return res.send(content);
     } catch (e) {
-      console.log(e);
-      return res.status(404).json("");
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
     }
   })
 );
@@ -273,25 +403,33 @@ router.get(
         page_errors: errors.page_errors,
       });
     } catch (e) {
-      console.log(e);
-      return res.status(404).json("");
+        logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+        return res.status(404).send(`File not found : ${filepath}`);
     }
   })
 );
 
-// files
-router.get(
-  "/*",
-  asyncHandler(async (req, res) => {
-    var info = await getRequestInfo(req);
 
-    if (info.status != 200) {
-      return res.status(info.status).json({ err: info.err });
-    }
-    return info.dir.startsWith("/www")
-      ? handleWebsiteFile(req, res, info)
-      : handleWikiFile(req, res, info);
-  })
-);
+router.get('/info/:wiki/update', asyncHandler(async (req, res) => {
+    await update(req)
+    return res.redirect(`/info/${req.params.wiki}`)
+}))
 
-module.exports = router;
+router.get('/:website/update', asyncHandler(async (req, res) => {
+    await update(req)
+    return res.redirect(`/${req.params.website}`)
+}))
+
+// wiki files
+router.get('/info/:wiki/*', asyncHandler(async (req, res) => {
+    var info = req.info
+    return handleWikiFile(req, res, info)
+}))
+
+// website files
+router.get('/:website/*', asyncHandler(async (req, res) => {
+    var info = req.info
+    return handleWebsiteFile(req, res, info)
+}))
+
+module.exports = router

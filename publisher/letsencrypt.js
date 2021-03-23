@@ -13,20 +13,19 @@ async function process() {
     websites[dir].push(domain);
   }
 
-  var letsencrypt = {};
 
-  for (var dir in websites) {
-    if (dir == "") {
-      continue;
-    }
-    var domains = websites[dir];
-    if (domains.length > 0) {
-      var subject = domains.pop();
-      letsencrypt[subject] = {};
-      letsencrypt[subject].renewAt = 1;
-      if (domains.length > 0) {
-        letsencrypt[subject]["altnames"] = domains;
-      }
+     // //{ "sites": [{ "subject": "example.com", "altnames": ["example.com"] }] }
+     try{
+        fs.statSync('greenlock.d/config.json')
+     }catch(e){
+        fs.copyFileSync('greenlock.d/config.json.bak', 'greenlock.d/config.json');
+     }
+    var c = {}
+    try{
+        c = JSON.parse(fs.readFileSync('greenlock.d/config.json'));
+    }catch(e){
+        console.log(chalk.red(`X (Let'sEncrypt) Failed to read config file greenlock.d/config.json`))
+        c = JSON.parse(fs.readFileSync('greenlock.d/config.json'));
     }
   }
 

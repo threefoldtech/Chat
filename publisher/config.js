@@ -1,19 +1,51 @@
 const fs = require("fs");
 const chalk = require("chalk");
-const path = require("path");
 
-let config = JSON.parse(fs.readFileSync("config.json"));
+const utils = require("./utils");
 
-config.filesystem.path = resolveHome(config.filesystem.path);
-config.hyperdrive.path = resolveHome(config.hyperdrive.path);
+async function load() {
+  let config = null;
+  try {
+    config = JSON.parse(fs.readFileSync("config.json"));
+    config.publishtools.root = await utils.resolvePath(
+      config.publishtools.root
+    );
+    config.hyperdrive.path = await utils.resolvePath(config.hyperdrive.path);
+    config.nodejs.production = process.env.NODE_ENV == "production";
+    if (config.nodejs.production) {
+      var passPhrase = process.env.THREEBOT_PHRASE;
+      var secret = process.env.SECRET;
 
-console.log(chalk.green("✓ (Config) loaded"));
-
-function resolveHome(filepath) {
-  if (filepath[0] === "~") {
-    return path.join(process.env.HOME, filepath.slice(1));
+      if (!passPhrase) {
+        throw new Error(
+          "THREEBOT_PHRASE Env variable must be set for production"
+        );
+      }
+      if (!secret) {
+        throw new Error(
+          "THREEBOT_PHRASE Env variable must be set for production"
+        );
+      }
+      config.threebot.passPhrase = passPhrase;
+      config.http.session.secret = secret;
+    }
+  } catch (e) {
+    console.log(chalk.red("X (Config) could not be loaded"));
+    console.log(e);
+    process.exit(1);
   }
-  return filepath;
+
+  for (var item in config) {
+    this[item] = config[item];
+  }
+  console.log(chalk.green("✓ (Config) loaded"));
 }
 
-module.exports = config;
+// Config class
+class Config {
+  constructor() {
+    this.load = load;
+  }
+}
+
+module.exports = new Config();

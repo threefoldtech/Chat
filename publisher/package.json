@@ -7,17 +7,25 @@
   "license": "ISC",
   "bin": "server.js",
   "dependencies": {
+    "@threefoldjimber/threefold_login": "^1.4.0",
     "chalk": "^4.1.0",
     "cors": "^2.8.5",
     "dns2": "^1.4.2",
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
+    "express-session": "^1.17.1",
     "greenlock-express": "^4.0.3",
     "hyperdrive": "^10.19.1",
     "hyperspace": "^3.18.1",
+    "morgan": "^1.10.0",
     "mustache-express": "^1.3.0",
+    "node-sass": "^5.0.0",
+    "nodemon": "^2.0.7",
     "pump": "^3.0.0",
-    "sodium-native": "^3.2.1"
+    "rotating-file-stream": "^2.1.5",
+    "sodium-native": "^3.2.1",
+    "sucrase": "^3.17.0",
+    "winston": "^3.3.3"
   },
   "pkg": {
     "assets": [
@@ -37,8 +45,5 @@
       "node_modules/fd-lock/prebuilds/darwin-x64/*"
     ]
   },
-  "devDependencies": {
-    "nodemon": "^2.0.7",
-    "sucrase": "^3.17.0"
-  }
+  "devDependencies": {}
 }
