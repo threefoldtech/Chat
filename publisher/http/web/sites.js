@@ -5,6 +5,7 @@ const config = require('../../config')
 
 const rewrite = require('../../rewrite')
 const logger = require('../../logger')
+const path = require('path')
 
 async function rewriteRoles(content, info){
     
@@ -156,6 +157,8 @@ async function handleWikiFile(req, res, info){
             res.type('application/pdf')
     }else if(filename.endsWith("md") ){
         encoding = 'utf-8'  
+    }else if (path.extname(filename) == ''){
+        filename = `${filename}.md`
     }
 
     filepath = `/${wikiname}/${filename}`
