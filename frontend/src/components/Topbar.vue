@@ -70,7 +70,7 @@
         getBlockList,
         initBlocklist,
     } from '@/store/blockStore';
-    import { setNewavater } from '@/store/userStore';
+    import { setNewAvatar } from '@/store/userStore';
     import { fetchStatus } from '@/store/statusStore';
     import { useRoute, useRouter } from 'vue-router';
     import { showUserConfigDialog } from '@/services/dialogService';
@@ -110,7 +110,7 @@
             };
 
             const sendNewAvatar = async () => {
-                const newUrl = await setNewavater(file.value);
+                const newUrl = await setNewAvatar(file.value);
                 await fetchStatus(user.id);
                 showUserConfigDialog.value = false;
             };
