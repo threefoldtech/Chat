@@ -1,0 +1,47 @@
+name: staging
+
+on:
+  push:
+    branches: [development, development_ci]
+  pull_request:
+    branches: [development]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag threefoldjimber/digitaltwin:${{ github.sha }}
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Push to dockerhub
+        run: docker push threefoldjimber/digitaltwin:${{ github.sha }}
+      - name: Push latest to dockerhub
+        run: |
+          docker tag threefoldjimber/digitaltwin:${{ github.sha }} threefoldjimber/digitaltwin:latest
+          docker push threefoldjimber/digitaltwin:latest
+          docker push threefoldjimber/digitaltwin:${{ github.sha }}
+  deploy_staging:
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment:
+      name: digitaltwin.staging
+      url: https://digitaltwin-test.jimbertesting.be/
+    steps:
+      - name: deploy on ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: docker pull threefoldjimber/digitaltwin:${{ github.sha }}
+      - name: set new version in config
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: echo "threefoldjimber/digitaltwin:${{ github.sha }}" > '/etc/digitaltwin/version.txt'
