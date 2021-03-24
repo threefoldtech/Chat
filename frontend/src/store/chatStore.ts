@@ -30,17 +30,15 @@ const state = reactive<chatstate>({
 export const selectedId = ref('');
 
 const retrievechats = async () => {
-    await axios
-        .get(`${config.baseUrl}api/chats`)
-        .then(response => {
-            const incommingchats = response.data;
+    await axios.get(`${config.baseUrl}api/chats`).then(response => {
+        const incommingchats = response.data;
 
-            // debugger
-            incommingchats.forEach(chat => {
-                addChat(chat);
-            });
-            sortChats();
+        // debugger
+        incommingchats.forEach(chat => {
+            addChat(chat);
         });
+        sortChats();
+    });
 };
 
 const addChat = (chat: Chat) => {
@@ -219,7 +217,10 @@ const sendSystemMessage = (chatId, message: string) => {
     );
 };
 
-const sendMessageObject = (chatId, message: Message<MessageBodyType>) => {
+export const sendMessageObject = (
+    chatId,
+    message: Message<MessageBodyType>
+) => {
     const { sendSocketMessage } = useSocketActions();
     // console.log(chatId, message);
     // @TODO when doing add message on SYSTEM/groupupdate results in  max call stack exeeded
@@ -330,7 +331,7 @@ const updateContactsInGroup = async (
                 remove ? 'removed from' : 'added to'
             } the group`,
             adminLocation: myLocation,
-            contact
+            contact,
         },
         timeStamp: new Date(),
         type: MessageTypes.SYSTEM,
@@ -359,7 +360,7 @@ export const usechatsActions = () => {
         readMessage,
         acceptChat,
         updateContactsInGroup,
-        updateChat
+        updateChat,
     };
 };
 
