@@ -44,4 +44,4 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: echo "threefoldjimber/digitaltwin:${{ github.sha }}" > '/etc/digitaltwin/version.txt'
+          script: echo "threefoldjimber/digitaltwin:${{ github.sha }}" > '/etc/digitaltwin/version.txt' && docker pull threefoldjimber/digitaltwin:${{ github.sha }}
