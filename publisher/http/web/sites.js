@@ -331,16 +331,29 @@ router.get('/:website', asyncHandler(async (req, res) =>  {
 }))
 
 router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
-    var info = req.info
-    var driveObj = info.drive
-    var dir = info.dir
-    var filepath = `${dir}/index.html`
+    var name = req.params.wiki
+    var driveObj = req.info.drive
+    var filepath = ""
+    contenttype = 'utf8'
+
+    if (name.endsWith("js") || name.endsWith("css")){   
+        filepath = path.join('..', 'static', name)
+        if (name.endsWith('js'))
+            res.type("text/javascript")
+        else if  (name.endsWith('css'))
+            res.type("text/css")
+    }else{
+        var dir = req.info.dir
+        filepath = `${dir}/index.html`
+    }
+    console.log(filepath)
     var entry = null
     try {
         entry = await driveObj.promises.stat(filepath)
         var content = await  driveObj.promises.readFile(filepath, 'utf8');
         return res.send(content)
     } catch (e) {
+
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
         return res.status(404).send(`File not found : ${filepath}`);
     }
