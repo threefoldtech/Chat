@@ -247,6 +247,11 @@
     import { useRoute, useRouter } from 'vue-router';
     import { messageToReplyTo } from '@/services/replyService';
     import { showSideBar } from '@/services/sidebarService';
+    import {
+        JoinedVideoRoomBody,
+        MessageTypes,
+        SystemMessageTypes,
+    } from '@/types';
 
     export default defineComponent({
         name: 'ChatView',
@@ -382,10 +387,11 @@
                 sendMessage(
                     chat.value.chatId,
                     {
-                        message:`${user.id} joined the video chat`,
-                        id: id.toString()
-                    },
-                    'JOINED_VIDEOROOM'
+                        type: SystemMessageTypes.JOINED_VIDEOROOM,
+                        message: `${user.id} joined the video chat`,
+                        id: id.toString(),
+                    } as JoinedVideoRoomBody,
+                    MessageTypes.SYSTEM
                 );
 
                 popupCenter(`/videoroom/${id}`, 'video room', 800, 550);

@@ -114,7 +114,7 @@ router.put('/', async (req, res) => {
         return;
     }
 
-    if (message.type === MessageTypes.GROUP_UPDATE) {
+    if (message.type === MessageTypes.SYSTEM) {
         console.log('received a groupUpdate');
         //@ts-ignore
         const groupUpdateMsg: Message<GroupUpdateType> = message;
@@ -149,7 +149,7 @@ router.put('/', async (req, res) => {
                 sendMessageToApi(c.location, message);
             });
 
-        if (message.type === <string>MessageTypes.GROUP_UPDATE) {
+        if (message.type === <string>MessageTypes.SYSTEM) {
             handleGroupUpdate(<any>message, chat);
             //@ts-ignore
             sendMessageToApi(message.body.contact.location, message);
@@ -215,7 +215,7 @@ router.put('/', async (req, res) => {
         return;
     }
 
-    if (message.type === <string>MessageTypes.GROUP_UPDATE) {
+    if (message.type === <string>MessageTypes.SYSTEM) {
         handleGroupUpdate(<any>message, chat);
 
         res.json({ status: 'success' });

@@ -5,22 +5,22 @@ import moment from 'moment';
 import {
     Chat,
     Contact,
-    Message,
     GroupChat,
+    GroupManagementBody,
+    Message,
     MessageBodyType,
-    PersonChat,
-    DtId,
-    GroupUpdate,
+    MessageTypes,
+    SystemBody,
+    SystemMessageTypes,
 } from '../types';
 import { useSocketActions } from './socketStore';
 import { useAuthState } from './authStore';
-import { useContactsActions, useContactsState } from './contactStore';
 import config from '../../public/config/config';
 import { uuidv4 } from '@/common';
 import { startFetchStatusLoop } from '@/store/statusStore';
 import { uniqBy } from 'lodash';
 import { useScrollActions } from './scrollStore';
-import { myYggdrasilAddress } from '../store/authStore';
+import { myYggdrasilAddress } from '@/store/authStore';
 
 const state = reactive<chatstate>({
     chats: [],
@@ -30,7 +30,7 @@ const state = reactive<chatstate>({
 export const selectedId = ref('');
 
 const retrievechats = async () => {
-    const response = await axios
+    await axios
         .get(`${config.baseUrl}api/chats`)
         .then(response => {
             const incommingchats = response.data;
@@ -79,10 +79,12 @@ const addGroupchat = (name: string, contacts: Contact[]) => {
             {
                 from: user.id,
                 to: name,
-                body: `${user.id} has created and invited you to ${name}`,
+                body: {
+                    message: `${user.id} has created and invited you to ${name}`,
+                } as SystemBody,
                 timeStamp: new Date(),
                 id: uuidv4(),
-                type: 'SYSTEM',
+                type: MessageTypes.SYSTEM,
                 replies: [],
                 subject: null,
             },
@@ -105,12 +107,12 @@ const addGroupchat = (name: string, contacts: Contact[]) => {
 const acceptChat = id => {
     axios
         .post(`${config.baseUrl}api/chats?id=${id}`)
-        .then(res => {
+        .then(() => {
             const index = state.chatRequests.findIndex(c => c.chatId == id);
             state.chatRequests[index].acceptedChat = true;
             addChat(state.chatRequests[index]);
             const { user } = useAuthState();
-            sendMessage(id, `${user.id} accepted invitation`, 'SYSTEM');
+            sendSystemMessage(id, `${user.id} accepted invitation`);
             state.chatRequests.splice(index, 1);
         })
         .catch(error => {
@@ -119,7 +121,6 @@ const acceptChat = id => {
 };
 
 const updateChat = (chat: Chat) => {
-    const index = state.chats.findIndex(c => c.chatId == chat.chatId);
     removeChat(chat.chatId);
     addChat(chat);
 };
@@ -210,11 +211,19 @@ const sendMessage = (chatId, message, type: string = 'STRING') => {
     sendSocketMessage(chatId, msg);
 };
 
+const sendSystemMessage = (chatId, message: string) => {
+    sendMessage(
+        chatId,
+        { message: message } as SystemBody,
+        MessageTypes.SYSTEM
+    );
+};
+
 const sendMessageObject = (chatId, message: Message<MessageBodyType>) => {
     const { sendSocketMessage } = useSocketActions();
     // console.log(chatId, message);
-    // @TODO when doing add message on groupupdate results in  max call stack exeeded
-    if (message.type !== 'GROUP_UPDATE') {
+    // @TODO when doing add message on SYSTEM/groupupdate results in  max call stack exeeded
+    if (message.type !== 'SYSTEM') {
         addMessage(chatId, message);
     }
     let isEdit = false;
@@ -249,7 +258,7 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
     addMessage(chatId, msgToSend);
 
     try {
-        const result = await axios.post(
+        await axios.post(
             `${config.baseUrl}api/files/${chatId}/${id}`,
             formData,
             {
@@ -308,25 +317,27 @@ const updateContactsInGroup = async (
     remove: boolean
 ) => {
     const { user } = useAuthState();
-    const { chats } = usechatsState();
-    const operation = remove ? 'REMOVEUSER' : 'ADDUSER';
-    const chat = chats.value.find(chat => chat.chatId == groupId);
-    const mylocation = await myYggdrasilAddress();
-    const message: Message<GroupUpdate> = {
+    const myLocation = await myYggdrasilAddress();
+    const message: Message<GroupManagementBody> = {
         id: uuidv4(),
         from: user.id,
         to: groupId,
-        body: <GroupUpdate>{
-            type: operation,
-            contact,
-            adminLocation: mylocation,
+        body: {
+            type: remove
+                ? SystemMessageTypes.REMOVE_USER
+                : SystemMessageTypes.ADD_USER,
+            message: `${contact.id} has been ${
+                remove ? 'removed from' : 'added to'
+            } the group`,
+            adminLocation: myLocation,
+            contact
         },
         timeStamp: new Date(),
-        type: 'GROUP_UPDATE',
+        type: MessageTypes.SYSTEM,
         replies: [],
         subject: null,
     };
-    console.log(message);
+
     sendMessageObject(groupId, message);
 };
 
@@ -348,7 +359,7 @@ export const usechatsActions = () => {
         readMessage,
         acceptChat,
         updateContactsInGroup,
-        updateChat,
+        updateChat
     };
 };
 

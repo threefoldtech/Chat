@@ -32,7 +32,7 @@
     import { computed, defineComponent, ref } from 'vue';
     import { findLastIndex } from 'lodash';
     import { useAuthState } from '@/store/authStore';
-    import { Message, MessageBodyType, MessageTypes } from '@/types';
+    import { Message, MessageBodyType, MessageTypes, SystemBody } from '@/types';
     import moment from 'moment';
     import { statusList } from '@/store/statusStore';
     import AvatarImg from '@/components/AvatarImg.vue';
@@ -81,17 +81,12 @@
                 switch (lstmsg.type) {
                     case 'GIF':
                         return 'Gif was sent';
-                    case 'GROUP_UPDATE':
-                        if (lstmsg.body.type == 'REMOVEUSER')
-                            return `${lstmsg.body.contact.id} removed from group.`;
-                        if (lstmsg.body.type == 'ADDUSER')
-                            return `${lstmsg.body.contact.id} added to group.`;
                     case 'QUOTE':
                         return lstmsg.body.message;
+                    case MessageTypes.SYSTEM:
+                        return (lstmsg.body as SystemBody).message;
                     case 'FILE':
                         return 'File has been uploaded';
-                    case MessageTypes.JOINED_VIDEOROOM:
-                        return lstmsg.body.message;
                     case 'DELETE':
                     default:
                         return lstmsg.body;
