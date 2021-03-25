@@ -1,10 +1,14 @@
-var Drives = {};
+var Drives = {
 
-var Domains = [];
+}
 
-var Authorized = {};
+var Domains = []
+
+var Authorized = {}
+
 
 module.exports = {
-  drives: Drives,
-  domains: Domains,
-};
+    drives: Drives,
+    domains : Domains,
+    authorized: Authorized
+}

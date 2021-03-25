@@ -1,4 +1,4 @@
-var express = require("express");
+var express = require('express');
 var router = express.Router();
 const asyncHandler = require('express-async-handler')
 const config = require('../../config')
@@ -136,8 +136,10 @@ async function handleWikiFile(req, res, info){
     if (filename == "README.md"){
         filename = "readme.md"
     }
-    if (filename.startsWith("file__")) {
-      encoding = "binary";
+    
+    var splitted = filename.split("/")
+    if (splitted.length > 1){
+        filename = splitted[splitted.length - 1]
     }
 
     if(filename.endsWith('png')){
@@ -211,8 +213,6 @@ async function handleWikiFile(req, res, info){
         }
         return res.status(404).send(`File not found : ${filepath}`);
     }
-    return res.status(404).json("");
-  }
 }
 
 // Home (list of wikis and sites)
@@ -357,8 +357,8 @@ router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
         return res.status(404).send(`File not found : ${filepath}`);
     }
-  })
-);
+}))
+
 
 
 router.get('/:website/flexsearch', asyncHandler(async (req, res) => {
@@ -368,65 +368,53 @@ router.get('/:website/flexsearch', asyncHandler(async (req, res) => {
         return res.status(info.status).send(info.err);
     }
 
-    var driveObj = info.drive;
-    var filepath = `${info.dir}/flexsearch.json`;
-    var entry = null;
+    var driveObj = info.drive
+    var filepath = `${info.dir}/flexsearch.json`
+    var entry = null
     try {
-      entry = await driveObj.promises.stat(filepath);
-      var content = await driveObj.promises.readFile(filepath, "utf8");
-      res.type("application/json");
-      return res.send(content);
+        entry = await driveObj.promises.stat(filepath)
+        var content = await  driveObj.promises.readFile(filepath, 'utf8');
+        res.type("application/json");
+        return res.send(content)
     } catch (e) {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
         return res.status(404).send(`File not found : ${filepath}`);
     }
-  })
-);
+}))
 
 // Wiki errors
-router.get(
-  "/errors",
-  asyncHandler(async (req, res) => {
-    var info = await getRequestInfo(req);
+router.get('/info/:wiki/errors', asyncHandler(async (req, res) => {
+    var info = await req.info
 
-    if (info.status != 200) {
-      return res.status(info.status).json({ err: info.err });
-    }
-
-    var driveObj = info.drive;
-    var wikiname = info.dir.substring(1);
-
-    filepath = `${info.dir}/errors.json`;
-    var entry = null;
+    var driveObj = info.drive
+    var wikiname = info.dir.substring(1)
+    
+    filepath = `${info.dir}/errors.json`
     try {
-      entry = await driveObj.promises.stat(filepath);
+        entry = await driveObj.promises.stat(filepath)
 
-      var content = await driveObj.promises.readFile(filepath, "utf-8");
-
-      var data = JSON.parse(content);
-      var errors = {
-        page_errors: [],
-      };
-      errors.site_errors = data.site_errors;
-
-      for (var key in data.page_errors) {
-        var e = {
-          page: key,
-          errors: data.page_errors[key],
-        };
-        errors.page_errors.push(e);
-      }
-      res.render("sites/errors.mustache", {
-        site_name: wikiname,
-        site_errors: errors.site_errors,
-        page_errors: errors.page_errors,
-      });
+        var content = await  driveObj.promises.readFile(filepath, 'utf-8');
+        
+        var data = JSON.parse(content)
+        var errors = {
+            page_errors : []
+        }
+        errors.site_errors = data.site_errors
+        
+        for (var key in data.page_errors){
+            var e = {
+                page : key,
+                errors : data.page_errors[key]
+            }
+            errors.page_errors.push(e)
+        }
+        res.render('sites/errors.mustache', {site_name: wikiname, site_errors : errors.site_errors, page_errors: errors.page_errors});
+       
     } catch (e) {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
         return res.status(404).send(`File not found : ${filepath}`);
     }
-  })
-);
+}))
 
 
 router.get('/info/:wiki/update', asyncHandler(async (req, res) => {
@@ -451,4 +439,10 @@ router.get('/:website/*', asyncHandler(async (req, res) => {
     return handleWebsiteFile(req, res, info)
 }))
 
+
+
+
+
 module.exports = router
+
+
