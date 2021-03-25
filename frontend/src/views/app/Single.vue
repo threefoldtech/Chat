@@ -369,12 +369,6 @@
             });
 
             const popupMeeting = () => {
-                sendMessage(
-                    chat.value.chatId,
-                    `${user.id} joined the video chat`,
-                    'SYSTEM'
-                );
-
                 // @ts-ignore
                 // const str = chat?.contacts ? chat.id : [user.id, chat.id].sort().join();
                 const str: string = chat.value.isGroup
@@ -384,9 +378,15 @@
                           .sort()
                           .join();
 
-                console.log(`str = ${str}`);
-
                 const id = crypto.SHA1(str);
+                sendMessage(
+                    chat.value.chatId,
+                    {
+                        message:`${user.id} joined the video chat`,
+                        id: id.toString()
+                    },
+                    'JOINED_VIDEOROOM'
+                );
 
                 popupCenter(`/videoroom/${id}`, 'video room', 800, 550);
             };

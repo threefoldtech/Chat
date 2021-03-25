@@ -13,6 +13,7 @@
     import AudioContent from '@/components/MessageContentType/AudioContent.vue';
     import ImageContent from '@/components/MessageContentType/ImageContent.vue';
     import GifContent from '@/components/MessageContentType/GifContent.vue';
+    import JoinedVideoRoomContent from '@/components/MessageContentType/JoinedVideoRoomContent.vue';
     import QuoteContent from '@/components/MessageContentType/QuoteContent.vue';
     import GroupUpdateContent from '@/components/MessageContentType/GroupUpdateContent.vue';
     import { getComponentForType } from '@/services/contentService';
@@ -30,6 +31,7 @@
             GifContent,
             QuoteContent,
             GroupUpdateContent,
+            JoinedVideoRoomContent
         },
         props: {
             message: {

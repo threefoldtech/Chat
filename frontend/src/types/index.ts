@@ -96,4 +96,5 @@ export enum MessageTypes {
     DELETE = 'DELETE',
     GROUP_UPDATE = 'GROUP_UPDATE',
     QUOTE = 'QUOTE',
+    JOINED_VIDEOROOM = 'JOINED_VIDEOROOM'
 }

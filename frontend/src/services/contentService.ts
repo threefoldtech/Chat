@@ -23,6 +23,8 @@ export const getComponentForType = message => {
             return 'QuoteContent';
         case MessageTypes.SYSTEM:
             return 'SystemContent';
+        case MessageTypes.JOINED_VIDEOROOM:
+            return 'JoinedVideoRoomContent';
         case MessageTypes.GROUP_UPDATE:
             return 'GroupUpdateContent';
         case MessageTypes.FILE:
