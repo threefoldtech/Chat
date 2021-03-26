@@ -45,7 +45,7 @@ async function handleContactRequest(message: Message<ContactRequest>) {
         to: message.to,
         body: `You've received a new message request from ${message.from}`,
         id: uuidv4(),
-        type: MessageTypes.STRING,
+        type: MessageTypes.SYSTEM,
         timeStamp: new Date(),
         replies: [],
         subject: null,
