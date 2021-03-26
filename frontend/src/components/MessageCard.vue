@@ -212,10 +212,10 @@
                 readMessage(props.chatId, props.message.id);
             };
 
-            // if (!props.isreadbyme) {
-            //     console.log('read');
-            //     read();
-            // }
+            if (!props.isreadbyme) {
+                console.log('read');
+                read();
+            }
 
             return {
                 moment,
