@@ -1,10 +1,15 @@
 <template>
-    <div class="flex flex-row">
+    <div
+        class="flex flex-row"
+        :class="{
+            'mb-2': isLastMessage,
+        }"
+    >
         <AvatarImg
             small
-            class="mr-2"
+            class="mr-2 "
             :class="{
-                hidden: !showAvatar,
+                'opacity-0': !isLastMessage,
             }"
             :id="message.from"
             :showOnlineStatus="false"
@@ -15,15 +20,15 @@
                 class="card flex flex-row flex-wrap"
             >
                 <div
-                    class="flex rounded-xl mb-1 pr-4 border-2"
+                    class="flex rounded-md rounded-r-xl mb-1 pr-4 bg-white shadow"
                     :class="{
-                        'bg-white': message.from !== user?.id,
-                        'bg-accent bg-opacity-10': message.from === user?.id,
-                        'border-black': messageToReplyTo?.id === message?.id,
+                        'bg-accent bg-opacity-60': message.from === user?.id,
+                        'rounded-tl-xl': isFirstMessage,
+                        'rounded-bl-xl': isLastMessage,
                     }"
                 >
                     <main
-                        class="msgcard flex justify-between pt-2 pl-4 pb-2"
+                        class="msgcard flex justify-between pt-1 pl-4 pb-1"
                         :class="{
                             'flex-row-reverse': message.user === user?.id,
                         }"
@@ -90,7 +95,7 @@
                         class="flex rounded-xl mb-1 overflow-hidden pr-4"
                         :class="{
                             'bg-white': reply.from !== user?.id,
-                            'bg-accent bg-opacity-10': reply.from === user?.id,
+                            'bg-accent bg-opacity-60': reply.from === user?.id,
                         }"
                     >
                         <main
@@ -144,7 +149,8 @@
             isGroup: Boolean,
             isreadbyme: Boolean,
             isread: Boolean,
-            showAvatar: Boolean,
+            isFirstMessage: Boolean,
+            isLastMessage: Boolean,
         },
         setup(props) {
             const { user } = useAuthState();

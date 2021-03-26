@@ -103,7 +103,8 @@
                                     :chatId="chat.chatId"
                                     :isGroup="chat.isGroup"
                                     :isMine="message.user === user.id"
-                                    :showAvatar="showAvatar(i)"
+                                    :isLastMessage="isLastMessage(i)"
+                                    :isFirstMessage="isFirstMessage(i)"
                                     v-on:scroll="scrollToBottom"
                                 />
                             </div>
@@ -458,13 +459,21 @@
                 });
             });
 
-            const showAvatar =(index: number) => {
+            const isLastMessage = (index: number) => {
                 if (index + 1 === chat.value.messages.length) {
                     return true;
                 }
                 const currentMessage = chat.value.messages[index];
                 const nextMessage = chat.value.messages[index + 1];
                 return currentMessage.from !== nextMessage.from;
+            };
+            const isFirstMessage = (index: number) => {
+                if (index === 0) {
+                    return true;
+                }
+                const currentMessage = chat.value.messages[index];
+                const prevMessage = chat.value.messages[index - 1];
+                return currentMessage.from !== prevMessage.from;
             };
 
             return {
@@ -495,7 +504,8 @@
                 showMenu,
                 messageToReplyTo,
                 showSideBar,
-                showAvatar,
+                isFirstMessage,
+                isLastMessage,
                 ...propRefs,
             };
         },
