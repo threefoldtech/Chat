@@ -31,7 +31,7 @@ jobs:
       name: digitaltwin.staging
       url: https://digitaltwin-test.jimbertesting.be/
     steps:
-     - name: deploy on ssh
+      - name: deploy on ssh
         run: |
           docker pull threefoldjimber/digitaltwin:${{ github.sha }}
           echo "threefoldjimber/digitaltwin:${{ github.sha }}" > '/etc/digitaltwin/version.txt'
