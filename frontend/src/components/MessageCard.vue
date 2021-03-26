@@ -2,9 +2,9 @@
     <div class="flex flex-row">
         <AvatarImg
             small
-            class='mr-2'
+            class="mr-2"
             :class="{
-               'hidden': !showAvatar
+                hidden: !showAvatar,
             }"
             :id="message.from"
             :showOnlineStatus="false"
@@ -14,7 +14,7 @@
                 style="position: relative;"
                 class="card flex flex-row flex-wrap"
                 :class="{
-                    'flex-row-reverse': message.user === user?.id,
+                    'flex-row-reverse': message.from === user?.id,
                 }"
             >
                 <div
@@ -39,7 +39,7 @@
                     style="margin-top: auto;"
                     class="actions pb-4 pl-4 flex"
                     :class="{
-                        'flex-row-reverse': message.user === user?.id,
+                        'flex-row-reverse': message.from === user?.id,
                     }"
                 >
                     <span
@@ -83,7 +83,7 @@
                     }"
                 >
                     <AvatarImg
-                        class='mr-2'
+                        class="mr-2"
                         small
                         :id="reply.from"
                         :showOnlineStatus="false"
@@ -133,7 +133,7 @@
     import { Message, StringMessageType } from '@/types';
     import { uuidv4 } from '@/common';
     import { useAuthState } from '@/store/authStore';
-    import { usechatsActions } from '@/store/chatStore';
+    import { sendMessageObject, usechatsActions } from '@/store/chatStore';
     import { messageToReplyTo } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
 
@@ -217,6 +217,21 @@
                 read();
             }
 
+            const deleteMessage = message => {
+                //@todo: show dialog
+                const updatedMessage: Message<StringMessageType> = {
+                    id: message.id,
+                    from: message.from,
+                    to: message.chatId,
+                    body: 'Message has been deleted',
+                    timeStamp: message.timeStamp,
+                    type: 'DELETE',
+                    replies: [],
+                    subject: null,
+                };
+                sendMessageObject(props.chatId, updatedMessage);
+            };
+
             return {
                 moment,
                 toggleSendForwardMessage,
@@ -225,6 +240,7 @@
                 toggleEditMessage,
                 user,
                 messageToReplyTo,
+                deleteMessage,
             };
         },
     });
@@ -247,11 +263,6 @@
     .card:hover > .actions,
     .card:hover > .actions {
         visibility: visible;
-    }
-
-    .reply:hover {
-        text-decoration: underline;
-        cursor: pointer;
     }
 
     .msgcard,

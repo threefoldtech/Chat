@@ -4,6 +4,7 @@ import fs from 'fs';
 import Chat from '../models/chat';
 import { parseChat } from './chatService';
 import { uniqBy } from 'lodash';
+import im from 'imagemagick';
 
 export const getChatIds = (): IdInterface[] => {
     const location = config.baseDir + 'chats';
@@ -24,7 +25,7 @@ export const getUserdata = () => {
         const data = JSON.parse(fs.readFileSync(location).toString());
         return data;
     } catch {
-        throw new Error("Userinfo file doesn't exitst");
+        throw new Error('Userinfo file doesn\'t exitst');
     }
 };
 
@@ -82,18 +83,40 @@ export const saveFile = (
     chatId: IdInterface,
     messageId: string,
     fileName: string,
-    fileBuffer: Buffer
+    fileBuffer: Buffer,
 ) => {
     let path = `${config.baseDir}chats/${chatId}/files/${messageId}`;
-    fs.mkdirSync(path)
-    path = `${path}/${fileName}`
+    fs.mkdirSync(path);
+    path = `${path}/${fileName}`;
     fs.writeFileSync(path, fileBuffer);
     return path;
 };
 
-export const saveAvatar = (fileBuffer: Buffer, id: string) => {
+export const saveAvatar = async (fileBuffer: Buffer, id: string) => {
     const path = `${config.baseDir}user/avatar-${id}`;
-    fs.writeFileSync(path, fileBuffer);
+    const tempPath = `${config.baseDir}user/temp-avatar-${id}`;
+    fs.writeFileSync(tempPath, fileBuffer);
+    await resizeAvatar(tempPath, path)
+    fs.unlinkSync(tempPath);
+};
+
+export const deleteAvatar = (id: string) => {
+    fs.unlinkSync(`${config.baseDir}user/avatar-${id}`);
+};
+
+export const resizeAvatar = async (from: string, to: string): Promise<unknown> => {
+    return new Promise((resolve, reject) => {
+        im.resize({
+            srcPath: from,
+            dstPath: to,
+            width: 64,
+        }, (err: Error, result) => {
+            if(err) {
+                reject(err);
+            }
+            resolve(result);
+        });
+    });
 };
 
 export const persistBlocklist = (blockList: string[]) => {

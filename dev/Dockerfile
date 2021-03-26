@@ -17,7 +17,7 @@ RUN set -ex \
 
 FROM ubuntu:20.04
 RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get install -y nginx curl musl-tools nano iputils-ping procps iproute2
+RUN apt-get install -y nginx curl musl-tools nano iputils-ping procps iproute2 imagemagick
 
 COPY --from=builder /src/yggdrasil    /usr/bin/
 COPY --from=builder /src/yggdrasilctl /usr/bin/
