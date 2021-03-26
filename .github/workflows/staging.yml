@@ -26,7 +26,7 @@ jobs:
           docker push threefoldjimber/digitaltwin:${{ github.sha }}
   deploy_staging:
     needs: [build_staging]
-    runs-on: digitaltwin-staging
+    runs-on: staging
     environment:
       name: digitaltwin.staging
       url: https://digitaltwin-test.jimbertesting.be/
