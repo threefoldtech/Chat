@@ -13,9 +13,6 @@
             <div
                 style="position: relative;"
                 class="card flex flex-row flex-wrap"
-                :class="{
-                    'flex-row-reverse': message.from === user?.id,
-                }"
             >
                 <div
                     class="flex rounded-xl mb-1 pr-4 border-2"
@@ -92,7 +89,7 @@
                     <div
                         class="flex rounded-xl mb-1 overflow-hidden pr-4"
                         :class="{
-                            'bg-white': reply.from === user?.id,
+                            'bg-white': reply.from !== user?.id,
                             'bg-accent bg-opacity-10': reply.from === user?.id,
                         }"
                     >
