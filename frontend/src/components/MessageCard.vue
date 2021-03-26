@@ -45,6 +45,14 @@
                 >
                     <span
                         class="reply text-xs pr-4"
+                        @click="deleteMessage(message)"
+                        v-if="messageBlock.user === user?.id"
+                    >
+                        <i class="fa fa-trash"></i>
+                        <span class="text-gray-600">Delete</span>
+                    </span>
+                    <span
+                        class="reply text-xs pr-4"
                         @click="toggleSendReplyMessage(message)"
                     >
                         <i class="fa fa-reply"></i>
@@ -138,7 +146,7 @@
     import { Message, StringMessageType } from '@/types';
     import { uuidv4 } from '@/common';
     import { useAuthState } from '@/store/authStore';
-    import { usechatsActions } from '@/store/chatStore';
+    import { sendMessageObject, usechatsActions } from '@/store/chatStore';
     import { messageToReplyTo } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
 
@@ -212,6 +220,21 @@
                 addScrollEvent();
             });
 
+            const deleteMessage = message => {
+                //@todo: show dialog
+                const updatedMessage: Message<StringMessageType> = {
+                    id: message.id,
+                    from: message.from,
+                    to: message.chatId,
+                    body: 'Message has been deleted',
+                    timeStamp: message.timeStamp,
+                    type: 'DELETE',
+                    replies: [],
+                    subject: null,
+                };
+                sendMessageObject(props.chatId, updatedMessage);
+            };
+
             return {
                 moment,
                 toggleSendForwardMessage,
@@ -220,6 +243,7 @@
                 toggleEditMessage,
                 user,
                 messageToReplyTo,
+                deleteMessage,
             };
         },
     });

@@ -210,7 +210,10 @@ const sendMessage = (chatId, message, type: string = 'STRING') => {
     sendSocketMessage(chatId, msg);
 };
 
-const sendMessageObject = (chatId, message: Message<MessageBodyType>) => {
+export const sendMessageObject = (
+    chatId,
+    message: Message<MessageBodyType>
+) => {
     const { sendSocketMessage } = useSocketActions();
     // console.log(chatId, message);
     // @TODO when doing add message on groupupdate results in  max call stack exeeded
