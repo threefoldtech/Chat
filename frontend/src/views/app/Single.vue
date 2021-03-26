@@ -96,18 +96,17 @@
                     >
                         <div class="absolute w-full mt-8 px-4">
                             <div
-                                v-for="(messageBlock,
-                                i) in getMessagesSortedByUser"
-                                :key="`${messageBlock.user}`"
+                                v-for="(message,
+                                i) in chat.messages"
                             >
                                 <MessageCard
                                     :isread="i <= lastRead"
                                     :isreadbyme="i <= lastReadByMe"
-                                    :messageBlock="messageBlock"
-                                    :message="messageBlock"
+                                    :messageBlock="(message"
+                                    :message="(message"
                                     :chatId="chat.chatId"
                                     :isGroup="chat.isGroup"
-                                    :isMine="messageBlock.user === user.id"
+                                    :isMine="(message.user === user.id"
                                     v-on:scroll="scrollToBottom"
                                 />
                             </div>
