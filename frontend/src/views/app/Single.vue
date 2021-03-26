@@ -103,6 +103,7 @@
                                     :chatId="chat.chatId"
                                     :isGroup="chat.isGroup"
                                     :isMine="message.user === user.id"
+                                    :showAvatar="true"
                                     v-on:scroll="scrollToBottom"
                                 />
                             </div>

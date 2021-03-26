@@ -8,7 +8,8 @@
     >
         <div class="col-span-2 place-items-center grid relative">
             <span
-                class="absolute right-2 -top-2 px-1 bg-accent rounded-full text-xs"
+                v-if="unreadMessagesAmount > 0"
+                class="absolute right-2 -top-2 px-1 bg-accent rounded-full text-xs z-10"
             >
                 {{unreadMessagesAmount}}
             </span>
