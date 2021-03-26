@@ -25,6 +25,7 @@
         "unicode-emoji-picker": "^1.1.1",
         "universal-cookie": "^4.0.4",
         "vue": "^3.0.4",
+        "vue-cropperjs": "^5.0.0",
         "vue-router": "^4.0.1",
         "vue-socket.io": "^3.0.10"
     },

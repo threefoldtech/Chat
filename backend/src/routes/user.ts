@@ -3,9 +3,11 @@ import { Router } from 'express';
 import { user } from '../store/user';
 import { connections } from '../store/connections';
 import { UploadedFile } from 'express-fileupload';
-import { saveAvatar } from '../service/dataService';
+import { deleteAvatar, saveAvatar } from '../service/dataService';
 import { uuidv4 } from '../common';
 import { config } from '../config/config';
+import im from 'imagemagick';
+import fs from 'fs';
 
 const router = Router();
 
@@ -33,9 +35,10 @@ router.get('/avatar/:avatarId', async (req, res) => {
 });
 
 router.post('/avatar', async (req, resp) => {
-    const fileToSave = <UploadedFile>req.files.file;
+    const file = <UploadedFile>req.files.file;
     const avatarId = uuidv4();
-    saveAvatar(fileToSave.data, avatarId);
+    await saveAvatar(file.data, avatarId);
+    await deleteAvatar(user.image)
 
     user.updateAvatar(avatarId);
     const newUrl = user.getAvatar();
