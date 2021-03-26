@@ -5,40 +5,23 @@
         style="z-index: 10000"
         v-on:close="hideGif"
     />
-    <div
-        class="bg-indigo-100 inline-flex text-sm rounded flex-row h-10 px-3 ml-10 self-start"
-        v-if="file"
-    >
-        <div class="self-center">
-            <i class="fas fa-file"></i>
-        </div>
-        <span class="ml-2 mr-1 leading-relaxed truncate max-w- self-center">
-            {{ file.name }}
-        </span>
-        <button
-            class="action-btn px-2 md:py-8 py-2 self-center"
-            @click.stop="removeFile"
-        >
-            <i class="fas fa-minus-circle "></i>
-        </button>
-    </div>
 
     <div
-        class="md:p-2 md:m-2 md:rounded-3xl bg-white flex flex-row actions"
+        class="md:p-2 md:m-2 md:rounded-3xl bg-white flex flex-col actions md:flex-row"
         @paste="onPaste"
     >
         <div
-            class="md:col-span-4 flex flex-nowrap md:bg-transparent"
+            class="md:col-span-4 flex flex-nowrap md:bg-transparent bg-gray-200"
             :class="{ hidden: !collapsed }"
         >
             <button
-                class="action-btn mx-2 my-0 p-0 self-center"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1 pt-0.5"
                 @click="toggleGif"
             >
                 <h2>GIF</h2>
             </button>
             <button
-                class="action-btn mx-2 my-0 p-0 self-center"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="selectFile"
             >
                 <i
@@ -54,14 +37,14 @@
                 @change="changeFile"
             />
             <button
-                class="action-btn mx-2 my-0 p-0 self-center"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="startRecording"
                 v-if="!stopRecording"
             >
                 <i class="fas fa-microphone "></i>
             </button>
             <button
-                class="action-btn mx-2 my-0 p-0 self-center"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="stopRecording"
                 v-else
             >
@@ -71,13 +54,13 @@
             <span
                 ref="emojipicker"
                 :class="{ hidden: !showEmoji }"
-                style="position: absolute; bottom: 140px; z-index: 10000"
+                style="position: absolute; bottom: 75px; z-index: 10000"
             >
                 <unicode-emoji-picker v-pre></unicode-emoji-picker>
             </span>
 
             <button
-                class="action-btn mx-2 my-0 p-0 self-center"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="toggleEmoji"
                 v-if="!file"
             >
@@ -86,13 +69,32 @@
         </div>
         <div class="flex flex-row flex-1">
             <button
-                class="action-btn cmx-2 my-0 p-0 self-center md:hidden"
+                class="action-btn mx-2 my-0 p-0 self-center md:hidden"
                 @click="collapsed = !collapsed"
                 :key="collapsed.toString()"
             >
-                <i v-if="collapsed" class="fas fa-chevron-up "></i>
-                <i v-else class="fas fa-chevron-down "></i>
+                <i v-if="collapsed" class="fas fa-chevron-down "></i>
+                <i v-else class="fas fa-chevron-up "></i>
             </button>
+            <div
+                class="bg-indigo-100 inline-flex text-sm rounded flex-row h-8 pl-3 self-center mr-2"
+                v-if="file"
+            >
+                <div class="self-center">
+                    <i class="fas fa-file"></i>
+                </div>
+                <span
+                    class="ml-2 mr-1 leading-relaxed truncate max-w- self-center hidden md:inline-block"
+                >
+                    {{ file.name }}
+                </span>
+                <button
+                    class="action-btn p-2 mx-0 self-center"
+                    @click.stop="removeFile"
+                >
+                    <i class="fas fa-minus-circle "></i>
+                </button>
+            </div>
             <!--            <div-->
             <!--                class="file-message md:col-span-10 col-span-8 w-full h-full pl-4 bg-blue-100"-->
             <!--                v-if="file"-->
@@ -380,6 +382,7 @@
     .action-btn:hover {
         color: rgb(68, 166, 135);
     }
+
     .action-btn {
     }
 
