@@ -7,7 +7,11 @@
         }"
     >
         <div class="col-span-2 place-items-center grid relative">
-            <span class="absolute -right-2 -top-2 px-1 bg-accent rounded-full text-xs">2</span>
+            <span
+                class="absolute right-2 -top-2 px-1 bg-accent rounded-full text-xs"
+            >
+                {{unreadMessagesAmount}}
+            </span>
             <AvatarImg :id="chat.chatId" :showOnlineStatus="!chat.isGroup" />
         </div>
         <div class="col-span-10 px-2">
@@ -99,6 +103,20 @@
                 }
             });
 
+            const unreadMessagesAmount = computed(() => {
+                if (!props.chat || !user) {
+                    return 0;
+                }
+
+                const lastReadMessageId = props.chat.read[<string>user.id];
+                const index = props.chat.messages?.findIndex(m => m.Id === lastReadMessageId);
+                if (!index || index < 1) {
+                    return 0;
+                }
+
+                return props.chat.messages.length - (index + 1)
+            });
+
             return {
                 status,
                 newMessages,
@@ -109,6 +127,7 @@
                 router,
                 user,
                 currentRoute,
+                unreadMessagesAmount
             };
         },
     });
