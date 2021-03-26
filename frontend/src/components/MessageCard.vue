@@ -1,133 +1,129 @@
 <template>
+    <!--    <div-->
+    <!--        class="flex flex-col items-start"-->
+    <!--        :class="{-->
+    <!--            'items-start': messageBlock.user !== user?.id,-->
+    <!--            'items-end': messageBlock.user === user?.id,-->
+    <!--        }"-->
+    <!--    >-->
+    <!--        <div class="flex justify-start pt-4 pb-2 w-18 mr-4">-->
+    <!--            <AvatarImg :id="messageBlock.user" :showOnlineStatus="false" />-->
+    <!--        </div>-->
+
+    <!--        <div v-for="message in messageBlock.messages" :key="message">-->
     <div
-        class="flex flex-col items-start"
+        style="position: relative;"
+        class="card flex flex-row flex-wrap"
         :class="{
-            'items-start': messageBlock.user !== user?.id,
-            'items-end': messageBlock.user === user?.id,
+            'flex-row-reverse': message.user === user?.id,
         }"
     >
-        <div class="flex justify-start pt-4 pb-2 w-18 mr-4">
-            <AvatarImg :id="messageBlock.user" :showOnlineStatus="false" />
-        </div>
-
-        <div v-for="message in messageBlock.messages" :key="message">
-            <div
-                style="position: relative;"
-                class="card flex flex-row flex-wrap"
+        <div
+            class="flex rounded-xl mb-1 pr-4 border-2"
+            :class="{
+                'bg-gray-200': message.user === user?.id,
+                'bg-white': message.user !== user?.id,
+                'border-black': messageToReplyTo?.id === message?.id,
+            }"
+        >
+            <main
+                class="msgcard flex justify-between pt-2 pl-4 pb-2"
                 :class="{
-                    'flex-row-reverse': messageBlock.user === user?.id,
+                    'flex-row-reverse': message.user === user?.id,
                 }"
             >
-                <div
-                    class="flex rounded-xl mb-1 pr-4 border-2"
-                    :class="{
-                        'bg-gray-200': messageBlock.user === user?.id,
-                        'bg-white': messageBlock.user !== user?.id,
-                        'border-black': messageToReplyTo?.id === message?.id,
-                    }"
-                >
-                    <main
-                        class="msgcard flex justify-between pt-2 pl-4 pb-2"
-                        :class="{
-                            'flex-row-reverse': messageBlock.user === user?.id,
-                        }"
-                    >
-                        <MessageContent :message="message"></MessageContent>
-                    </main>
-                </div>
+                <MessageContent :message="message"></MessageContent>
+            </main>
+        </div>
 
-                <div
-                    style="margin-top: auto;"
-                    class="actions pb-4 pl-4 flex"
+        <div
+            style="margin-top: auto;"
+            class="actions pb-4 pl-4 flex"
+            :class="{
+                'flex-row-reverse': message.user === user?.id,
+            }"
+        >
+            <span
+                class="reply text-xs pr-4"
+                @click="toggleSendReplyMessage(message)"
+            >
+                <i class="fa fa-reply"></i>
+                <span class="text-gray-600"> Reply</span>
+            </span>
+            <div class="pr-4 text-gray-600 date inline-block text-xs">
+                {{ moment(message.timeStamp).fromNow() }}
+                <!-- {{ message }} -->
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="flex flex-col mb-4"
+        :class="{
+            'mr-4 border-r-2 pr-2': message.user === user?.id,
+            'ml-4 border-l-2 pl-2': message.user !== user?.id,
+        }"
+        v-if="message.replies?.length > 0"
+    >
+        <div
+            class="text-gray-400"
+            :class="{
+                'self-end': message.user === user?.id,
+                'self-start': message.user !== user?.id,
+            }"
+        >
+            Replies:
+        </div>
+        <div
+            v-for="reply in message.replies"
+            :key="reply.id"
+            class="card flex"
+            :class="{
+                'ml-auto flex-row-reverse': message.user === user?.id,
+                'mr-auto': message.user !== user?.id,
+            }"
+        >
+            <AvatarImg
+                :class="{
+                    'ml-4': message.user === user?.id,
+                    'mr-4': message.user !== user?.id,
+                }"
+                :id="reply.from"
+                :showOnlineStatus="false"
+            />
+
+            <div
+                class="flex rounded-xl mb-1 overflow-hidden pr-4"
+                :class="{
+                    'bg-gray-200': reply.from === user?.id,
+                    'bg-white': reply.from !== user?.id,
+                }"
+            >
+                <main
+                    class="replymsg flex justify-between pt-2 pl-4 pb-2"
                     :class="{
-                        'flex-row-reverse': messageBlock.user === user?.id,
+                        'flex-row-reverse': message.user === user?.id,
                     }"
                 >
-                    <span
-                        class="reply text-xs pr-4"
-                        @click="toggleSendReplyMessage(message)"
-                    >
-                        <i class="fa fa-reply"></i>
-                        <span class="text-gray-600"> Reply</span>
-                    </span>
-                    <div class="pr-4 text-gray-600 date inline-block text-xs">
-                        {{ moment(message.timeStamp).fromNow() }}
-                        <!-- {{ message }} -->
-                    </div>
-                </div>
+                    <MessageContent :message="reply"></MessageContent>
+                </main>
             </div>
 
             <div
-                class="flex flex-col mb-4"
+                style="margin-top: auto;"
+                class="actions pb-4 pl-4 flex"
                 :class="{
-                    'mr-4 border-r-2 pr-2': messageBlock.user === user?.id,
-                    'ml-4 border-l-2 pl-2': messageBlock.user !== user?.id,
+                    'flex-row-reverse': message.user === user?.id,
                 }"
-                v-if="message.replies.length > 0"
             >
-                <div
-                    class="text-gray-400"
-                    :class="{
-                        'self-end': messageBlock.user === user?.id,
-                        'self-start': messageBlock.user !== user?.id,
-                    }"
-                >
-                    Replies:
-                </div>
-                <div
-                    v-for="reply in message.replies"
-                    :key="reply.id"
-                    class="card flex"
-                    :class="{
-                        'ml-auto flex-row-reverse':
-                            messageBlock.user === user?.id,
-                        'mr-auto': messageBlock.user !== user?.id,
-                    }"
-                >
-                    <AvatarImg
-                        :class="{
-                            'ml-4': messageBlock.user === user?.id,
-                            'mr-4': messageBlock.user !== user?.id,
-                        }"
-                        :id="reply.from"
-                        :showOnlineStatus="false"
-                    />
-
-                    <div
-                        class="flex rounded-xl mb-1 overflow-hidden pr-4"
-                        :class="{
-                            'bg-gray-200': reply.from === user?.id,
-                            'bg-white': reply.from !== user?.id,
-                        }"
-                    >
-                        <main
-                            class="replymsg flex justify-between pt-2 pl-4 pb-2"
-                            :class="{
-                                'flex-row-reverse':
-                                    messageBlock.user === user?.id,
-                            }"
-                        >
-                            <MessageContent :message="reply"></MessageContent>
-                        </main>
-                    </div>
-
-                    <div
-                        style="margin-top: auto;"
-                        class="actions pb-4 pl-4 flex"
-                        :class="{
-                            'flex-row-reverse': messageBlock.user === user?.id,
-                        }"
-                    >
-                        <div
-                            class="pr-4 text-gray-600 date inline-block text-xs"
-                        >
-                            {{ moment(message.timeStamp).fromNow() }}
-                        </div>
-                    </div>
+                <div class="pr-4 text-gray-600 date inline-block text-xs">
+                    {{ moment(message.timeStamp).fromNow() }}
                 </div>
             </div>
         </div>
     </div>
+    <!--        </div>-->
+    <!--    </div>-->
 </template>
 
 <script lang="ts">
@@ -147,7 +143,6 @@
         components: { MessageContent, AvatarImg },
         props: {
             message: Object,
-            messageBlock: Object,
             chatId: String,
             isMine: Boolean,
             isGroup: Boolean,
@@ -179,9 +174,9 @@
                     messageToReplyTo.value.id === message.id
                 ) {
                     messageToReplyTo.value = '';
-                } else {
-                    messageToReplyTo.value = message;
+                    return;
                 }
+                messageToReplyTo.value = message;
             };
 
             const sendReplyMessage = () => {
@@ -211,6 +206,16 @@
             onMounted(() => {
                 addScrollEvent();
             });
+
+            const read = () => {
+                const { readMessage } = usechatsActions();
+                readMessage(props.chatId, props.message.id);
+            };
+
+            // if (!props.isreadbyme) {
+            //     console.log('read');
+            //     read();
+            // }
 
             return {
                 moment,

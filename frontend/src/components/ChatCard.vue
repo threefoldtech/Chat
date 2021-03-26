@@ -7,6 +7,7 @@
         }"
     >
         <div class="col-span-2 place-items-center grid relative">
+            <span class="absolute -right-2 -top-2 px-1 bg-accent rounded-full text-xs">2</span>
             <AvatarImg :id="chat.chatId" :showOnlineStatus="!chat.isGroup" />
         </div>
         <div class="col-span-10 px-2">
@@ -32,7 +33,12 @@
     import { computed, defineComponent, ref } from 'vue';
     import { findLastIndex } from 'lodash';
     import { useAuthState } from '@/store/authStore';
-    import { Message, MessageBodyType, MessageTypes, SystemBody } from '@/types';
+    import {
+        Message,
+        MessageBodyType,
+        MessageTypes,
+        SystemBody,
+    } from '@/types';
     import moment from 'moment';
     import { statusList } from '@/store/statusStore';
     import AvatarImg from '@/components/AvatarImg.vue';
