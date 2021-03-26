@@ -15,21 +15,21 @@
         style="position: relative;"
         class="card flex flex-row flex-wrap"
         :class="{
-            'flex-row-reverse': message.user === user?.id,
+            'flex-row-reverse': message.from === user?.id,
         }"
     >
         <div
             class="flex rounded-xl mb-1 pr-4 border-2"
             :class="{
-                'bg-gray-200': message.user === user?.id,
-                'bg-white': message.user !== user?.id,
+                'bg-gray-200': message.from === user?.id,
+                'bg-white': message.from !== user?.id,
                 'border-black': messageToReplyTo?.id === message?.id,
             }"
         >
             <main
                 class="msgcard flex justify-between pt-2 pl-4 pb-2"
                 :class="{
-                    'flex-row-reverse': message.user === user?.id,
+                    'flex-row-reverse': message.from === user?.id,
                 }"
             >
                 <MessageContent :message="message"></MessageContent>
@@ -40,11 +40,19 @@
             style="margin-top: auto;"
             class="actions pb-4 pl-4 flex"
             :class="{
-                'flex-row-reverse': message.user === user?.id,
+                'flex-row-reverse': message.from === user?.id,
             }"
         >
             <span
-                class="reply text-xs pr-4"
+                class="hover:underline cursor-pointer text-xs pr-4"
+                @click="deleteMessage(message)"
+                v-if="message.from === user?.id"
+            >
+                <i class="fa fa-trash"></i>
+                <span class="text-gray-600">Delete</span>
+            </span>
+            <span
+                class="hover:underline cursor-pointer text-xs pr-4"
                 @click="toggleSendReplyMessage(message)"
             >
                 <i class="fa fa-reply"></i>
@@ -60,16 +68,16 @@
     <div
         class="flex flex-col mb-4"
         :class="{
-            'mr-4 border-r-2 pr-2': message.user === user?.id,
-            'ml-4 border-l-2 pl-2': message.user !== user?.id,
+            'mr-4 border-r-2 pr-2': message.from === user?.id,
+            'ml-4 border-l-2 pl-2': message.from !== user?.id,
         }"
         v-if="message.replies?.length > 0"
     >
         <div
             class="text-gray-400"
             :class="{
-                'self-end': message.user === user?.id,
-                'self-start': message.user !== user?.id,
+                'self-end': message.from === user?.id,
+                'self-start': message.from !== user?.id,
             }"
         >
             Replies:
@@ -79,14 +87,14 @@
             :key="reply.id"
             class="card flex"
             :class="{
-                'ml-auto flex-row-reverse': message.user === user?.id,
-                'mr-auto': message.user !== user?.id,
+                'ml-auto flex-row-reverse': message.from === user?.id,
+                'mr-auto': message.from !== user?.id,
             }"
         >
             <AvatarImg
                 :class="{
-                    'ml-4': message.user === user?.id,
-                    'mr-4': message.user !== user?.id,
+                    'ml-4': message.from === user?.id,
+                    'mr-4': message.from !== user?.id,
                 }"
                 :id="reply.from"
                 :showOnlineStatus="false"
@@ -102,7 +110,7 @@
                 <main
                     class="replymsg flex justify-between pt-2 pl-4 pb-2"
                     :class="{
-                        'flex-row-reverse': message.user === user?.id,
+                        'flex-row-reverse': message.from === user?.id,
                     }"
                 >
                     <MessageContent :message="reply"></MessageContent>
@@ -113,9 +121,17 @@
                 style="margin-top: auto;"
                 class="actions pb-4 pl-4 flex"
                 :class="{
-                    'flex-row-reverse': message.user === user?.id,
+                    'flex-row-reverse': reply.from === user?.id,
                 }"
             >
+                <span
+                    class="hover:underline cursor-pointer text-xs pr-4"
+                    @click="deleteMessage(message)"
+                    v-if="reply.from === user?.id"
+                >
+                    <i class="fa fa-trash"></i>
+                    <span class="text-gray-600">Delete</span>
+                </span>
                 <div class="pr-4 text-gray-600 date inline-block text-xs">
                     {{ moment(message.timeStamp).fromNow() }}
                 </div>
@@ -134,7 +150,7 @@
     import { Message, StringMessageType } from '@/types';
     import { uuidv4 } from '@/common';
     import { useAuthState } from '@/store/authStore';
-    import { usechatsActions } from '@/store/chatStore';
+    import { sendMessageObject, usechatsActions } from '@/store/chatStore';
     import { messageToReplyTo } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
 
@@ -217,6 +233,21 @@
                 read();
             }
 
+            const deleteMessage = message => {
+                //@todo: show dialog
+                const updatedMessage: Message<StringMessageType> = {
+                    id: message.id,
+                    from: message.from,
+                    to: message.chatId,
+                    body: 'Message has been deleted',
+                    timeStamp: message.timeStamp,
+                    type: 'DELETE',
+                    replies: [],
+                    subject: null,
+                };
+                sendMessageObject(props.chatId, updatedMessage);
+            };
+
             return {
                 moment,
                 toggleSendForwardMessage,
@@ -225,6 +256,7 @@
                 toggleEditMessage,
                 user,
                 messageToReplyTo,
+                deleteMessage,
             };
         },
     });
@@ -247,11 +279,6 @@
     .card:hover > .actions,
     .card:hover > .actions {
         visibility: visible;
-    }
-
-    .reply:hover {
-        text-decoration: underline;
-        cursor: pointer;
     }
 
     .msgcard,
