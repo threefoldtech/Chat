@@ -1,4 +1,4 @@
-name: staging
+name: staging-digitaltwin
 
 on:
   push:
@@ -26,18 +26,13 @@ jobs:
           docker push threefoldjimber/digitaltwin:${{ github.sha }}
   deploy_staging:
     needs: [build_staging]
-    runs-on: ubuntu-latest
+    runs-on: digitaltwin-staging
     environment:
       name: digitaltwin.staging
       url: https://digitaltwin-test.jimbertesting.be/
     steps:
-      - name: deploy on ssh
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            docker pull threefoldjimber/digitaltwin:${{ github.sha }}
-            echo "threefoldjimber/digitaltwin:${{ github.sha }}" > '/etc/digitaltwin/version.txt'
+     - name: deploy on ssh
+        run: |
+          docker pull threefoldjimber/digitaltwin:${{ github.sha }}
+          echo "threefoldjimber/digitaltwin:${{ github.sha }}" > '/etc/digitaltwin/version.txt'
+          echo Completed.
