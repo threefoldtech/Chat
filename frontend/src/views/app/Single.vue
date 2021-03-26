@@ -103,7 +103,7 @@
                                     :chatId="chat.chatId"
                                     :isGroup="chat.isGroup"
                                     :isMine="message.user === user.id"
-                                    :showAvatar="true"
+                                    :showAvatar="showAvatar(i)"
                                     v-on:scroll="scrollToBottom"
                                 />
                             </div>
@@ -458,6 +458,15 @@
                 });
             });
 
+            const showAvatar =(index: number) => {
+                if (index + 1 === chat.value.messages.length) {
+                    return true;
+                }
+                const currentMessage = chat.value.messages[index];
+                const nextMessage = chat.value.messages[index + 1];
+                return currentMessage.from !== nextMessage.from;
+            };
+
             return {
                 chats,
                 selectedId,
@@ -486,6 +495,7 @@
                 showMenu,
                 messageToReplyTo,
                 showSideBar,
+                showAvatar,
                 ...propRefs,
             };
         },
