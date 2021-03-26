@@ -15,12 +15,9 @@
             :showOnlineStatus="false"
         />
         <div class="flex-1">
-            <div
-                style="position: relative;"
-                class="card flex flex-row flex-wrap"
-            >
+            <div class="card flex flex-row flex-wrap">
                 <div
-                    class="flex rounded-md rounded-r-xl mb-1 pr-4 bg-white shadow"
+                    class="flex rounded-md rounded-r-xl mb-1 pr-8 bg-white shadow relative"
                     :class="{
                         'bg-accent bg-opacity-60': message.from === user?.id,
                         'rounded-tl-xl': isFirstMessage,
@@ -35,6 +32,17 @@
                     >
                         <MessageContent :message="message"></MessageContent>
                     </main>
+
+                    <div
+                        class="read absolute bottom-1 right-1.5 text-xs"
+                        :class="{
+                            'text-accent': message.from !== user?.id,
+                            'text-white': message.from === user?.id,
+                        }"
+                        v-if="isread"
+                    >
+                        <i class="fas fa-eye "></i>
+                    </div>
                 </div>
 
                 <div

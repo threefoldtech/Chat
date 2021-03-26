@@ -106,6 +106,7 @@
                                     :isLastMessage="isLastMessage(i)"
                                     :isFirstMessage="isFirstMessage(i)"
                                     v-on:scroll="scrollToBottom"
+                                    :key="`${message.id}-${i <= lastRead}`"
                                 />
                             </div>
 
