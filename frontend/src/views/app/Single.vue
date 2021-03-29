@@ -96,6 +96,13 @@
                     >
                         <div class="absolute w-full mt-8 px-4">
                             <div v-for="(message, i) in chat.messages">
+                                <div
+                                    v-if="showDivider(message, i)"
+                                    class="grey--text text-sm text-center p-4"
+                                >
+                                    {{ moment(message.timeStamp).calendar() }}
+                                </div>
+
                                 <MessageCard
                                     :isread="i <= lastRead"
                                     :isreadbyme="i <= lastReadByMe"
@@ -507,6 +514,7 @@
                 showSideBar,
                 isFirstMessage,
                 isLastMessage,
+                moment,
                 ...propRefs,
             };
         },
