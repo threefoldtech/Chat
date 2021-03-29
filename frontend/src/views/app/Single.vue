@@ -77,8 +77,6 @@
         <template v-slot:default>
             <div
                 class="grid grid-cols-1  relative h-full w-full"
-                v-if="chat"
-                :key="chat.id + selectedId"
                 :class="{
                     'md:singleGrid': showSideBar,
                     'md:twoGrid': !showSideBar,
@@ -89,7 +87,11 @@
                 >
                     <ChatList />
                 </div>
-                <div class="relative h-full flex flex-col">
+                <div
+                    class="relative h-full flex flex-col"
+                    v-if="chat"
+                    :key="chat.id + selectedId"
+                >
                     <MessageBox :chat="chat" @scrollToBottom="scrollToBottom">
                         <template v-slot:viewAnchor>
                             <div
@@ -146,12 +148,17 @@
                         </div>
                     </jdialog>
                 </div>
+                <div class="grid h-full w-full place-items-center" v-else>
+                    <h2>Loading</h2>
+                </div>
                 <aside
                     class="hidden relative h-full flex-col overflow-y-auto"
                     :class="{
                         'md:flex': showSideBar,
                         'md:hidden': !showSideBar,
                     }"
+                    v-if="chat"
+                    :key="'aside' + chat.id + selectedId"
                 >
                     <div class="absolute max-w-full w-full p-4 pt-8">
                         <div
@@ -184,10 +191,6 @@
                         ></group-management>
                     </div>
                 </aside>
-            </div>
-
-            <div class="grid h-full w-full place-items-center" v-else>
-                <h2>Loading</h2>
             </div>
         </template>
     </appLayout>
