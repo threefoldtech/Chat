@@ -105,12 +105,17 @@
             });
 
             const unreadMessagesAmount = computed(() => {
+                console.log("propschat", props.chat);
+                console.log("user", user);
                 if (!props.chat || !user) {
                     return 0;
                 }
 
                 const lastReadMessageId = props.chat.read[<string>user.id];
-                const index = props.chat.messages?.findIndex(m => m.Id === lastReadMessageId);
+                const index = props.chat.messages?.findIndex(m => m.id === lastReadMessageId);
+
+                console.log("lrmid", lastReadMessageId);
+                console.log("index", index);
                 if (!index || index < 1) {
                     return 0;
                 }

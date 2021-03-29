@@ -19,7 +19,7 @@
                 <div
                     class="flex rounded-md rounded-r-xl mb-1 pr-8 bg-white shadow relative"
                     :class="{
-                        'bg-accent bg-opacity-60': message.from === user?.id,
+                        'my-message': message.from === user?.id,
                         'rounded-tl-xl': isFirstMessage,
                         'rounded-bl-xl': isLastMessage,
                     }"
@@ -39,9 +39,10 @@
                             'text-accent': message.from !== user?.id,
                             'text-white': message.from === user?.id,
                         }"
-                        v-if="isread"
+                        v-if="message.from === user?.id"
                     >
-                        <i class="fas fa-eye "></i>
+                        <i class="fas fa-check-double text-accent" v-if="isread"></i>
+                        <i class="fas fa-check text-gray-400" v-else></i>
                     </div>
                 </div>
 
@@ -103,7 +104,7 @@
                         class="flex rounded-xl mb-1 overflow-hidden pr-4"
                         :class="{
                             'bg-white': reply.from !== user?.id,
-                            'bg-accent bg-opacity-60': reply.from === user?.id,
+                            'my-message': reply.from === user?.id,
                         }"
                     >
                         <main
@@ -283,6 +284,6 @@
     }
 
     .my-message {
-        background-color: rgba(68, 166, 135, 0.1);
+        background-color: #D0F0C0;
     }
 </style>
