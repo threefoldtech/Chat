@@ -25,9 +25,7 @@
                         'rounded-bl-xl': isLastMessage,
                     }"
                 >
-                    <main
-                        class="msgcard flex justify-between"
-                    >
+                    <main class="msgcard flex justify-between">
                         <MessageContent :message="message"></MessageContent>
                     </main>
                     <div
@@ -42,10 +40,7 @@
                     </div>
                 </div>
 
-                <div
-                    style="margin-top: auto;"
-                    class="actions pb-4 pl-4 flex"
-                >
+                <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
                     <span
                         class="reply text-xs pr-4"
                         @click="deleteMessage(message)"
@@ -72,9 +67,7 @@
                 class="flex flex-col mb-4 ml-4 border-l-2 pl-2"
                 v-if="message.replies?.length > 0"
             >
-                <div
-                    class="text-gray-400 self-start"
-                >
+                <div class="text-gray-400 self-start">
                     Replies:
                 </div>
                 <div
@@ -92,13 +85,11 @@
                     <div
                         class="flex rounded-xl overflow-hidden"
                         :class="{
-                            'bg-white': !isMine,
-                            'my-message': isMine,
+                            'bg-white': reply.from !== user.id,
+                            'my-message': reply.from === user.id,
                         }"
                     >
-                        <main
-                            class="replymsg flex justify-between"
-                        >
+                        <main class="replymsg flex justify-between">
                             <MessageContent :message="reply"></MessageContent>
                         </main>
                     </div>
@@ -107,6 +98,17 @@
                         style="margin-top: auto;"
                         class="actions pb-4 pl-4 flex"
                     >
+                        <span
+                            class="reply text-xs pr-4"
+                            @click="deleteReply(message, reply)"
+                            v-if="
+                                reply.from === user?.id &&
+                                    reply.body !== 'Message has been deleted'
+                            "
+                        >
+                            <i class="fa fa-trash"></i>
+                            <span class="text-gray-600">Delete</span>
+                        </span>
                         <div
                             class="pr-4 text-gray-600 date inline-block text-xs"
                         >
@@ -231,6 +233,21 @@
                 sendMessageObject(props.chatId, updatedMessage);
             };
 
+            const deleteReply = (message, reply) => {
+                //@todo: show dialog
+                const updatedMessage: Message<StringMessageType> = {
+                    id: reply.id,
+                    from: reply.from,
+                    to: reply.to,
+                    body: 'Message has been deleted',
+                    timeStamp: message.timeStamp,
+                    type: 'DELETE',
+                    replies: [],
+                    subject: message.id,
+                };
+                sendMessageObject(props.chatId, updatedMessage);
+            };
+
             return {
                 moment,
                 toggleSendForwardMessage,
@@ -240,6 +257,7 @@
                 user,
                 messageToReplyTo,
                 deleteMessage,
+                deleteReply,
                 MessageTypes,
             };
         },

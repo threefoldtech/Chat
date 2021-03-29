@@ -170,9 +170,28 @@ const addMessage = (chatId, message) => {
         const subjectMessageIndex = chat.messages.findIndex(
             m => m.id === message.subject
         );
+        if (subjectMessageIndex === -1) {
+            return;
+        }
         const subjectMessage = chat.messages[subjectMessageIndex];
-        subjectMessage.replies = [...subjectMessage.replies, message];
-        chat.messages[subjectMessageIndex] = subjectMessage;
+
+        const replyIndex = subjectMessage.replies.findIndex(
+            m => m.id === message.id
+        );
+        if (replyIndex === -1) {
+            return;
+        }
+        const reply = subjectMessage.replies[replyIndex];
+        if (
+            message.type === MessageTypes.DELETE ||
+            message.type === MessageTypes.EDIT
+        ) {
+            reply.body = message.body;
+        } else {
+            subjectMessage.replies = [...subjectMessage.replies, message];
+            chat.messages[subjectMessageIndex] = subjectMessage;
+        }
+
         setLastMessage(chatId, message);
         return;
     }
