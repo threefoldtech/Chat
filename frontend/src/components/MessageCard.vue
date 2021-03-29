@@ -17,7 +17,7 @@
         <div class="flex-1">
             <div class="card flex flex-row flex-wrap">
                 <div
-                    class="flex rounded-md rounded-r-xl mb-1 pr-8 bg-white shadow relative"
+                    class="flex rounded-md rounded-r-xl mb-1 bg-white shadow relative overflow-hidden"
                     :class="{
                         'my-message': message.from === user?.id,
                         'rounded-tl-xl': isFirstMessage,
@@ -25,7 +25,7 @@
                     }"
                 >
                     <main
-                        class="msgcard flex justify-between pt-1 pl-4 pb-1"
+                        class="msgcard flex justify-between"
                         :class="{
                             'flex-row-reverse': message.user === user?.id,
                         }"
@@ -37,7 +37,10 @@
                         class="h-7 flex items-center absolute right-1.5 bottom-0"
                         v-if="message.from === user?.id"
                     >
-                        <i class="fas fa-check-double text-accent" v-if="isread"></i>
+                        <i
+                            class="fas fa-check-double text-accent"
+                            v-if="isread"
+                        ></i>
                         <i class="fas fa-check text-gray-400" v-else></i>
                     </div>
                 </div>
@@ -270,15 +273,13 @@
         word-break: break-word;
     }
 
-
     .read {
         height: 28px;
         display: flex;
         align-items: center;
     }
 
-
     .my-message {
-        background-color: #D0F0C0;
+        background-color: #d0f0c0;
     }
 </style>
