@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="message.body.type === 'JOINED_VIDEOROOM'"
-        class="cursor-pointer"
+        class="cursor-pointer flex justify-center items-center mb-4"
         @click="joinVideo"
     >
         <div>
@@ -9,8 +9,9 @@
 
             <i class="underline">{{ message.body.message }}</i>
         </div>
-        <button class="text-xs text align-right p-0 m-0">
-            click to join
+        <button class="text-xs text bg-accent text-white px-4 py-2 m-0 rounded-full ml-6">
+            <i class="fas fa-video mr-3"></i>
+            JOIN
         </button>
     </div>
     <div v-else class="justify-around">

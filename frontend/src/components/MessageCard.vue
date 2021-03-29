@@ -27,9 +27,6 @@
                 >
                     <main
                         class="msgcard flex justify-between"
-                        :class="{
-                            'flex-row-reverse': isMine,
-                        }"
                     >
                         <MessageContent :message="message"></MessageContent>
                     </main>
@@ -61,30 +58,18 @@
             </div>
 
             <div
-                class="flex flex-col mb-4"
-                :class="{
-                    'mr-4 border-r-2 pr-2': isMine,
-                    'ml-4 border-l-2 pl-2': !isMine,
-                }"
+                class="flex flex-col mb-4 ml-4 border-l-2 pl-2"
                 v-if="message.replies?.length > 0"
             >
                 <div
-                    class="text-gray-400"
-                    :class="{
-                        'self-end': isMine,
-                        'self-start': !isMine,
-                    }"
+                    class="text-gray-400 self-start"
                 >
                     Replies:
                 </div>
                 <div
                     v-for="reply in message.replies"
                     :key="reply.id"
-                    class="card flex"
-                    :class="{
-                        'ml-auto flex-row-reverse': isMine,
-                        'mr-auto': !isMine,
-                    }"
+                    class="card flex mb-1"
                 >
                     <AvatarImg
                         class="mr-2"
@@ -94,14 +79,14 @@
                     />
 
                     <div
-                        class="flex rounded-xl mb-1 overflow-hidden pr-4"
+                        class="flex rounded-xl overflow-hidden"
                         :class="{
                             'bg-white': !isMine,
                             'my-message': isMine,
                         }"
                     >
                         <main
-                            class="replymsg flex justify-between pt-2 pl-4 pb-2"
+                            class="replymsg flex justify-between"
                         >
                             <MessageContent :message="reply"></MessageContent>
                         </main>
