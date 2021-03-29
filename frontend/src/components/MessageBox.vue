@@ -18,7 +18,7 @@
                     :isMine="message.from === user.id"
                     :isLastMessage="isLastMessage(chat, i)"
                     :isFirstMessage="isFirstMessage(chat, i)"
-                    v-on:scroll="$emit(scroll)"
+                    v-on:scroll="$emit('scrollToBottom')"
                     :key="`${message.id}-${i <= lastRead}`"
                 />
             </div>

@@ -90,7 +90,7 @@
                     <ChatList />
                 </div>
                 <div class="relative h-full flex flex-col">
-                    <MessageBox :chat="chat" @scroll="scrollToBottom">
+                    <MessageBox :chat="chat" @scrollToBottom="scrollToBottom">
                         <template v-slot:viewAnchor>
                             <div
                                 id="viewAnchor"
@@ -364,6 +364,7 @@
             const { isIntersecting } = useIntersectionObserver(viewAnchor);
 
             const scrollToBottom = (force = false) => {
+                console.log('scroll');
                 if (!force && !isIntersecting.value) {
                     return;
                 }
