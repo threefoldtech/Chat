@@ -190,7 +190,7 @@
                                 />
                             </div>
                             <h2
-                                class="my-3 break-words text-center w-full overflow-y-auto max-h-28"
+                                class="my-3 break-words text-center w-full overflow-y-auto max-h-28 text-xl"
                             >
                                 {{ chat.name }}
                             </h2>
