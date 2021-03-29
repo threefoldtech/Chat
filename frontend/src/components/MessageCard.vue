@@ -30,7 +30,6 @@
                     >
                         <MessageContent :message="message"></MessageContent>
                     </main>
-
                     <div
                         class="h-7 flex items-center absolute right-1.5 bottom-0"
                         v-if="isMine"
@@ -42,7 +41,19 @@
                         <i class="fas fa-check text-gray-400" v-else></i>
                     </div>
                 </div>
-                <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
+
+                <div
+                    style="margin-top: auto;"
+                    class="actions pb-4 pl-4 flex"
+                >
+                    <span
+                        class="reply text-xs pr-4"
+                        @click="deleteMessage(message)"
+                        v-if="message.from === user?.id"
+                    >
+                        <i class="fa fa-trash"></i>
+                        <span class="text-gray-600">Delete</span>
+                    </span>
                     <span
                         class="reply text-xs pr-4"
                         @click="toggleSendReplyMessage(message)"
