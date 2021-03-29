@@ -2,8 +2,12 @@
     <div
         class="chatcard relative grid grid-cols-12 mb-2 py-2 text-sm"
         :class="{
-            'bg-gray-50': !router.currentRoute?.value.path.includes(chat.name),
-            'bg-gray-200': router.currentRoute?.value.path.includes(chat.name),
+            'bg-gray-50': !router.currentRoute?.value.path.includes(
+                chat.chatId
+            ),
+            'bg-gray-200': router.currentRoute?.value.path.includes(
+                chat.chatId
+            ),
         }"
     >
         <div class="col-span-2 place-items-center grid relative">
