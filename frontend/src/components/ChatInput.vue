@@ -7,16 +7,21 @@
     />
 
     <div
-        class="md:p-2 md:m-2 md:rounded-3xl bg-white grid grid-cols-12"
+        class="md:p-2 md:m-2 md:rounded-3xl bg-white flex flex-col actions md:flex-row"
         @paste="onPaste"
     >
         <div
-            class="md:col-span-4 col-span-full md:grid grid-cols-4 md:bg-transparent"
-            :class="{ hidden: collapsed, grid: !collapsed }"
+            class="md:col-span-4 flex flex-nowrap md:bg-transparent bg-gray-200"
+            :class="{ hidden: !collapsed }"
         >
-            <button class="action-btn" @click="toggleGif"><h2>GIF</h2></button>
             <button
-                class="action-btn px-2 md:py-8 py-2"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1 pt-0.5"
+                @click="toggleGif"
+            >
+                <h2>GIF</h2>
+            </button>
+            <button
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="selectFile"
             >
                 <i
@@ -32,14 +37,14 @@
                 @change="changeFile"
             />
             <button
-                class="action-btn px-2 md:py-8 py-2"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="startRecording"
                 v-if="!stopRecording"
             >
                 <i class="fas fa-microphone "></i>
             </button>
             <button
-                class="action-btn px-2 md:py-8 py-2"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="stopRecording"
                 v-else
             >
@@ -49,53 +54,60 @@
             <span
                 ref="emojipicker"
                 :class="{ hidden: !showEmoji }"
-                style="position: absolute; bottom: 140px; z-index: 10000"
+                style="position: absolute; bottom: 75px; z-index: 10000"
             >
                 <unicode-emoji-picker v-pre></unicode-emoji-picker>
             </span>
 
             <button
-                class="action-btn px-2 md:py-8 py-2"
+                class="action-btn mx-2 my-0 p-0 self-center flex-1"
                 @click.stop="toggleEmoji"
                 v-if="!file"
             >
                 😃
             </button>
         </div>
-        <div class="input md:col-span-8 col-span-full grid grid-cols-12">
+        <div class="flex flex-row flex-1">
             <button
-                class="action-btn col-span-2 md:hidden"
+                class="action-btn mx-2 my-0 p-0 self-center md:hidden"
                 @click="collapsed = !collapsed"
                 :key="collapsed.toString()"
             >
-                <i v-if="collapsed" class="fas fa-chevron-up "></i>
-                <i v-else class="fas fa-chevron-down "></i>
+                <i v-if="collapsed" class="fas fa-chevron-down "></i>
+                <i v-else class="fas fa-chevron-up "></i>
             </button>
             <div
-                class="file-message md:col-span-10 col-span-8 w-full h-full pl-4 bg-blue-100"
+                class="bg-indigo-100 inline-flex text-sm rounded flex-row h-8 pl-3 self-center mr-2"
                 v-if="file"
             >
-                <span> {{ file.name }}</span>
+                <div class="self-center">
+                    <i class="fas fa-file"></i>
+                </div>
+                <span
+                    class="ml-2 mr-1 leading-relaxed truncate max-w- self-center hidden md:inline-block"
+                >
+                    {{ file.name }}
+                </span>
                 <button
-                    class="action-btn px-2 md:py-8 py-2"
+                    class="action-btn p-2 mx-0 self-center"
                     @click.stop="removeFile"
                 >
-                    <i class="fas fa-minus-circle "></i>
+                    <i class="fas  fa-times"></i>
                 </button>
             </div>
-            <form
-                class="md:col-span-10 col-span-8 py-3"
-                @submit.prevent="chatsend"
-            >
-                <input class="h-full" type="text" ref="message" v-focus />
+            <form class="w-full" @submit.prevent="chatsend">
+                <input type="text" ref="message" v-focus />
             </form>
-            <button class="action-btn col-span-1" @click="chatsend">
+            <button
+                class="action-btn mx-2 my-0 p-0 self-center"
+                @click="chatsend"
+            >
                 <i class="fas fa-paper-plane"></i>
             </button>
 
             <button
                 v-if="showSideBar"
-                class="action-btn col-span-1 hidden md:block"
+                class="action-btn self-center"
                 @click="toggleSideBar"
             >
                 <i class="fas fa-chevron-right"></i>
@@ -103,7 +115,7 @@
 
             <button
                 v-else
-                class="action-btn col-span-1 hidden md:block"
+                class="action-btn self-center self-center"
                 @click="toggleSideBar"
             >
                 <i class="fas fa-chevron-left"></i>
@@ -357,5 +369,12 @@
 <style scoped>
     .action-btn:hover {
         color: rgb(68, 166, 135);
+    }
+
+    .action-btn {
+    }
+
+    .actions {
+        min-height: 3em;
     }
 </style>

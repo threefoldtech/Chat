@@ -77,8 +77,6 @@
         <template v-slot:default>
             <div
                 class="grid grid-cols-1  relative h-full w-full"
-                v-if="chat"
-                :key="chat.id + selectedId"
                 :class="{
                     'md:singleGrid': showSideBar,
                     'md:twoGrid': !showSideBar,
@@ -89,29 +87,13 @@
                 >
                     <ChatList />
                 </div>
-                <div class="relative h-full flex flex-col">
-                    <div
-                        class="flex-grow relative overflow-y-auto"
-                        ref="messageBox"
-                    >
-                        <div class="absolute w-full mt-8 px-4">
-                            <div
-                                v-for="(messageBlock,
-                                i) in getMessagesSortedByUser"
-                                :key="`${messageBlock.user}`"
-                            >
-                                <MessageCard
-                                    :isread="i <= lastRead"
-                                    :isreadbyme="i <= lastReadByMe"
-                                    :messageBlock="messageBlock"
-                                    :message="messageBlock"
-                                    :chatId="chat.chatId"
-                                    :isGroup="chat.isGroup"
-                                    :isMine="messageBlock.user === user.id"
-                                    v-on:scroll="scrollToBottom"
-                                />
-                            </div>
-
+                <div
+                    class="relative h-full flex flex-col"
+                    v-if="chat"
+                    :key="chat.id + selectedId"
+                >
+                    <MessageBox :chat="chat" @scrollToBottom="scrollToBottom">
+                        <template v-slot:viewAnchor>
                             <div
                                 id="viewAnchor"
                                 ref="viewAnchor"
@@ -123,8 +105,8 @@
                                     pointer-events: none;
                                 "
                             ></div>
-                        </div>
-                    </div>
+                        </template>
+                    </MessageBox>
                     <div
                         v-if="messageToReplyTo"
                         class="flex justify-between m-2 p-4 bg-white rounded-xl"
@@ -166,12 +148,17 @@
                         </div>
                     </jdialog>
                 </div>
+                <div class="grid h-full w-full place-items-center" v-else>
+                    <h2>Loading</h2>
+                </div>
                 <aside
                     class="hidden relative h-full flex-col overflow-y-auto"
                     :class="{
                         'md:flex': showSideBar,
                         'md:hidden': !showSideBar,
                     }"
+                    v-if="chat"
+                    :key="'aside' + chat.id + selectedId"
                 >
                     <div class="absolute max-w-full w-full p-4 pt-8">
                         <div
@@ -185,7 +172,7 @@
                                 />
                             </div>
                             <h2
-                                class="my-3 break-words text-center w-full overflow-y-auto max-h-28"
+                                class="my-3 break-words text-center w-full overflow-y-auto max-h-28 text-xl"
                             >
                                 {{ chat.name }}
                             </h2>
@@ -204,10 +191,6 @@
                         ></group-management>
                     </div>
                 </aside>
-            </div>
-
-            <div class="grid h-full w-full place-items-center" v-else>
-                <h2>Loading</h2>
             </div>
         </template>
     </appLayout>
@@ -230,7 +213,7 @@
         onUpdated,
     } from 'vue';
 
-    import { findLastIndex, each } from 'lodash';
+    import { each } from 'lodash';
     import { statusList } from '@/store/statusStore';
     import { usechatsState, usechatsActions } from '@/store/chatStore';
     import { sendBlockChat, sendRemoveChat } from '@/store/socketStore';
@@ -247,10 +230,18 @@
     import { useRoute, useRouter } from 'vue-router';
     import { messageToReplyTo } from '@/services/replyService';
     import { showSideBar } from '@/services/sidebarService';
+    import {
+        JoinedVideoRoomBody,
+        MessageTypes,
+        SystemMessageTypes,
+    } from '@/types';
+    import MessageBox from '@/components/MessageBox.vue';
+    import { messageBox } from '@/services/messageHelperService';
 
     export default defineComponent({
         name: 'ChatView',
         components: {
+            MessageBox,
             AvatarImg,
             ChatInput,
             MessageCard,
@@ -276,54 +267,16 @@
             const { sendMessage } = usechatsActions();
             const { user } = useAuthState();
             const m = val => moment(val);
-            const messageBox = ref(null);
             const showMenu = ref(false);
             const file = ref();
             let showDialog = ref(false);
 
             const propRefs = toRefs(props);
-
-            const lastRead = computed(() => {
-                let id = <string>user.id;
-                //@ts-ignore
-                const { [id]: _, ...read } = chat.value.read;
-
-                const reads = Object.values(read);
-
-                return findLastIndex(chat.value.messages, message =>
-                    reads.includes(<string>message.id)
-                );
-            });
-
-            const lastReadByMe = computed(() => {
-                return findLastIndex(
-                    chat.value.messages,
-                    message => chat.value.read[<string>user.id] === message.id
-                );
-            });
-
-            const isMine = message => {
-                return message.from == user.id;
-            };
             const truncate = (value, limit = 20) => {
                 if (value.length > limit) {
                     value = value.substring(0, limit - 3) + '...';
                 }
                 return value;
-            };
-
-            const scrollToBottom = (force = false) => {
-                if (!force && !isIntersecting.value) {
-                    return;
-                }
-
-                nextTick(() => {
-                    if (!messageBox.value) {
-                        return;
-                    }
-
-                    messageBox.value.scrollTo(0, messageBox.value.scrollHeight);
-                });
             };
 
             const getMessagesSortedByUser = computed(() => {
@@ -356,25 +309,7 @@
                 return chats.value.find(c => c.chatId == selectedId.value);
             });
 
-            onMounted(() => {
-                nextTick(() => {
-                    scrollToBottom(true);
-                });
-            });
-
-            onUpdated(() => {
-                nextTick(() => {
-                    scrollToBottom(true);
-                });
-            });
-
             const popupMeeting = () => {
-                sendMessage(
-                    chat.value.chatId,
-                    `${user.id} joined the video chat`,
-                    'SYSTEM'
-                );
-
                 // @ts-ignore
                 // const str = chat?.contacts ? chat.id : [user.id, chat.id].sort().join();
                 const str: string = chat.value.isGroup
@@ -384,9 +319,16 @@
                           .sort()
                           .join();
 
-                console.log(`str = ${str}`);
-
                 const id = crypto.SHA1(str);
+                sendMessage(
+                    chat.value.chatId,
+                    {
+                        type: SystemMessageTypes.JOINED_VIDEOROOM,
+                        message: `${user.id} joined the video chat`,
+                        id: id.toString(),
+                    } as JoinedVideoRoomBody,
+                    MessageTypes.SYSTEM
+                );
 
                 popupCenter(`/videoroom/${id}`, 'video room', 800, 550);
             };
@@ -407,20 +349,9 @@
                 sendBlockChat(chat.value.chatId);
             };
 
-            const showDivider = (message, index) => {
-                const previousMessage = chat.value.messages[index - 1];
-                if (!previousMessage) {
-                    return true;
-                }
-                const time = moment(message.timeStamp);
-
-                return time.diff(previousMessage.timeStamp, 'm') > 5;
-            };
-
             const reads = computed(() => {
                 const preReads = {};
                 each(chat.value.read, (val: string, key: string) => {
-                    console.log(key, val);
                     if (key === user.id) {
                         return;
                     }
@@ -433,10 +364,34 @@
 
             const viewAnchor = ref(null);
 
-            const {
-                isIntersecting,
-                intersectionRatio,
-            } = useIntersectionObserver(viewAnchor);
+            const { isIntersecting } = useIntersectionObserver(viewAnchor);
+
+            const scrollToBottom = (force = false) => {
+                console.log('scroll');
+                if (!force && !isIntersecting.value) {
+                    return;
+                }
+
+                nextTick(() => {
+                    if (!messageBox.value) {
+                        return;
+                    }
+
+                    messageBox.value.scrollTo(0, messageBox.value.scrollHeight);
+                });
+            };
+
+            onMounted(() => {
+                nextTick(() => {
+                    scrollToBottom(true);
+                });
+            });
+
+            onUpdated(() => {
+                nextTick(() => {
+                    scrollToBottom(true);
+                });
+            });
 
             const status = computed(() => {
                 return statusList[selectedId.value];
@@ -464,26 +419,22 @@
                 truncate,
                 message,
                 file,
-                isMine,
                 m,
                 messageBox,
                 scrollToBottom,
                 status,
                 statusList,
                 popupMeeting,
-                lastRead,
-                lastReadByMe,
                 deleteChat,
                 blockChat,
                 doBlockChat,
-                user,
                 viewAnchor,
-                showDivider,
                 reads,
                 showDialog,
                 showMenu,
                 messageToReplyTo,
                 showSideBar,
+                moment,
                 ...propRefs,
             };
         },

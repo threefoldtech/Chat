@@ -177,11 +177,32 @@ export const editMessage = (
     chatId: IdInterface,
     newMessage: Message<MessageBodyTypeInterface>
 ) => {
+    if(newMessage.subject) {
+        editReply(chatId, newMessage);
+        return;
+    }
+
     const chat = getChat(chatId);
     const index = chat.messages.findIndex(mes => mes.id === newMessage.id);
     chat.messages[index].body = newMessage.body;
     persistChat(chat);
 };
+
+export const editReply = (chatId: IdInterface, newMessage: Message<MessageBodyTypeInterface>) => {
+    const chat = getChat(chatId);
+    const messageIndex = chat.messages.findIndex(mes => mes.id === newMessage.subject);
+    if(messageIndex === -1) {
+        return;
+    }
+
+    const replyIndex = chat.messages[messageIndex]?.replies?.findIndex(r => r.id === newMessage.id);
+    if(replyIndex === -1) {
+        return;
+    }
+
+    chat.messages[messageIndex].replies[replyIndex].body = newMessage.body;
+    persistChat(chat);
+}
 
 export const handleRead = (message: Message<StringMessageTypeInterface>) => {
     // console.log('reading');
