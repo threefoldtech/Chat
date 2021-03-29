@@ -473,6 +473,11 @@
                 }
                 const currentMessage = chat.value.messages[index];
                 const nextMessage = chat.value.messages[index + 1];
+
+                if (nextMessage.type === MessageTypes.SYSTEM) {
+                    return true;
+                }
+
                 return currentMessage.from !== nextMessage.from;
             };
             const isFirstMessage = (index: number) => {
@@ -481,6 +486,9 @@
                 }
                 const currentMessage = chat.value.messages[index];
                 const prevMessage = chat.value.messages[index - 1];
+                if (prevMessage.type === MessageTypes.SYSTEM) {
+                    return true;
+                }
                 return currentMessage.from !== prevMessage.from;
             };
 

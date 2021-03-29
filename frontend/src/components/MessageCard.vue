@@ -4,6 +4,7 @@
         :class="{
             'mb-2': isLastMessage,
         }"
+        v-if="message.type !== MessageTypes.SYSTEM"
     >
         <AvatarImg
             small
@@ -120,6 +121,9 @@
             </div>
         </div>
     </div>
+    <div v-else>
+        <MessageContent :message="message"></MessageContent>
+    </div>
 </template>
 
 <script lang="ts">
@@ -133,6 +137,8 @@
     import { sendMessageObject, usechatsActions } from '@/store/chatStore';
     import { messageToReplyTo } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
+
+    import { MessageTypes } from '@/types';
 
     export default defineComponent({
         name: 'MessageCard',
@@ -239,6 +245,7 @@
                 user,
                 messageToReplyTo,
                 deleteMessage,
+                MessageTypes,
             };
         },
     });
