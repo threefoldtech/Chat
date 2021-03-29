@@ -92,21 +92,9 @@
                     class="action-btn p-2 mx-0 self-center"
                     @click.stop="removeFile"
                 >
-                    <i class="fas fa-minus-circle "></i>
+                    <i class="fas  fa-times"></i>
                 </button>
             </div>
-            <!--            <div-->
-            <!--                class="file-message md:col-span-10 col-span-8 w-full h-full pl-4 bg-blue-100"-->
-            <!--                v-if="file"-->
-            <!--            >-->
-            <!--                <span> {{ file.name }}</span>-->
-            <!--                <button-->
-            <!--                    class="action-btn px-2 md:py-8 py-2"-->
-            <!--                    @click.stop="removeFile"-->
-            <!--                >-->
-            <!--                    <i class="fas fa-minus-circle "></i>-->
-            <!--                </button>-->
-            <!--            </div>-->
             <form class="w-full" @submit.prevent="chatsend">
                 <input type="text" ref="message" v-focus />
             </form>
