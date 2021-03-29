@@ -44,11 +44,7 @@
                         <i class="fas fa-check text-gray-400" v-else></i>
                     </div>
                 </div>
-
-                <div
-                    style="margin-top: auto;"
-                    class="actions pl-4 flex h-7 items-center mb-1"
-                >
+                <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
                     <span
                         class="reply text-xs pr-4"
                         @click="toggleSendReplyMessage(message)"
