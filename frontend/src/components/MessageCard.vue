@@ -20,7 +20,7 @@
                 <div
                     class="flex rounded-md rounded-r-xl mb-1 bg-white shadow relative overflow-hidden"
                     :class="{
-                        'my-message': message.from === user?.id,
+                        'my-message': isMine,
                         'rounded-tl-xl': isFirstMessage,
                         'rounded-bl-xl': isLastMessage,
                     }"
@@ -28,7 +28,7 @@
                     <main
                         class="msgcard flex justify-between"
                         :class="{
-                            'flex-row-reverse': message.user === user?.id,
+                            'flex-row-reverse': isMine,
                         }"
                     >
                         <MessageContent :message="message"></MessageContent>
@@ -36,7 +36,7 @@
 
                     <div
                         class="h-7 flex items-center absolute right-1.5 bottom-0"
-                        v-if="message.from === user?.id"
+                        v-if="isMine"
                     >
                         <i
                             class="fas fa-check-double text-accent"
@@ -63,16 +63,16 @@
             <div
                 class="flex flex-col mb-4"
                 :class="{
-                    'mr-4 border-r-2 pr-2': message.user === user?.id,
-                    'ml-4 border-l-2 pl-2': message.user !== user?.id,
+                    'mr-4 border-r-2 pr-2': isMine,
+                    'ml-4 border-l-2 pl-2': !isMine,
                 }"
                 v-if="message.replies?.length > 0"
             >
                 <div
                     class="text-gray-400"
                     :class="{
-                        'self-end': message.user === user?.id,
-                        'self-start': message.user !== user?.id,
+                        'self-end': isMine,
+                        'self-start': !isMine,
                     }"
                 >
                     Replies:
@@ -82,8 +82,8 @@
                     :key="reply.id"
                     class="card flex"
                     :class="{
-                        'ml-auto flex-row-reverse': message.user === user?.id,
-                        'mr-auto': message.user !== user?.id,
+                        'ml-auto flex-row-reverse': isMine,
+                        'mr-auto': !isMine,
                     }"
                 >
                     <AvatarImg
@@ -96,8 +96,8 @@
                     <div
                         class="flex rounded-xl mb-1 overflow-hidden pr-4"
                         :class="{
-                            'bg-white': reply.from !== user?.id,
-                            'my-message': reply.from === user?.id,
+                            'bg-white': !isMine,
+                            'my-message': isMine,
                         }"
                     >
                         <main
