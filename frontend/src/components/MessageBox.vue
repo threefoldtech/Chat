@@ -15,7 +15,7 @@
                     :message="message"
                     :chatId="chat.chatId"
                     :isGroup="chat.isGroup"
-                    :isMine="message.user === user.id"
+                    :isMine="message.from === user.id"
                     :isLastMessage="isLastMessage(chat, i)"
                     :isFirstMessage="isFirstMessage(chat, i)"
                     v-on:scroll="$emit(scroll)"
