@@ -34,7 +34,7 @@
                     </main>
 
                     <div
-                        class="read absolute bottom-1 right-1.5 text-xs"
+                        class="h-7 flex items-center absolute right-1.5 bottom-0"
                         v-if="message.from === user?.id"
                     >
                         <i class="fas fa-check-double text-accent" v-if="isread"></i>
@@ -44,10 +44,7 @@
 
                 <div
                     style="margin-top: auto;"
-                    class="actions pb-4 pl-4 flex"
-                    :class="{
-                        'flex-row-reverse': message.from === user?.id,
-                    }"
+                    class="actions pl-4 flex h-7 items-center mb-1"
                 >
                     <span
                         class="reply text-xs pr-4"
@@ -105,9 +102,6 @@
                     >
                         <main
                             class="replymsg flex justify-between pt-2 pl-4 pb-2"
-                            :class="{
-                                'flex-row-reverse': message.user === user?.id,
-                            }"
                         >
                             <MessageContent :message="reply"></MessageContent>
                         </main>
@@ -116,9 +110,6 @@
                     <div
                         style="margin-top: auto;"
                         class="actions pb-4 pl-4 flex"
-                        :class="{
-                            'flex-row-reverse': message.user === user?.id,
-                        }"
                     >
                         <div
                             class="pr-4 text-gray-600 date inline-block text-xs"
@@ -278,6 +269,14 @@
         max-width: 500px;
         word-break: break-word;
     }
+
+
+    .read {
+        height: 28px;
+        display: flex;
+        align-items: center;
+    }
+
 
     .my-message {
         background-color: #D0F0C0;

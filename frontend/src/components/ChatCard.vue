@@ -1,6 +1,6 @@
 <template>
     <div
-        class="chatcard relative grid grid-cols-12 mb-2 py-2"
+        class="chatcard relative grid grid-cols-12 mb-2 py-2 text-sm"
         :class="{
             'bg-gray-50': !router.currentRoute?.value.path.includes(chat.name),
             'bg-gray-200': router.currentRoute?.value.path.includes(chat.name),
@@ -11,7 +11,7 @@
                 v-if="unreadMessagesAmount > 0"
                 class="absolute right-2 -top-2 px-1 bg-accent rounded-full text-xs z-10"
             >
-                {{unreadMessagesAmount}}
+                {{ unreadMessagesAmount }}
             </span>
             <AvatarImg :id="chat.chatId" :showOnlineStatus="!chat.isGroup" />
         </div>
@@ -105,22 +105,24 @@
             });
 
             const unreadMessagesAmount = computed(() => {
-                console.log("propschat", props.chat);
-                console.log("user", user);
+                console.log('propschat', props.chat);
+                console.log('user', user);
                 if (!props.chat || !user) {
                     return 0;
                 }
 
                 const lastReadMessageId = props.chat.read[<string>user.id];
-                const index = props.chat.messages?.findIndex(m => m.id === lastReadMessageId);
+                const index = props.chat.messages?.findIndex(
+                    m => m.id === lastReadMessageId
+                );
 
-                console.log("lrmid", lastReadMessageId);
-                console.log("index", index);
+                console.log('lrmid', lastReadMessageId);
+                console.log('index', index);
                 if (!index || index < 1) {
                     return 0;
                 }
 
-                return props.chat.messages.length - (index + 1)
+                return props.chat.messages.length - (index + 1);
             });
 
             return {
@@ -133,13 +135,16 @@
                 router,
                 user,
                 currentRoute,
-                unreadMessagesAmount
+                unreadMessagesAmount,
             };
         },
     });
 </script>
 
 <style scoped>
+    .chatcard {
+
+    }
     .chatcard:hover {
         background-color: lightgray;
     }
