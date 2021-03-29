@@ -217,7 +217,6 @@
             };
 
             if (!props.isreadbyme) {
-                console.log('read');
                 read();
             }
 

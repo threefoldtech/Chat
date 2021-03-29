@@ -90,33 +90,8 @@
                     <ChatList />
                 </div>
                 <div class="relative h-full flex flex-col">
-                    <div
-                        class="flex-grow relative overflow-y-auto"
-                        ref="messageBox"
-                    >
-                        <div class="absolute w-full mt-8 px-4">
-                            <div v-for="(message, i) in chat.messages">
-                                <div
-                                    v-if="showDivider(message, i)"
-                                    class="grey--text text-sm text-center p-4"
-                                >
-                                    {{ moment(message.timeStamp).calendar() }}
-                                </div>
-
-                                <MessageCard
-                                    :isread="i <= lastRead"
-                                    :isreadbyme="i <= lastReadByMe"
-                                    :message="message"
-                                    :chatId="chat.chatId"
-                                    :isGroup="chat.isGroup"
-                                    :isMine="message.user === user.id"
-                                    :isLastMessage="isLastMessage(i)"
-                                    :isFirstMessage="isFirstMessage(i)"
-                                    v-on:scroll="scrollToBottom"
-                                    :key="`${message.id}-${i <= lastRead}`"
-                                />
-                            </div>
-
+                    <MessageBox :chat="chat" @scroll="scrollToBottom">
+                        <template v-slot:viewAnchor>
                             <div
                                 id="viewAnchor"
                                 ref="viewAnchor"
@@ -128,8 +103,8 @@
                                     pointer-events: none;
                                 "
                             ></div>
-                        </div>
-                    </div>
+                        </template>
+                    </MessageBox>
                     <div
                         v-if="messageToReplyTo"
                         class="flex justify-between m-2 p-4 bg-white rounded-xl"
@@ -235,7 +210,7 @@
         onUpdated,
     } from 'vue';
 
-    import { findLastIndex, each } from 'lodash';
+    import { each } from 'lodash';
     import { statusList } from '@/store/statusStore';
     import { usechatsState, usechatsActions } from '@/store/chatStore';
     import { sendBlockChat, sendRemoveChat } from '@/store/socketStore';
@@ -257,10 +232,13 @@
         MessageTypes,
         SystemMessageTypes,
     } from '@/types';
+    import MessageBox from '@/components/MessageBox.vue';
+    import { messageBox } from '@/services/messageHelperService';
 
     export default defineComponent({
         name: 'ChatView',
         components: {
+            MessageBox,
             AvatarImg,
             ChatInput,
             MessageCard,
@@ -286,54 +264,16 @@
             const { sendMessage } = usechatsActions();
             const { user } = useAuthState();
             const m = val => moment(val);
-            const messageBox = ref(null);
             const showMenu = ref(false);
             const file = ref();
             let showDialog = ref(false);
 
             const propRefs = toRefs(props);
-
-            const lastRead = computed(() => {
-                let id = <string>user.id;
-                //@ts-ignore
-                const { [id]: _, ...read } = chat.value.read;
-
-                const reads = Object.values(read);
-
-                return findLastIndex(chat.value.messages, message =>
-                    reads.includes(<string>message.id)
-                );
-            });
-
-            const lastReadByMe = computed(() => {
-                return findLastIndex(
-                    chat.value.messages,
-                    message => chat.value.read[<string>user.id] === message.id
-                );
-            });
-
-            const isMine = message => {
-                return message.from == user.id;
-            };
             const truncate = (value, limit = 20) => {
                 if (value.length > limit) {
                     value = value.substring(0, limit - 3) + '...';
                 }
                 return value;
-            };
-
-            const scrollToBottom = (force = false) => {
-                if (!force && !isIntersecting.value) {
-                    return;
-                }
-
-                nextTick(() => {
-                    if (!messageBox.value) {
-                        return;
-                    }
-
-                    messageBox.value.scrollTo(0, messageBox.value.scrollHeight);
-                });
             };
 
             const getMessagesSortedByUser = computed(() => {
@@ -364,18 +304,6 @@
 
             const chat = computed(() => {
                 return chats.value.find(c => c.chatId == selectedId.value);
-            });
-
-            onMounted(() => {
-                nextTick(() => {
-                    scrollToBottom(true);
-                });
-            });
-
-            onUpdated(() => {
-                nextTick(() => {
-                    scrollToBottom(true);
-                });
             });
 
             const popupMeeting = () => {
@@ -418,20 +346,9 @@
                 sendBlockChat(chat.value.chatId);
             };
 
-            const showDivider = (message, index) => {
-                const previousMessage = chat.value.messages[index - 1];
-                if (!previousMessage) {
-                    return true;
-                }
-                const time = moment(message.timeStamp);
-
-                return time.diff(previousMessage.timeStamp, 'm') > 5;
-            };
-
             const reads = computed(() => {
                 const preReads = {};
                 each(chat.value.read, (val: string, key: string) => {
-                    console.log(key, val);
                     if (key === user.id) {
                         return;
                     }
@@ -444,10 +361,33 @@
 
             const viewAnchor = ref(null);
 
-            const {
-                isIntersecting,
-                intersectionRatio,
-            } = useIntersectionObserver(viewAnchor);
+            const { isIntersecting } = useIntersectionObserver(viewAnchor);
+
+            const scrollToBottom = (force = false) => {
+                if (!force && !isIntersecting.value) {
+                    return;
+                }
+
+                nextTick(() => {
+                    if (!messageBox.value) {
+                        return;
+                    }
+
+                    messageBox.value.scrollTo(0, messageBox.value.scrollHeight);
+                });
+            };
+
+            onMounted(() => {
+                nextTick(() => {
+                    scrollToBottom(true);
+                });
+            });
+
+            onUpdated(() => {
+                nextTick(() => {
+                    scrollToBottom(true);
+                });
+            });
 
             const status = computed(() => {
                 return statusList[selectedId.value];
@@ -467,31 +407,6 @@
                 });
             });
 
-            const isLastMessage = (index: number) => {
-                if (index + 1 === chat.value.messages.length) {
-                    return true;
-                }
-                const currentMessage = chat.value.messages[index];
-                const nextMessage = chat.value.messages[index + 1];
-
-                if (nextMessage.type === MessageTypes.SYSTEM) {
-                    return true;
-                }
-
-                return currentMessage.from !== nextMessage.from;
-            };
-            const isFirstMessage = (index: number) => {
-                if (index === 0) {
-                    return true;
-                }
-                const currentMessage = chat.value.messages[index];
-                const prevMessage = chat.value.messages[index - 1];
-                if (prevMessage.type === MessageTypes.SYSTEM) {
-                    return true;
-                }
-                return currentMessage.from !== prevMessage.from;
-            };
-
             return {
                 chats,
                 selectedId,
@@ -500,28 +415,21 @@
                 truncate,
                 message,
                 file,
-                isMine,
                 m,
                 messageBox,
                 scrollToBottom,
                 status,
                 statusList,
                 popupMeeting,
-                lastRead,
-                lastReadByMe,
                 deleteChat,
                 blockChat,
                 doBlockChat,
-                user,
                 viewAnchor,
-                showDivider,
                 reads,
                 showDialog,
                 showMenu,
                 messageToReplyTo,
                 showSideBar,
-                isFirstMessage,
-                isLastMessage,
                 moment,
                 ...propRefs,
             };
