@@ -3,6 +3,7 @@
         width="450"
         :src="calcExternalResourceLink(message.body.url)"
         @load="imageLoaded"
+        class="inner-"
     />
 </template>
 
