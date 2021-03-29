@@ -16,8 +16,11 @@ router.get('/', async (request, response) => {
 });
 
 router.get('/signin', async (request, response) => {
-    const loginUrl = await getAppLoginUrl(request, `/api/auth/callback`);
-    response.redirect(loginUrl + "&username=" + window.location.host.split('.')[0]);
+    let loginUrl = await getAppLoginUrl(request, `/api/auth/callback`);
+    loginUrl = loginUrl + "&username=" + request.query.username
+
+    console.log('url: ', loginUrl);
+    response.redirect(loginUrl);
 });
 
 router.get('/callback', async (request, response) => {
