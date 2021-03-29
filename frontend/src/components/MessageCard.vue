@@ -35,10 +35,6 @@
 
                     <div
                         class="read absolute bottom-1 right-1.5 text-xs"
-                        :class="{
-                            'text-accent': message.from !== user?.id,
-                            'text-white': message.from === user?.id,
-                        }"
                         v-if="message.from === user?.id"
                     >
                         <i class="fas fa-check-double text-accent" v-if="isread"></i>
