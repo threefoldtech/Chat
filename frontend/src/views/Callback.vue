@@ -1,24 +1,28 @@
 <template>
     <div>
-        <h2>callback</h2>
+        <h2>Redirecting you to your digitaltwin.</h2>
     </div>
 </template>
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import { useRoute } from 'vue-router';
+    import { useRouter } from 'vue-router';
 
     export default defineComponent({
         name: 'Home',
-        setup() {
-            const route = useRoute();
+        async setup() {
+            let name = window.location.host.split('.')[0];
 
-            // console.log('response.headers', response.headers);
+            const user = {
+                name,
+                image: `${window.location.origin}/api/user/avatar`,
+                email: `${name.replace(/ /g, '')}@domain.com`,
+            };
 
-            // verify the callback response?
-            window.opener.postMessage({
-                message: 'LoginRedirectSuccess',
-            });
+            localStorage.setItem('user', JSON.stringify(user));
+
+            const router = useRouter();
+            await router.push('/chat');
         },
     });
 </script>
