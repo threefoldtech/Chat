@@ -80,7 +80,7 @@ app.use(function (req, res, next) {
  
   if(req.url != '/'){
     for (var alias in config.info.websites){
-      if (req.url.startsWith(`/${alias}`)){
+      if (req.url == `/${alias}` || req.url == `/${alias}` || req.url.startsWith(`/${alias}/`)){
         info = config.info.websites[alias]
         break
       }
