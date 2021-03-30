@@ -29,11 +29,5 @@
         "production": false
     },
 
-    "environments": ["staging", "production"],
-
-    "aliases": {},
-
-    "homeAlias": {"alias": "threefold", "isWebsite": true},
-
-    "domains" : ["new.threefold.io"]
+    "info": {}
 }

@@ -5,15 +5,33 @@ const chalk = require('chalk');
 const config = require("./config");
 
 async function process(){
+    
     var letsencrypt = {}
+    var seendomains = new Set()
 
-    for(var i=0; i<  config.domains.length; i++){
-        var domain = config.domains[i]
+    for(var alias in config.info.websites){
+        var domains = config.info.websites[alias].domains
+        for(var i=0; i < domains.length; i++){
+            var domain = domains[i]
+            seendomains.add(domain)
+        }
+    }
+
+    for(var alias in config.info.wikis){
+        var domains = config.info.wikis[alias].domains
+        for(var i=0; i < domains.length; i++){
+            var domain = domains[i]
+            seendomains.add(domain)
+        }
+    }
+
+    seendomains = Array.from(seendomains)
+
+    for(var j=0; j<seendomains.length; j++){
+        var domain = seendomains[j]
         letsencrypt[domain] = {"renewAt": 1, "altnames": [domain]}
     }
 
-
-     // //{ "sites": [{ "subject": "example.com", "altnames": ["example.com"] }] }
      try{
         fs.statSync('greenlock.d/config.json')
      }catch(e){
@@ -27,20 +45,16 @@ async function process(){
         c = JSON.parse(fs.readFileSync('greenlock.d/config.json'));
     }
 
-    var currentDomains = {}
-    c.sites.forEach(element => {
-        currentDomains[element.subject] = element.renewAt || 1
-    });
-    
-    for(var item in currentDomains){
-        if (!(item in letsencrypt)){
-            continue
-        }else{
-            letsencrypt[item]["renewAt"] = currentDomains[item]
-        }
+    for (var i=0; i< c.sites.length; i++){
+        
+        var site = c.sites[i]
+        
+        if (!(site.subject in letsencrypt)){continue}
+        letsencrypt[site.subject].renewAt = site.renewAt
     }
-    
-    var newSites = []
+
+    c.sites = []
+
     for(item in letsencrypt){
         if(item == "localhost" || item == "127.0.0.1"){
             continue
@@ -50,9 +64,9 @@ async function process(){
         obj.subject = item
         obj.altnames = letsencrypt[item].altnames
         obj.renewAt = letsencrypt[item].renewAt
-        newSites.push(obj)
+        c.sites.push(obj)
     }
-    c.sites = newSites
+
     try{
         fs.writeFileSync('greenlock.d/config.json', JSON.stringify(c, null, 4), {flag: 'w'})
     }catch(e){

@@ -20,8 +20,8 @@ async function rewriteRoles(content, info){
             continue
         }
         var suff = rewrite[item]
-        content = content.replace(new RegExp(`${config.homeAlias.alias}/`, "g"), "")
-        content = content.replace(new RegExp(item, "g"), `${suff}`)
+        // content = content.replace(new RegExp(`${config.homeAlias.alias}/`, "g"), "")
+        // content = content.replace(new RegExp(item, "g"), `${suff}`)
     }
     return content
 }
@@ -165,8 +165,8 @@ async function handleWikiFile(req, res, info){
 
     filepath = `/${wikiname}/${filename}`
     driveObj = null
-    for(var alias in config.aliases.wikis){
-        var item = config.aliases.wikis[alias]
+    for(var alias in config.info.wikis){
+        var item = config.info.wikis[alias]
         if(item.dir == `/${wikiname}`){
             driveObj =  item.drive
         }
@@ -188,15 +188,15 @@ async function handleWikiFile(req, res, info){
     } catch (e) {
         
         newfilename = filename.replace(".md", "")
-        var def = config.aliases.defs[newfilename]
+        var def = config.info.defs[newfilename]
        
         if (def){
             wikiname = `wiki_${def.wikiname}`
             filename = `${def.pagename}.md`
             filepath = `/${wikiname}/${filename}`
 
-            for(var alias in config.aliases.wikis){
-                var item = config.aliases.wikis[alias]
+            for(var alias in config.info.wikis){
+                var item = config.info.wikis[alias]
                 if(item.dir == `/${wikiname}`){
                     driveObj =  item.drive
                 }
@@ -223,8 +223,8 @@ router.get('/publishtools/list', asyncHandler(async (req, res) =>  {
         var wikis = new Set()
         var sites = new Set()
 
-        for(var w in config.aliases.websites){
-            var item = config.aliases.websites[w]
+        for(var w in config.info.websites){
+            var item = config.info.websites[w]
             var d = `${info.host}`
             if(info.port != 80 && info.port != 443){
                 d = `${d}:${info.port}`
@@ -236,8 +236,8 @@ router.get('/publishtools/list', asyncHandler(async (req, res) =>  {
             sites.add({"name": item.alias, "url": `${d}/${w}`})
         }
 
-        for(var w in config.aliases.wikis){
-            var item = config.aliases.wikis[w]
+        for(var w in config.info.wikis){
+            var item = config.info.wikis[w]
             var d = `${info.host}`
             if(info.port != 80 && info.port != 443){
                 d = `${d}:${info.port}`
@@ -281,8 +281,8 @@ router.get('/info', asyncHandler(async (req, res) =>  {
 
         var wikis = new Set()
 
-        for(var w in config.aliases.wikis){
-            var item = config.aliases.wikis[w]
+        for(var w in config.info.wikis){
+            var item = config.info.wikis[w]
             var d = `${info.host}`
             if(info.port != 80 && info.port != 443){
                 d = `${d}:${info.port}`
@@ -439,10 +439,4 @@ router.get('/:website/*', asyncHandler(async (req, res) => {
     return handleWebsiteFile(req, res, info)
 }))
 
-
-
-
-
 module.exports = router
-
-

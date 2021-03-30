@@ -9,7 +9,7 @@ const utils = require('./drive/utils')
 const dnsserver = require("./servers/dns")
 var rewrite = require('./rewrite')
 
-// const letsencrypt = require('./letsencrypt')
+const letsencrypt = require('./letsencrypt')
 
 async function init(){
     var domainsList = []
@@ -25,9 +25,9 @@ async function init(){
       const {_, cleanup } = await hyperdrive.start();
       domainsList.push(...await hyperdrive.load())
     }
-    var aliases = await utils.reduce(domainsList)
+    var info = await utils.reduce(domainsList)
     
-    config.aliases = aliases
+    config.info = info
     return cleanup
 }
 
@@ -59,7 +59,7 @@ async function main(){
     }else{
       
       // write new config
-      // letsencrypt.process()
+      await letsencrypt.process()
 
       require('greenlock-express').init({
         packageRoot: __dirname,

@@ -6,7 +6,8 @@ var utils = require('../utils')
 
 
 async function process(drive, dir){
-    var aliases = {"websites": {}, "wikis": {}}
+    var info = {"websites": {}, "wikis": {}}
+    var domains = {}
 
     var p = path.join("/", dir)
     var dirs = await drive.promises.readdir(p)
@@ -78,7 +79,7 @@ async function process(drive, dir){
         var item =  isWebSite? "websites" : "wikis"
 
         var alias = repoInfo["alias"]
-        if (alias in aliases[item]){
+        if (alias in info[item]){
             console.log(chalk.red(`    ✓ (Drive (${drive.name}) Ignoring path: ${dir} duplicated alias`))
             continue
         }
@@ -98,7 +99,7 @@ async function process(drive, dir){
             }
         }
 
-        aliases[item][alias] = {
+        var val = {
             "drive": drive,
             "dir": dir,
             "repo": repoInfo["repo"],
@@ -108,35 +109,42 @@ async function process(drive, dir){
             "login": acl.login,
             "domains": domainInfo.domains
         }
+
+        info[item][alias] = val
+
+        for(var k=0; k < domainInfo.domains.length; k++){
+            var domain = domainInfo.domains[k]
+            domains[domain] = val
+        }
     }
-    aliases["defs"] = defs
-    return aliases
+    info["defs"] = defs
+    info["domains"] = domains
+
+    return info
 }
 
-async function loadAliases(drive){
+async function loadInfo(drive){
     var dirs = await drive.promises.readdir("/")
     dirs = dirs.filter((item) => {if(!item.startsWith(".")){return item}}).sort()
     var items = []
-
-    for(var i=0; i < dirs.length; i++){
-        var dir = dirs[i]
-        if(config.environments.includes(dir)){
-            items.push(await process(drive, dir))
-        }
-    }
     items.push(await process(drive, "."))
     return items
 }
 
 async function reduce(items){
-    var res = {"websites": {}, "wikis": {}, "defs": {}}
-
+    var res = {"websites": {}, "wikis": {}, "defs": {}, "domains": {}}
+    
     for(var i=0; i<items.length; i++){
         var obj = items[i]
         
         for(var def in obj.defs){
             res.defs[def] = obj.defs[def]
         }
+
+        for(var d in obj.domains){
+            res.domains[d] = obj.domains[d]
+        }
+
 
         for(var alias in obj["websites"]){
             if(alias in res["websites"]){
@@ -145,10 +153,6 @@ async function reduce(items){
                 console.log(chalk.red(`    ✓ (Drive (${driv.name}) Ignoring path: ${dir} duplicate alias for domain ${domain}`))
                 continue
             }else{
-                
-                if(alias == config.homeAlias.alias && config.homeAlias.isWebsite){
-                    res["websites"]["/"] = obj["websites"][alias]
-                }
                 res["websites"][alias] =  obj["websites"][alias]
                 var domains = obj["websites"][alias].domains
                 for(var j=0; j< domains.length; j++){
@@ -165,9 +169,6 @@ async function reduce(items){
                 console.log(chalk.red(`    ✓ (Drive (${driv.name}) Ignoring path: ${dir} duplicate alias for domain ${domain}`))
                 continue
             }else{
-                if(obj["wikis"][alias] == config.homeAlias.alias && !config.homeAlias.isWebSite){
-                    res["wikis"]["/"] = obj["wikis"][alias]
-                }
                 res["wikis"][alias] =  obj["wikis"][alias]
                 var domains = obj["wikis"][alias].domains
                 for(var j=0; j< domains.length; j++){
@@ -182,6 +183,6 @@ async function reduce(items){
 }
 
 module.exports = {
-    loadAliases: loadAliases,
+    loadInfo: loadInfo,
     reduce: reduce
 }

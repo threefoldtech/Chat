@@ -41,7 +41,6 @@ var accessLogStream = rfs.createStream('access.log', {
 
 app.use(morgan('combined', { stream: accessLogStream }))
 
-
 // req info
 app.use(function (req, res, next) {
   var port = 443
@@ -59,7 +58,7 @@ app.use(function (req, res, next) {
   if (host === ""){
       return res.status(400).json('Host Header is missing');
   }
-
+  
   if(req.url.startsWith('/threebot')){
     if(req.session.authorized){
       return res.status(201)
@@ -70,32 +69,33 @@ app.use(function (req, res, next) {
 
   var info = null
 
+  if(host == 'localhost'){
+    info = config.info.websites['threefold'] || config.info.wikis['threefold']
+    console.log(info)
+  }
+  else{
+    info = config.info.domains[host]
+
+  }
  
-  if(req.url == '/'){
-    info = config.aliases.websites['/'] || config.aliases.wikis['/']
-    if(!info){
-      return res.status(404).content("No alias found for /")
-    }
-
-  }else{
-    for (var alias in config.aliases.websites){
+  if(req.url != '/'){
+    for (var alias in config.info.websites){
       if (req.url.startsWith(`/${alias}`)){
-        info = config.aliases.websites[alias]
+        info = config.info.websites[alias]
         break
       }
     }
 
-    for (var alias in config.aliases.wikis){
+    for (var alias in config.info.wikis){
       if (req.url.startsWith(`/info/${alias}`)){
-        info = config.aliases.wikis[alias]
+        info = config.info.wikis[alias]
         break
       }
     }
 
     if(!info){
-      info = config.aliases.wikis['/'] || config.aliases.websites['/']
+      info = config.info.wikis['/'] || config.info.websites['/']
       var splitted = req.url.split("/")
-      // var pass = ["flexsearch.json", "favicon.ico"] 
       if(splitted.length == 2){
         const clone = Object.assign({}, info);
         clone.dir = path.join(info.dir,  splitted[1])
@@ -124,8 +124,6 @@ app.use(function (req, res, next) {
     return
   }
 })
-
-
 
 app.use(express.json());
 
