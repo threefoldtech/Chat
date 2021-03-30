@@ -1,14 +1,15 @@
 version: "3"
 
 services:
-  development-digitaltwin:
-    container_name: development-chat
+  bob-digitaltwin:
+    container_name: bob-chat
     build:
       context: ../
       dockerfile: ./dev/Dockerfile
     restart: always
     environment:
-      - USER_ID=development
+      - USER_ID=bob
+      - ENVIRONMENT=development
     volumes:
       - ../frontend:/frontend
       - ../backend:/backend
@@ -25,14 +26,15 @@ services:
     devices:
       - /dev/net/tun
 
-  singlecore007-digitaltwin:
-    container_name: singlecore007-chat
+  alice-digitaltwin:
+    container_name: alice-chat
     build:
       context: ../
       dockerfile: ./dev/Dockerfile
     restart: always
     environment:
-      - USER_ID=singlecore007
+      - USER_ID=alice
+      - ENVIRONMENT=development
     volumes:
       - ../frontend:/frontend
       - ../backend:/backend
