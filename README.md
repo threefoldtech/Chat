@@ -36,3 +36,7 @@ Add the following records to your hosts file
 127.0.0.1  alice.digitaltwin.jimbertesting.be
 # 127.0.0.1  digitaltwin.jimbertesting.be # Optional if you want to see the login screen of the digitaltwin.
 ```
+
+## URLs
+- https://bob.digitaltwin.jimbertesting.be/chat
+- https://alice.digitaltwin.jimbertesting.be/chat
