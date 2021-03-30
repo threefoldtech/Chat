@@ -10,7 +10,7 @@
 
     export default defineComponent({
         name: 'Home',
-        async setup() {
+        mounted() {
             let name = window.location.host.split('.')[0];
 
             const user = {
@@ -22,7 +22,10 @@
             localStorage.setItem('user', JSON.stringify(user));
 
             const router = useRouter();
-            await router.push('/chat');
+            router.push('/chat');
+        },
+        setup() {
+
         },
     });
 </script>
