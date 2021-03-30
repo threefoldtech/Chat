@@ -1,26 +1,32 @@
 <template>
-    <MessageCard
-        class="bg-gray-200"
-        :message="message.body.quotedMessage"
-    ></MessageCard>
-    <br />
-    <span>{{ message.body.message }}</span>
-    <pre class="bg-red-300 p-4 break-words">{{ message.body }}</pre>
+    <div class="p-4">
+        <div class="bg-gray-200 p-4" v-if="!preventRecursion">
+            <MessageContent
+                :message="message.body.quotedMessage"
+                preventRecursion
+            >
+            </MessageContent>
+        </div>
+        <div>{{ message.body.message }}</div>
+    </div>
 </template>
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import MessageCard from '@/components/MessageCard.vue';
+    import Button from '@/components/Button.vue';
+    import AvatarImg from '@/components/AvatarImg.vue';
     import MessageContent from '@/components/MessageContent.vue';
 
     export default defineComponent({
         name: 'QuoteContent',
-        components: { MessageContent, MessageCard },
+        components: { MessageContent, AvatarImg, Button },
         props: {
             message: { type: Object, required: true },
-        },
-        setup(props) {
-            return {};
+            preventRecursion: {
+                type: Boolean,
+                default: false,
+                required: false,
+            },
         },
     });
 </script>
