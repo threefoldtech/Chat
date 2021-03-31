@@ -29,7 +29,7 @@
                         <MessageContent :message="message"></MessageContent>
                     </main>
                     <div
-                        class="h-7 flex items-center absolute right-1.5 bottom-0"
+                        class="h-9 flex items-center absolute right-1.5 bottom-0"
                         v-if="isMine"
                     >
                         <i
@@ -57,7 +57,7 @@
                         <span class="text-gray-600"> Reply</span>
                     </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
-                        {{ moment(message.timeStamp).fromNow() }}
+                        <Time :time='message.timeStamp'/>
                         <!-- {{ message }} -->
                     </div>
                 </div>
@@ -112,7 +112,7 @@
                         <div
                             class="pr-4 text-gray-600 date inline-block text-xs"
                         >
-                            {{ moment(message.timeStamp).fromNow() }}
+                            <Time :time='message.timeStamp'/>
                         </div>
                     </div>
                 </div>
@@ -135,12 +135,14 @@
     import { sendMessageObject, usechatsActions } from '@/store/chatStore';
     import { messageToReplyTo } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
+    import {clock} from '@/services/clockService'
 
     import { MessageTypes } from '@/types';
+    import Time from '@/components/Time.vue';
 
     export default defineComponent({
         name: 'MessageCard',
-        components: { MessageContent, AvatarImg },
+        components: { Time, MessageContent, AvatarImg },
         props: {
             message: Object,
             chatId: String,
@@ -259,6 +261,7 @@
                 deleteMessage,
                 deleteReply,
                 MessageTypes,
+                clock
             };
         },
     });
