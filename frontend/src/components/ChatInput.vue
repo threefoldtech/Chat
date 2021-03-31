@@ -104,22 +104,6 @@
             >
                 <i class="fas fa-paper-plane"></i>
             </button>
-
-            <button
-                v-if="showSideBar"
-                class="action-btn self-center"
-                @click="toggleSideBar"
-            >
-                <i class="fas fa-chevron-right"></i>
-            </button>
-
-            <button
-                v-else
-                class="action-btn self-center self-center"
-                @click="toggleSideBar"
-            >
-                <i class="fas fa-chevron-left"></i>
-            </button>
         </div>
     </div>
     <div
@@ -166,7 +150,6 @@
     } from '@/types';
     import { uuidv4 } from '@/common';
     import { useScrollActions } from '@/store/scrollStore';
-    import { showSideBar } from '@/services/sidebarService';
     import { EmojiPickerElement } from 'unicode-emoji-picker';
 
     export default {
@@ -193,10 +176,6 @@
             const stopRecording = ref(null);
             const showEmoji = ref(false);
 
-            const toggleSideBar = () => {
-                console.log('Toggling: ', showSideBar.value);
-                showSideBar.value = !showSideBar.value;
-            };
 
             watch(subjectMessage, () => {
                 if (subjectMessage.value) {
@@ -370,8 +349,6 @@
                 hideGif,
                 collapsed,
                 onPaste,
-                showSideBar,
-                toggleSideBar,
             };
         },
     };

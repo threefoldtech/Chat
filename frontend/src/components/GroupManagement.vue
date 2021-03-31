@@ -1,6 +1,7 @@
 <template>
     <div
         class="bg-white p-2 w-full relative rounded-lg mb-4 mt-0 md:grid place-items-center grid-cols-1"
+        v-if="groupChat.isGroup"
     >
         <h2>Members</h2>
         <div
@@ -117,6 +118,7 @@
         emits: ['app-call', 'app-block', 'app-delete'],
         components: { AvatarImg },
         setup(props) {
+            console.log(props.groupChat);
             const { contacts } = useContactsState();
             const removeFromGroup = contact => {
                 const { updateContactsInGroup } = usechatsActions();
