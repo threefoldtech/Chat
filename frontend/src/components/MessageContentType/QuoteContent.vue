@@ -1,11 +1,10 @@
 <template>
-    <div class="p-4">
-        <div class="bg-gray-200 p-4" v-if="!preventRecursion">
+    <div>
+        <div class="bg-gray-200 p-4 border-l-4" v-if="!preventRecursion">
             <MessageContent
                 :message="message.body.quotedMessage"
                 preventRecursion
-            >
-            </MessageContent>
+            ></MessageContent>
         </div>
         <div>{{ message.body.message }}</div>
     </div>
@@ -13,13 +12,11 @@
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import Button from '@/components/Button.vue';
-    import AvatarImg from '@/components/AvatarImg.vue';
-    import MessageContent from '@/components/MessageContent.vue';
+    import MessageContent from '../MessageContent.vue';
 
     export default defineComponent({
         name: 'QuoteContent',
-        components: { MessageContent, AvatarImg, Button },
+        components: { MessageContent },
         props: {
             message: { type: Object, required: true },
             preventRecursion: {

@@ -3,6 +3,7 @@
         :is="contentComponent"
         :message="message"
         :preventRecursion="preventRecursion"
+        :type="contentComponent"
     />
 </template>
 
