@@ -73,7 +73,6 @@
                 </div>
             </div>
         </template>
-
         <template v-slot:default>
             <div
                 class="grid grid-cols-1  relative h-full w-full"
@@ -92,6 +91,52 @@
                     v-if="chat"
                     :key="chat.id + selectedId"
                 >
+                    <div
+                        class="topbar h-14 bg-white flex-row border border-t-0 border-gray-100 hidden md:flex"
+                    >
+                        <div class="py-2 pl-4 flex-1">
+                            <p
+                                class="font-bold font overflow-hidden overflow-ellipsis w-80"
+                            >
+                                {{ chat.name }}
+                            </p>
+                            <p class="font-thin">
+                                {{ getChatStatus }}
+                            </p>
+                        </div>
+                        <div class="h-full flex items-center self-end px-8  space-x-4">
+
+                            <button
+                                @click="popupMeeting"
+                                class="focus:outline-none hover:text-accent"
+                                :class="{
+                                    'text-accent': showSideBar,
+                                    'text-gray-500': !showSideBar,
+                                }"
+                            >
+                                <i
+                                    class="fas fa-video fa-2x"
+                                >
+                                </i>
+                            </button>
+
+                            <button
+                                @click="toggleSideBar"
+                                class="focus:outline-none hover:text-accent"
+                                :class="{
+                                    'text-accent': showSideBar,
+                                    'text-gray-500': !showSideBar,
+                                }"
+                            >
+                                <i
+                                    class="far fa-window-maximize transform fa-2x "
+                                    style="--tw-rotate: 90deg"
+                                >
+                                </i>
+                            </button>
+
+                        </div>
+                    </div>
                     <MessageBox :chat="chat" @scrollToBottom="scrollToBottom">
                         <template v-slot:viewAnchor>
                             <div
@@ -229,7 +274,7 @@
     import { useIntersectionObserver } from '@/lib/intersectionObserver';
     import { useRoute, useRouter } from 'vue-router';
     import { messageToReplyTo } from '@/services/replyService';
-    import { showSideBar } from '@/services/sidebarService';
+    import { showSideBar, toggleSideBar } from '@/services/sidebarService';
     import {
         JoinedVideoRoomBody,
         MessageTypes,
@@ -237,10 +282,12 @@
     } from '@/types';
     import MessageBox from '@/components/MessageBox.vue';
     import { messageBox } from '@/services/messageHelperService';
+    import Button from '@/components/Button.vue';
 
     export default defineComponent({
         name: 'ChatView',
         components: {
+            Button,
             MessageBox,
             AvatarImg,
             ChatInput,
@@ -307,6 +354,29 @@
 
             const chat = computed(() => {
                 return chats.value.find(c => c.chatId == selectedId.value);
+            });
+
+            const getChatStatus = computed(() => {
+                if(!chat.value) {
+                    return;
+                }
+
+                if(chat.value.isGroup) {
+                    let message = `${chat.value.contacts.length} members`;
+                    const onlineMembers = chat.value.contacts
+                        .filter(c => c.id != user.id)
+                        .map(c => ({...c, isOnline: statusList[<string>c.id]?.isOnline ?? false}))
+                        .length;
+
+                    if(onlineMembers > 0) {
+                        message += `, ${onlineMembers} online`;
+                    }
+
+                    return message;
+                }
+
+                const status = statusList[<string>user.id];
+                return status.isOnline ? "Online" : "Offline";
             });
 
             const popupMeeting = () => {
@@ -434,6 +504,8 @@
                 showMenu,
                 messageToReplyTo,
                 showSideBar,
+                toggleSideBar,
+                getChatStatus,
                 moment,
                 ...propRefs,
             };
