@@ -1,7 +1,10 @@
 <template>
-    <suspense>
-        <component :is="contentComponent" :message="message" />
-    </suspense>
+    <component
+        :is="contentComponent"
+        :message="message"
+        :preventRecursion="preventRecursion"
+        :type="contentComponent"
+    />
 </template>
 
 <script lang="ts">
@@ -15,12 +18,10 @@
     import GifContent from '@/components/MessageContentType/GifContent.vue';
     import QuoteContent from '@/components/MessageContentType/QuoteContent.vue';
     import { getComponentForType } from '@/services/contentService';
-    import AvatarImg from '@/components/AvatarImg.vue';
 
     export default defineComponent({
         name: 'MessageContent',
         components: {
-            AvatarImg,
             StringContent,
             SystemContent,
             FileContent,
@@ -33,6 +34,10 @@
             message: {
                 type: Object,
                 required: true,
+            },
+            preventRecursion: {
+                type: Boolean,
+                default: false,
             },
         },
         setup(props) {

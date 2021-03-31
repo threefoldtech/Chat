@@ -5,6 +5,7 @@ import router from './router';
 import '@fortawesome/fontawesome-free/js/all';
 import socketIo from './plugins/SocketIo';
 import config from '../public/config/config';
+import MessageContent from '@/components/MessageContent.vue';
 
 // console.log(Socketio)
 // const a = Socketio.install
@@ -35,6 +36,9 @@ const app = createApp(App)
         },
         transports: ['websocket'],
     });
+
+// this fixes some issues with rendering inside of QouteContent n
+app.component('MessageContent', MessageContent);
 
 app.directive('focus', {
     // When the bound element is mounted into the DOM...

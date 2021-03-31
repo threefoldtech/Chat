@@ -1,2 +1,2 @@
 import { ref } from 'vue';
-export const messageToReplyTo = ref(null);
+export const subjectMessage = ref(null);
