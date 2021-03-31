@@ -12,7 +12,7 @@ import { sendEventToConnectedSockets } from '../service/socketService';
 const router = Router();
 
 router.post('/', (req, res) => {
-    if (!req.session.userId) {
+    if (!req.session.userId && process.env.ENVIRONMENT !== 'development') {
         res.send(401);
         return;
     }
@@ -33,7 +33,7 @@ router.post('/', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-    if (!req.session.userId) {
+    if (!req.session.userId && process.env.ENVIRONMENT !== 'development') {
         res.send(401);
         return;
     }
@@ -44,7 +44,7 @@ router.get('/', (req, res) => {
 
 //@TODO will need to use this later
 router.get('/chatRequests', (req, res) => {
-    if (!req.session.userId) {
+    if (!req.session.userId && process.env.ENVIRONMENT !== 'development') {
         res.send(401);
         return;
     }

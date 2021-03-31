@@ -26,10 +26,13 @@
                     }"
                 >
                     <main class="msgcard flex justify-between">
-                        <MessageContent :message="message"></MessageContent>
+                        <MessageContent
+                            :message="message"
+                            :key="message.type"
+                        ></MessageContent>
                     </main>
                     <div
-                        class="h-7 flex items-center absolute right-1.5 bottom-0"
+                        class="h-9 flex items-center absolute right-1.5 bottom-0"
                         v-if="isMine"
                     >
                         <i
@@ -42,22 +45,25 @@
 
                 <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
                     <span
-                        class="reply text-xs pr-4"
+                        class="reply text-xs pr-4 cursor-pointer hover:underline"
                         @click="deleteMessage(message)"
-                        v-if="message.from === user?.id"
+                        v-if="
+                            message.from === user?.id &&
+                                message.type !== 'DELETE'
+                        "
                     >
                         <i class="fa fa-trash"></i>
-                        <span class="text-gray-600">Delete</span>
+                        <span class="text-gray-600 pl-2">Delete</span>
                     </span>
                     <span
-                        class="reply text-xs pr-4"
+                        class="reply text-xs pr-4 cursor-pointer hover:underline"
                         @click="toggleSendReplyMessage(message)"
                     >
                         <i class="fa fa-reply"></i>
-                        <span class="text-gray-600"> Reply</span>
+                        <span class="text-gray-600 pl-2"> Reply</span>
                     </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
-                        {{ moment(message.timeStamp).fromNow() }}
+                        <Time :time='message.timeStamp'/>
                         <!-- {{ message }} -->
                     </div>
                 </div>
@@ -112,7 +118,7 @@
                         <div
                             class="pr-4 text-gray-600 date inline-block text-xs"
                         >
-                            {{ moment(message.timeStamp).fromNow() }}
+                            <Time :time='message.timeStamp'/>
                         </div>
                     </div>
                 </div>
@@ -129,18 +135,25 @@
     import moment from 'moment';
     import AvatarImg from '@/components/AvatarImg.vue';
     import MessageContent from '@/components/MessageContent.vue';
-    import { Message, StringMessageType } from '@/types';
+    import {
+        Message,
+        MessageBodyType,
+        QuoteBodyType,
+        StringMessageType,
+    } from '@/types';
     import { uuidv4 } from '@/common';
     import { useAuthState } from '@/store/authStore';
     import { sendMessageObject, usechatsActions } from '@/store/chatStore';
-    import { messageToReplyTo } from '@/services/replyService';
+    import { subjectMessage } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
+    import {clock} from '@/services/clockService'
 
     import { MessageTypes } from '@/types';
+    import Time from '@/components/Time.vue';
 
     export default defineComponent({
         name: 'MessageCard',
-        components: { MessageContent, AvatarImg },
+        components: { Time, MessageContent, AvatarImg },
         props: {
             message: Object,
             chatId: String,
@@ -172,35 +185,13 @@
 
             const toggleSendReplyMessage = message => {
                 if (
-                    messageToReplyTo.value &&
-                    messageToReplyTo.value.id === message.id
+                    subjectMessage.value &&
+                    subjectMessage.value.id === message.id
                 ) {
-                    messageToReplyTo.value = '';
+                    subjectMessage.value = '';
                     return;
                 }
-                messageToReplyTo.value = message;
-            };
-
-            const sendReplyMessage = () => {
-                console.log('sendReplyMessage');
-
-                const { user } = useAuthState();
-
-                const newMessage: Message<StringMessageType> = {
-                    id: uuidv4(),
-                    from: user.id,
-                    to: props.chatId,
-                    body: <StringMessageType>null,
-                    timeStamp: new Date(),
-                    type: 'STRING',
-                    replies: [],
-                    subject: props.message.id,
-                };
-
-                const { sendMessageObject } = usechatsActions();
-
-                sendMessageObject(props.chatId, newMessage);
-                messageToReplyTo.value = null;
+                subjectMessage.value = message;
             };
 
             const { addScrollEvent } = useScrollActions();
@@ -223,7 +214,7 @@
                 const updatedMessage: Message<StringMessageType> = {
                     id: message.id,
                     from: message.from,
-                    to: message.chatId,
+                    to: message.to,
                     body: 'Message has been deleted',
                     timeStamp: message.timeStamp,
                     type: 'DELETE',
@@ -251,14 +242,14 @@
             return {
                 moment,
                 toggleSendForwardMessage,
-                sendReplyMessage,
                 toggleSendReplyMessage,
                 toggleEditMessage,
                 user,
-                messageToReplyTo,
+                subjectMessage,
                 deleteMessage,
                 deleteReply,
                 MessageTypes,
+                clock
             };
         },
     });

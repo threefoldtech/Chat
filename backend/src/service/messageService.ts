@@ -1,15 +1,9 @@
-import { IdInterface, StringMessageTypeInterface } from './../types/index';
-import {
-    ContactRequest,
-    FileMessageType,
-    MessageBodyTypeInterface,
-    MessageInterface,
-    MessageTypes,
-} from '../types';
+import {IdInterface, MessageTypes, StringMessageTypeInterface} from './../types/index';
+import {ContactRequest, FileMessageType, MessageBodyTypeInterface, MessageInterface, MessageTypes,} from '../types';
 import Message from '../models/message';
-import { getChat, persistChat, saveFile } from './dataService';
-import { sendEventToConnectedSockets } from './socketService';
-import { determinChatId } from '../routes/messages';
+import {getChat, persistChat, saveFile} from './dataService';
+import {sendEventToConnectedSockets} from './socketService';
+import {determinChatId} from '../routes/messages';
 
 export const parseMessage = (
     msg: any
@@ -185,6 +179,10 @@ export const editMessage = (
     const chat = getChat(chatId);
     const index = chat.messages.findIndex(mes => mes.id === newMessage.id);
     chat.messages[index].body = newMessage.body;
+    if(newMessage.type === MessageTypes.DELETE){
+        chat.messages[index] = newMessage;
+
+    }
     persistChat(chat);
 };
 

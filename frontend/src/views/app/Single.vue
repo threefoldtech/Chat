@@ -153,18 +153,18 @@
                         </template>
                     </MessageBox>
                     <div
-                        v-if="messageToReplyTo"
+                        v-if="subjectMessage"
                         class="flex justify-between m-2 p-4 bg-white rounded-xl"
                     >
                         <div>
                             <b>Replying: </b>
                             <div class="replymsg">
-                                <span>{{ messageToReplyTo.from }}</span>
-                                <p>{{ messageToReplyTo.body }}</p>
+                                <span>{{ subjectMessage.from }}</span>
+                                <p>{{ subjectMessage.body }}</p>
                             </div>
                         </div>
 
-                        <button @click="messageToReplyTo = null">
+                        <button @click="subjectMessage = null">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -273,7 +273,7 @@
     import * as crypto from 'crypto-js';
     import { useIntersectionObserver } from '@/lib/intersectionObserver';
     import { useRoute, useRouter } from 'vue-router';
-    import { messageToReplyTo } from '@/services/replyService';
+    import { subjectMessage } from '@/services/replyService';
     import { showSideBar, toggleSideBar } from '@/services/sidebarService';
     import {
         JoinedVideoRoomBody,
@@ -502,7 +502,7 @@
                 reads,
                 showDialog,
                 showMenu,
-                messageToReplyTo,
+                subjectMessage,
                 showSideBar,
                 toggleSideBar,
                 getChatStatus,

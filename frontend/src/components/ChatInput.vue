@@ -139,9 +139,15 @@
     import { nextTick, ref, watch } from 'vue';
     import { usechatsActions } from '@/store/chatStore';
     import GifSelector from '@/components/GifSelector.vue';
-    import { messageToReplyTo } from '@/services/replyService';
+    import { subjectMessage } from '@/services/replyService';
     import { useAuthState } from '@/store/authStore';
-    import { Message, StringMessageType } from '@/types';
+    import {
+        Message,
+        MessageBodyType,
+        MessageTypes,
+        QuoteBodyType,
+        StringMessageType,
+    } from '@/types';
     import { uuidv4 } from '@/common';
     import { useScrollActions } from '@/store/scrollStore';
     import { EmojiPickerElement } from 'unicode-emoji-picker';
@@ -171,8 +177,8 @@
             const showEmoji = ref(false);
 
 
-            watch(messageToReplyTo, () => {
-                if (messageToReplyTo.value) {
+            watch(subjectMessage, () => {
+                if (subjectMessage.value) {
                     console.log('Selecting chat ...');
                     message.value.focus();
                 }
@@ -181,25 +187,30 @@
             const { addScrollEvent } = useScrollActions();
 
             const chatsend = async e => {
-                if (messageToReplyTo.value) {
+                if (subjectMessage.value) {
                     const { user } = useAuthState();
 
-                    const newMessage: Message<StringMessageType> = {
+                    const newMessage: Message<QuoteBodyType> = {
                         id: uuidv4(),
                         from: user.id,
                         to: <string>props.selectedid,
-                        body: <StringMessageType>message.value.value,
+                        body: <QuoteBodyType>{
+                            message: message.value.value,
+                            quotedMessage: <Message<MessageBodyType>>(
+                                subjectMessage.value
+                            ),
+                        },
                         timeStamp: new Date(),
-                        type: 'STRING',
+                        type: 'QUOTE',
                         replies: [],
-                        subject: messageToReplyTo.value.id,
+                        subject: null,
                     };
 
                     const { sendMessageObject } = usechatsActions();
 
                     sendMessageObject(props.selectedid, newMessage);
 
-                    messageToReplyTo.value = null;
+                    subjectMessage.value = null;
                     message.value.value = '';
 
                     addScrollEvent();
