@@ -200,7 +200,6 @@
     import * as crypto from 'crypto-js';
     import { useIntersectionObserver } from '@/lib/intersectionObserver';
     import { useRoute, useRouter } from 'vue-router';
-    import { subjectMessage } from '@/services/replyService';
     import { showSideBar, toggleSideBar } from '@/services/sidebarService';
     import { JoinedVideoRoomBody, MessageTypes, SystemMessageTypes } from '@/types';
     import MessageBox from '@/components/MessageBox.vue';
@@ -422,7 +421,6 @@
                 reads,
                 showDialog,
                 showMenu,
-                subjectMessage,
                 showSideBar,
                 toggleSideBar,
                 getChatStatus,

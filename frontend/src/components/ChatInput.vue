@@ -1,12 +1,14 @@
 <template>
     <GifSelector v-if="showGif" v-on:sendgif="sendGif" style="z-index: 10000" v-on:close="hideGif" />
     <div v-if="action" class="flex justify-between m-2 p-4 bg-white rounded-xl">
-        <div>
-            <b v-if="action.type === MessageAction.REPLY">Replying: </b>
-            <b v-else-if="action.type === MessageAction.EDIT">Edit: </b>
+        <div class='flex flex-row'>
+            <div class='text-accent mr-4 self-center'>
+                <i class='fa fa-reply fa-2x' v-if="action.type === MessageAction.REPLY"></i>
+                <i class='fa fa-pen fa-2x' v-else-if="action.type === MessageAction.EDIT"></i>
+            </div>
             <div class="replymsg">
-                <span>{{ action.message.from }}</span>
-                <p>{{ action.message.body }}</p>
+                <b>{{ action.message.from }}</b>
+                <p>{{ getActionMessage }}</p>
             </div>
         </div>
 
@@ -143,7 +145,9 @@
                 if (!props.selectedid) {
                     return;
                 }
-                return messageState?.actions[props.selectedid];
+                const bla = messageState?.actions[props.selectedid];
+                console.log("action", bla);
+                return bla;
             });
 
             const clearAction = () => {
@@ -151,7 +155,7 @@
             };
 
             watch(action, () => {
-                if (action.value) {
+                if (action.value && message.value) {
                     console.log('Selecting chat ...');
                     message.value.focus();
                 }
@@ -318,6 +322,13 @@
                 }
             };
 
+            const getActionMessage = computed(() => {
+                if(action.value.message.type === MessageTypes.QUOTE)
+                    return (action.value.message.body as QuoteBodyType).message;
+
+                return action.value.message.body;
+            })
+
             const collapsed = ref(true);
             return {
                 sendMessage,
@@ -342,7 +353,9 @@
                 onPaste,
                 action,
                 clearAction,
+                getActionMessage,
                 MessageAction,
+                MessageTypes,
             };
         },
     };
