@@ -11,9 +11,8 @@ export const isLastMessage = (chat: Chat, index: number) => {
     const currentMessage = chat.messages[index];
     const nextMessage = chat.messages[index + 1];
 
-    if (nextMessage.type === MessageTypes.SYSTEM) {
-        return true;
-    }
+    if (nextMessage.type === MessageTypes.SYSTEM) return true;
+    if (showDivider(chat, index + 1)) return true;
 
     return currentMessage.from !== nextMessage.from;
 };
@@ -23,9 +22,10 @@ export const isFirstMessage = (chat: Chat, index: number) => {
     }
     const currentMessage = chat.messages[index];
     const prevMessage = chat.messages[index - 1];
-    if (prevMessage.type === MessageTypes.SYSTEM) {
-        return true;
-    }
+
+    if (prevMessage.type === MessageTypes.SYSTEM) return true;
+    if (showDivider(chat, index)) return true;
+
     return currentMessage.from !== prevMessage.from;
 };
 export const showDivider = (chat: Chat, index) => {
