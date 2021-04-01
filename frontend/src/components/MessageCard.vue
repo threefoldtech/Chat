@@ -6,7 +6,7 @@
             'my-message': isMine,
         }"
         v-if="message.type !== MessageTypes.SYSTEM"
-        @click='selectedMessageId = message.id'
+        @click="selectedMessageId = message.id"
     >
         <AvatarImg
             small
@@ -35,7 +35,11 @@
                     </div>
                 </div>
 
-                <div style="margin-top: auto;" class="actions pb-4 pl-4 md:hidden" :class='{ "flex": selectedMessageId === message.id, "hidden" : selectedMessageId !== message.id}'>
+                <div
+                    style="margin-top: auto;"
+                    class="actions pb-4 pl-4 md:hidden"
+                    :class="{ flex: selectedMessageId === message.id, hidden: selectedMessageId !== message.id }"
+                >
                     <span
                         class="reply text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
                         @click="editMessage(message)"
@@ -57,8 +61,8 @@
                         <span class="text-gray-600 pl-2">Delete</span>
                     </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
-                        <span v-if="message.updated" class='mr-4'>edited</span>
-                        <Time :time="message.timeStamp" />
+                        <span v-if="message.updated" class="mr-4">edited</span>
+                        <Time :time="new Date(message.timeStamp)" />
                         <!-- {{ message }} -->
                     </div>
                 </div>
@@ -93,7 +97,7 @@
                             <span class="text-gray-600 pl-2">Delete</span>
                         </span>
                         <div class="pr-4 text-gray-600 date inline-block text-xs">
-                            <Time :time="message.timeStamp" />
+                            <Time :time="new Date(message.timeStamp)" />
                         </div>
                     </div>
                 </div>
@@ -119,10 +123,10 @@
         sendMessageObject,
         setMessageAction,
         usechatsActions,
-        selectedMessageId
+        selectedMessageId,
     } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
-    import {clock} from '@/services/clockService'
+    import { clock } from '@/services/clockService';
     import Time from '@/components/Time.vue';
 
     export default defineComponent({
@@ -154,7 +158,7 @@
                 //nextTick is needed because vue throws dom errors if you switch between Reply and Edit
                 nextTick(() => {
                     setMessageAction(props.chatId, message, MessageAction.REPLY);
-                })
+                });
             };
 
             const { addScrollEvent } = useScrollActions();
@@ -207,7 +211,7 @@
                 //nextTick is needed because vue throws dom errors if you switch between Reply and Edit
                 nextTick(() => {
                     setMessageAction(props.chatId, message, MessageAction.EDIT);
-                })
+                });
             };
 
             return {
@@ -220,7 +224,7 @@
                 editMessage,
                 MessageTypes,
                 clock,
-                selectedMessageId
+                selectedMessageId,
             };
         },
     });

@@ -14,12 +14,11 @@
         name: 'Time',
         components: { TimeContent },
         props: {
-            time: { type: String },
+            time: { type: Date },
         },
         setup(props) {
-            const date = new Date(props.time);
             const now = new Date();
-            const diff = now.getTime() - date.getTime();
+            const diff = now.getTime() - props.time.getTime();
             let clockType = ClockType.HOURS;
             if (diff < 1000 * 60 * 5) clockType = ClockType.SECONDS;
             else if (diff < 1000 * 60 * 40) clockType = ClockType.MINUTES;
@@ -29,7 +28,7 @@
                 clockType,
                 ClockType,
                 hourClock,
-                minuteClock
+                minuteClock,
             };
         },
     });
