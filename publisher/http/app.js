@@ -12,6 +12,8 @@ var morgan = require('morgan')
 
 var path = require('path')
 var rfs = require('rotating-file-stream') 
+const auth = require('basic-auth')
+
 
 let app = express()
 
@@ -122,6 +124,25 @@ app.use(function (req, res, next) {
   }else{
     next()
     return
+  }
+})
+
+app.use((req, res, next) => {
+  var info = req.info
+  
+  if (info.password != ""){
+    let user = auth(req)
+    console.log(info)
+    console.log(user)
+    if (user === undefined || user['name'] !== info.username || user['pass'] !== info.password) {
+      res.statusCode = 401
+      res.setHeader('WWW-Authenticate', 'Basic realm="Node"')
+      res.end('Unauthorized')
+    } else {
+      next()
+    }
+  } else{
+    next()
   }
 })
 
