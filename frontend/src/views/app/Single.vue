@@ -104,8 +104,9 @@
                                 {{ getChatStatus }}
                             </p>
                         </div>
-                        <div class="h-full flex items-center self-end px-8  space-x-4">
-
+                        <div
+                            class="h-full flex items-center self-end px-8 space-x-4"
+                        >
                             <button
                                 @click="popupMeeting"
                                 class="focus:outline-none hover:text-accent"
@@ -114,10 +115,7 @@
                                     'text-gray-500': !showSideBar,
                                 }"
                             >
-                                <i
-                                    class="fas fa-video fa-2x"
-                                >
-                                </i>
+                                <i class="fas fa-video fa-w-12"> </i>
                             </button>
 
                             <button
@@ -129,12 +127,11 @@
                                 }"
                             >
                                 <i
-                                    class="far fa-window-maximize transform fa-2x "
+                                    class="far fa-window-maximize transform fa-w-12"
                                     style="--tw-rotate: 90deg"
                                 >
                                 </i>
                             </button>
-
                         </div>
                     </div>
                     <MessageBox :chat="chat" @scrollToBottom="scrollToBottom">
@@ -357,18 +354,21 @@
             });
 
             const getChatStatus = computed(() => {
-                if(!chat.value) {
+                if (!chat.value) {
                     return;
                 }
 
-                if(chat.value.isGroup) {
+                if (chat.value.isGroup) {
                     let message = `${chat.value.contacts.length} members`;
                     const onlineMembers = chat.value.contacts
                         .filter(c => c.id != user.id)
-                        .map(c => ({...c, isOnline: statusList[<string>c.id]?.isOnline ?? false}))
-                        .length;
+                        .map(c => ({
+                            ...c,
+                            isOnline:
+                                statusList[<string>c.id]?.isOnline ?? false,
+                        })).length;
 
-                    if(onlineMembers > 0) {
+                    if (onlineMembers > 0) {
                         message += `, ${onlineMembers} online`;
                     }
 
@@ -376,7 +376,7 @@
                 }
 
                 const status = statusList[<string>user.id];
-                return status.isOnline ? "Online" : "Offline";
+                return status?.isOnline ? 'Online' : 'Offline';
             });
 
             const popupMeeting = () => {
