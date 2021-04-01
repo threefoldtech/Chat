@@ -73,7 +73,6 @@ app.use(function (req, res, next) {
 
   if(host == 'localhost'){
     info = config.info.websites['threefold'] || config.info.wikis['threefold']
-    console.log(info)
   }
   else{
     info = config.info.domains[host]
@@ -132,8 +131,6 @@ app.use((req, res, next) => {
   
   if (info.password != ""){
     let user = auth(req)
-    console.log(info)
-    console.log(user)
     if (user === undefined || user['name'] !== info.username || user['pass'] !== info.password) {
       res.statusCode = 401
       res.setHeader('WWW-Authenticate', 'Basic realm="Node"')
