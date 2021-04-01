@@ -19,14 +19,7 @@ const routes: Array<RouteRecordRaw> = [
         path: '/callback',
         name: 'Callback/:signedAttempt',
         component: Callback,
-        beforeEnter: async (to, from, next) => {
-            console.log('Check is user is authenticated');
-            if (await isUserAuthenticated()) {
-                console.log('User is authenticated!');
-                next();
-            }
-            next({ name: 'Home' });
-        },
+        meta: { requiresAuth: true },
     },
     {
         path: '/unauthorized',
@@ -41,14 +34,7 @@ const routes: Array<RouteRecordRaw> = [
                 path: '',
                 name: 'chat',
                 component: Chat,
-                beforeEnter: async (to, from, next) => {
-                    console.log('Check is user is authenticated');
-                    if (await isUserAuthenticated()) {
-                        console.log('User is authenticated!');
-                        next();
-                    }
-                    next({ name: 'Home' });
-                },
+                meta: { requiresAuth: true },
             },
             {
                 path: ':id',
@@ -56,14 +42,7 @@ const routes: Array<RouteRecordRaw> = [
                 component: Single,
                 meta: {
                     back: 'chat',
-                },
-                beforeEnter: async (to, from, next) => {
-                    console.log('Check is user is authenticated');
-                    if (await isUserAuthenticated()) {
-                        console.log('User is authenticated!');
-                        next();
-                    }
-                    next({ name: 'Home' });
+                    requiresAuth: true,
                 },
             },
         ],
@@ -73,14 +52,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'filebrowser',
         path: '/filebrowser',
         component: FileBrowser,
-        beforeEnter: async (to, from, next) => {
-            console.log('Check is user is authenticated');
-            if (await isUserAuthenticated()) {
-                console.log('User is authenticated!');
-                next();
-            }
-            next({ name: 'Home' });
-        },
+        meta: { requiresAuth: true },
     },
     {
         name: 'videoroom',
@@ -92,6 +64,16 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
     routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+    if (
+        to.matched.some(record => record.meta.requiresAuth) &&
+        !(await isUserAuthenticated())
+    ) {
+        next({ name: 'Home' });
+    }
+    next();
 });
 
 export default router;
