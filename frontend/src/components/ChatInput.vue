@@ -177,12 +177,14 @@
                             message: message.value.value,
                             quotedMessage: action.value.message as Message<MessageBodyType>,
                         };
+                        break;
                     }
 
                     case MessageAction.EDIT: {
                         newMessage.id = <string>action.value.message.id;
                         newMessage.type = MessageTypes.EDIT;
                         newMessage.body = message.value.value;
+                        break;
                     }
                 }
 
