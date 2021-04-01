@@ -2,6 +2,7 @@
     <div
         class="grid relative"
         :class="{
+            'h-16 w-16': large,
             'h-12 w-12': !small && !xsmall,
             'h-8 w-8': small,
             'h-6 w-6': xsmall,
@@ -11,7 +12,8 @@
             class="bg-icon rounded-full"
             :style="`background:url(${src}) no-repeat center/cover`"
             :class="{
-                'h-12 w-12': !small && !xsmall,
+                'h-16 w-16': large,
+                'h-12 w-12': !small && !xsmall && !large,
                 'h-8 w-8': small,
                 'h-6 w-6': xsmall,
             }"
@@ -41,6 +43,7 @@
                 default: true,
                 type: Boolean,
             },
+            large: { required: false, default: false, type: Boolean },
             small: { required: false, default: false, type: Boolean },
             xsmall: { required: false, default: false, type: Boolean },
         },

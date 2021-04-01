@@ -63,7 +63,7 @@
                         <span class="text-gray-600 pl-2"> Reply</span>
                     </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
-                        <Time :time='message.timeStamp'/>
+                        <Time :time="message.timeStamp" />
                         <!-- {{ message }} -->
                     </div>
                 </div>
@@ -105,7 +105,7 @@
                         class="actions pb-4 pl-4 flex"
                     >
                         <span
-                            class="reply text-xs pr-4"
+                            class="reply text-xs pr-4 cursor-pointer hover:underline"
                             @click="deleteReply(message, reply)"
                             v-if="
                                 reply.from === user?.id &&
@@ -113,12 +113,12 @@
                             "
                         >
                             <i class="fa fa-trash"></i>
-                            <span class="text-gray-600">Delete</span>
+                            <span class="text-gray-600 pl-2">Delete</span>
                         </span>
                         <div
                             class="pr-4 text-gray-600 date inline-block text-xs"
                         >
-                            <Time :time='message.timeStamp'/>
+                            <Time :time="message.timeStamp" />
                         </div>
                     </div>
                 </div>
@@ -146,7 +146,7 @@
     import { sendMessageObject, usechatsActions } from '@/store/chatStore';
     import { subjectMessage } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
-    import {clock} from '@/services/clockService'
+    import { clock } from '@/services/clockService';
 
     import { MessageTypes } from '@/types';
     import Time from '@/components/Time.vue';
@@ -249,7 +249,7 @@
                 deleteMessage,
                 deleteReply,
                 MessageTypes,
-                clock
+                clock,
             };
         },
     });

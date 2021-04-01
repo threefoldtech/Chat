@@ -108,11 +108,7 @@
 
                             <button
                                 @click="popupMeeting"
-                                class="focus:outline-none hover:text-accent"
-                                :class="{
-                                    'text-accent': showSideBar,
-                                    'text-gray-500': !showSideBar,
-                                }"
+                                class="focus:outline-none hover:text-accent text-gray-500"
                             >
                                 <i
                                     class="fas fa-video fa-2x"
@@ -375,8 +371,8 @@
                     return message;
                 }
 
-                const status = statusList[<string>user.id];
-                return status.isOnline ? "Online" : "Offline";
+                const status = statusList[<string>chat.value.chatId];
+                return status?.isOnline ? "Online" : "Offline";
             });
 
             const popupMeeting = () => {

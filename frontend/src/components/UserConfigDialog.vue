@@ -18,7 +18,7 @@
                         >
                             <i class="fas fa-pen text-white"></i>
                         </div>
-                        <AvatarImg :id="user.id" />
+                        <AvatarImg :id="user.id" large/>
                     </div>
                     <h1 class="text-center my-4">{{ user.id }}</h1>
                 </div>
@@ -102,16 +102,18 @@
                 <h1>Avatar</h1>
             </template>
             <div class="flex w-full flex-col">
-                <div class="w-full mh-20">
+                <div class="w-full">
                     <vue-cropper
                         ref="cropper"
                         :aspect-ratio="1"
                         :src="src"
-                        :viewMode="1"
+                        :viewMode="2"
                         :zoomable="false"
                         :guides="false"
                         :minCanvasWidth="64"
                         :minCropBoxWidth="64"
+                        :containerStyle='{"max-height": "400px"}'
+                        :background='false'
                     />
                 </div>
                 <div class="flex flex-row justify-end">
