@@ -6,6 +6,7 @@
             'my-message': isMine,
         }"
         v-if="message.type !== MessageTypes.SYSTEM"
+        @click="selectedMessageId = message.id"
     >
         <AvatarImg
             small
@@ -34,24 +35,34 @@
                     </div>
                 </div>
 
-                <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
+                <div
+                    style="margin-top: auto;"
+                    class="actions pb-4 pl-4 md:hidden"
+                    :class="{ flex: selectedMessageId === message.id, hidden: selectedMessageId !== message.id }"
+                >
                     <span
                         class="reply text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
+                        @click="editMessage(message)"
+                        v-if="message.type === MessageTypes.STRING"
+                    >
+                        <i class="fa fa-pen"></i>
+                        <span class="text-gray-600 pl-2">Edit</span>
+                    </span>
+                    <span class="reply text-xs pr-4 cursor-pointer hover:underline" @click="replyMessage(message)">
+                        <i class="fa fa-reply"></i>
+                        <span class="text-gray-600 pl-2"> Reply</span>
+                    </span>
+                    <span
+                        class="delete text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
                         @click="deleteMessage(message)"
                         v-if="message.type !== 'DELETE'"
                     >
                         <i class="fa fa-trash"></i>
                         <span class="text-gray-600 pl-2">Delete</span>
                     </span>
-                    <span
-                        class="reply text-xs pr-4 cursor-pointer hover:underline"
-                        @click="toggleSendReplyMessage(message)"
-                    >
-                        <i class="fa fa-reply"></i>
-                        <span class="text-gray-600 pl-2"> Reply</span>
-                    </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
-                        <Time :time="message.timeStamp" />
+                        <span v-if="message.updated" class="mr-4">edited</span>
+                        <Time :time="new Date(message.timeStamp)" />
                         <!-- {{ message }} -->
                     </div>
                 </div>
@@ -78,15 +89,15 @@
 
                     <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
                         <span
-                            class="reply text-xs pr-4"
+                            class="reply text-xs pr-4 cursor-pointer hover:underline"
                             @click="deleteReply(message, reply)"
                             v-if="reply.from === user?.id && reply.body !== 'Message has been deleted'"
                         >
                             <i class="fa fa-trash"></i>
-                            <span class="text-gray-600">Delete</span>
+                            <span class="text-gray-600 pl-2">Delete</span>
                         </span>
                         <div class="pr-4 text-gray-600 date inline-block text-xs">
-                            <Time :time="message.timeStamp" />
+                            <Time :time="new Date(message.timeStamp)" />
                         </div>
                     </div>
                 </div>
@@ -99,19 +110,23 @@
 </template>
 
 <script lang="ts">
-    import { defineComponent, onMounted, ref } from 'vue';
+    import { computed, defineComponent, nextTick, onMounted } from 'vue';
     import moment from 'moment';
     import AvatarImg from '@/components/AvatarImg.vue';
     import MessageContent from '@/components/MessageContent.vue';
-    import { Message, MessageBodyType, QuoteBodyType, StringMessageType } from '@/types';
+    import { Message, MessageBodyType, QuoteBodyType, StringMessageType, MessageTypes } from '@/types';
     import { uuidv4 } from '@/common';
     import { useAuthState } from '@/store/authStore';
-    import { sendMessageObject, usechatsActions } from '@/store/chatStore';
-    import { subjectMessage } from '@/services/replyService';
+    import {
+        clearMessageAction,
+        MessageAction,
+        sendMessageObject,
+        setMessageAction,
+        usechatsActions,
+        selectedMessageId,
+    } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
     import { clock } from '@/services/clockService';
-
-    import { MessageTypes } from '@/types';
     import Time from '@/components/Time.vue';
 
     export default defineComponent({
@@ -130,14 +145,6 @@
         setup(props) {
             const { user } = useAuthState();
 
-            const toggleEditMessage = () => {
-                console.log('toggleEditMessage');
-            };
-
-            const editMessage = () => {
-                console.log('editMessage');
-            };
-
             const toggleSendForwardMessage = () => {
                 console.log('toggleSendForwardMessage');
             };
@@ -146,12 +153,12 @@
                 console.log('sendQuoteMessage');
             };
 
-            const toggleSendReplyMessage = message => {
-                if (subjectMessage.value && subjectMessage.value.id === message.id) {
-                    subjectMessage.value = '';
-                    return;
-                }
-                subjectMessage.value = message;
+            const replyMessage = message => {
+                clearMessageAction(props.chatId);
+                //nextTick is needed because vue throws dom errors if you switch between Reply and Edit
+                nextTick(() => {
+                    setMessageAction(props.chatId, message, MessageAction.REPLY);
+                });
             };
 
             const { addScrollEvent } = useScrollActions();
@@ -177,7 +184,7 @@
                     to: message.to,
                     body: 'Message has been deleted',
                     timeStamp: message.timeStamp,
-                    type: 'DELETE',
+                    type: MessageTypes.DELETE,
                     replies: [],
                     subject: null,
                 };
@@ -192,24 +199,32 @@
                     to: reply.to,
                     body: 'Message has been deleted',
                     timeStamp: message.timeStamp,
-                    type: 'DELETE',
+                    type: MessageTypes.DELETE,
                     replies: [],
                     subject: message.id,
                 };
                 sendMessageObject(props.chatId, updatedMessage);
             };
 
+            const editMessage = message => {
+                clearMessageAction(props.chatId);
+                //nextTick is needed because vue throws dom errors if you switch between Reply and Edit
+                nextTick(() => {
+                    setMessageAction(props.chatId, message, MessageAction.EDIT);
+                });
+            };
+
             return {
                 moment,
                 toggleSendForwardMessage,
-                toggleSendReplyMessage,
-                toggleEditMessage,
+                replyMessage,
                 user,
-                subjectMessage,
                 deleteMessage,
                 deleteReply,
+                editMessage,
                 MessageTypes,
                 clock,
+                selectedMessageId,
             };
         },
     });
@@ -221,12 +236,8 @@
         white-space: pre-wrap;
     }
 
-    .actions {
-        visibility: hidden;
-    }
-
     .messageCard:hover .actions {
-        visibility: visible;
+        display: flex;
     }
 
     .msgcard,

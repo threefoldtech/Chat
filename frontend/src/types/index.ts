@@ -32,6 +32,7 @@ export interface Message<T> {
     type: String;
     subject: Id | null;
     replies: Message<MessageBodyType>[];
+    updated?: Date;
 }
 
 export interface MessageBodyType {}

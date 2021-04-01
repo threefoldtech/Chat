@@ -28,6 +28,42 @@ const state = reactive<chatstate>({
 });
 
 export const selectedId = ref('');
+export const selectedMessageId = ref(undefined);
+
+export enum MessageAction {
+    EDIT = 'EDIT',
+    REPLY = 'REPLY',
+}
+
+interface MessageState {
+    actions: {
+        [key: string]: {
+            message: Message<any>;
+            type: MessageAction;
+        };
+    };
+}
+
+export const messageState = reactive<MessageState>({
+    actions: {},
+});
+
+export const setMessageAction = (chatId: string, message: Message<any>, action: MessageAction) => {
+    messageState.actions = {
+        ...(messageState.actions ?? {}),
+        [chatId]: {
+            message,
+            type: action,
+        },
+    };
+};
+
+export const clearMessageAction = (chatId: string) => {
+    messageState.actions = {
+        ...(messageState.actions ?? {}),
+        [chatId]: undefined,
+    };
+};
 
 const retrievechats = async () => {
     await axios.get(`${config.baseUrl}api/chats`).then(response => {
@@ -44,9 +80,7 @@ const retrievechats = async () => {
 const addChat = (chat: Chat) => {
     if (!chat.isGroup) {
         const { user } = useAuthState();
-        const otherContact: Contact = <Contact>(
-            chat.contacts.find(c => c.id !== user.id)
-        );
+        const otherContact: Contact = <Contact>chat.contacts.find(c => c.id !== user.id);
         if (otherContact) {
             startFetchStatusLoop(otherContact);
         }
@@ -148,11 +182,7 @@ const addMessage = (chatId, message) => {
         const newRead = getMessage(chat, message.body);
         const oldRead = getMessage(chat, <string>message.from);
 
-        if (
-            oldRead &&
-            new Date(newRead.timeStamp).getTime() >
-                new Date(oldRead.timeStamp).getTime()
-        ) {
+        if (oldRead && new Date(newRead.timeStamp).getTime() > new Date(oldRead.timeStamp).getTime()) {
             return;
         }
 
@@ -167,25 +197,18 @@ const addMessage = (chatId, message) => {
     const chat: Chat = state.chats.find(chat => chat.chatId == chatId);
 
     if (message.subject) {
-        const subjectMessageIndex = chat.messages.findIndex(
-            m => m.id === message.subject
-        );
+        const subjectMessageIndex = chat.messages.findIndex(m => m.id === message.subject);
         if (subjectMessageIndex === -1) {
             return;
         }
         const subjectMessage = chat.messages[subjectMessageIndex];
 
-        const replyIndex = subjectMessage.replies.findIndex(
-            m => m.id === message.id
-        );
+        const replyIndex = subjectMessage.replies.findIndex(m => m.id === message.id);
         if (replyIndex === -1) {
             return;
         }
         const reply = subjectMessage.replies[replyIndex];
-        if (
-            message.type === MessageTypes.DELETE ||
-            message.type === MessageTypes.EDIT
-        ) {
+        if (message.type === MessageTypes.DELETE || message.type === MessageTypes.EDIT) {
             reply.body = message.body;
         } else {
             subjectMessage.replies = [...subjectMessage.replies, message];
@@ -199,6 +222,7 @@ const addMessage = (chatId, message) => {
     const index = chat.messages.findIndex(mes => mes.id == message.id);
     if (index !== -1) {
         chat.messages[index] = message;
+        chat.messages[index].updated = new Date();
         return;
     }
 
@@ -229,28 +253,17 @@ const sendMessage = (chatId, message, type: string = 'STRING') => {
 };
 
 const sendSystemMessage = (chatId, message: string) => {
-    sendMessage(
-        chatId,
-        { message: message } as SystemBody,
-        MessageTypes.SYSTEM
-    );
+    sendMessage(chatId, { message: message } as SystemBody, MessageTypes.SYSTEM);
 };
 
-export const sendMessageObject = (
-    chatId,
-    message: Message<MessageBodyType>
-) => {
+export const sendMessageObject = (chatId, message: Message<MessageBodyType>) => {
     const { sendSocketMessage } = useSocketActions();
     // console.log(chatId, message);
     // @TODO when doing add message on SYSTEM/groupupdate results in  max call stack exeeded
     if (message.type !== 'SYSTEM') {
         addMessage(chatId, message);
     }
-    let isEdit = false;
-    if (message.type === 'EDIT' || message.type === 'DELETE') {
-        isEdit = true;
-    }
-
+    const isEdit = message.type === 'EDIT' || message.type === 'DELETE';
     sendSocketMessage(chatId, message, isEdit);
 };
 
@@ -278,15 +291,11 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
     addMessage(chatId, msgToSend);
 
     try {
-        await axios.post(
-            `${config.baseUrl}api/files/${chatId}/${id}`,
-            formData,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            }
-        );
+        await axios.post(`${config.baseUrl}api/files/${chatId}/${id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         console.log('File uploaded.');
     } catch (e) {
         msgToSend.body = `Failed to send file: ${e.message}`;
@@ -331,11 +340,7 @@ const readMessage = (chatId, messageId) => {
     sendMessageObject(chatId, newMessage);
 };
 
-const updateContactsInGroup = async (
-    groupId,
-    contact: Contact,
-    remove: boolean
-) => {
+const updateContactsInGroup = async (groupId, contact: Contact, remove: boolean) => {
     const { user } = useAuthState();
     const myLocation = await myYggdrasilAddress();
     const message: Message<GroupManagementBody> = {
@@ -343,12 +348,8 @@ const updateContactsInGroup = async (
         from: user.id,
         to: groupId,
         body: {
-            type: remove
-                ? SystemMessageTypes.REMOVE_USER
-                : SystemMessageTypes.ADD_USER,
-            message: `${contact.id} has been ${
-                remove ? 'removed from' : 'added to'
-            } the group`,
+            type: remove ? SystemMessageTypes.REMOVE_USER : SystemMessageTypes.ADD_USER,
+            message: `${contact.id} has been ${remove ? 'removed from' : 'added to'} the group`,
             adminLocation: myLocation,
             contact,
         },
@@ -399,11 +400,7 @@ export const handleRead = (message: Message<string>) => {
     const newRead = getMessage(chat, message.body);
     const oldRead = getMessage(chat, <string>message.from);
 
-    if (
-        oldRead &&
-        new Date(newRead.timeStamp).getTime() <
-            new Date(oldRead.timeStamp).getTime()
-    ) {
+    if (oldRead && new Date(newRead.timeStamp).getTime() < new Date(oldRead.timeStamp).getTime()) {
         return;
     }
 

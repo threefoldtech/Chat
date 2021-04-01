@@ -9,7 +9,7 @@
     export default defineComponent({
         name: 'TimeContent',
         props: {
-            time: { type: String },
+            time: { type: Date },
         },
         setup(props) {
             const timeString = computed(() => {

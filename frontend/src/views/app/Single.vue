@@ -3,21 +3,14 @@
         <template v-slot:top>
             <div class="w-full flex md:px-4" v-if="chat">
                 <div class="place-items-center grid mr-4">
-                    <AvatarImg
-                        :id="chat.chatId"
-                        :showOnlineStatus="false"
-                    ></AvatarImg>
+                    <AvatarImg :id="chat.chatId" :showOnlineStatus="false"></AvatarImg>
                 </div>
                 <div class="py-4 pl-2">
                     <p class="font-bold font overflow-hidden overflow-ellipsis">
                         {{ chat.name }}
                     </p>
                     <p class="font-thin" v-if="!chat.isGroup">
-                        {{
-                            statusList[chat.chatId]?.isOnline
-                                ? 'Is online'
-                                : 'Is offline'
-                        }}
+                        {{ statusList[chat.chatId]?.isOnline ? 'Is online' : 'Is offline' }}
                     </p>
                     <p class="font-thin" v-if="chat.isGroup">Group chat</p>
                 </div>
@@ -28,17 +21,10 @@
         <template v-slot:actions>
             <div class="">
                 <div class="relative">
-                    <button
-                        class="text-lg text-white md:hidden"
-                        @click="showMenu = true"
-                    >
+                    <button class="text-lg text-white md:hidden" @click="showMenu = true">
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
-                    <div
-                        class="backdrop"
-                        v-if="showMenu"
-                        @click="showMenu = false"
-                    ></div>
+                    <div class="backdrop" v-if="showMenu" @click="showMenu = false"></div>
                     <div
                         class="right-2 z-20 -top-2 flex flex-col bg-white shadow-sm w-40 rounded absolute py-2 pl-2"
                         v-if="showMenu"
@@ -81,40 +67,21 @@
                     'md:twoGrid': !showSideBar,
                 }"
             >
-                <div
-                    class="hidden md:block relative h-full flex-col overflow-y-auto"
-                >
+                <div class="hidden md:block relative h-full flex-col overflow-y-auto">
                     <ChatList />
                 </div>
-                <div
-                    class="relative h-full flex flex-col"
-                    v-if="chat"
-                    :key="chat.id + selectedId"
-                >
-                    <div
-                        class="topbar h-14 bg-white flex-row border border-t-0 border-gray-100 hidden md:flex"
-                    >
+                <div class="relative h-full flex flex-col" v-if="chat" :key="chat.id + selectedId">
+                    <div class="topbar h-14 bg-white flex-row border border-t-0 border-gray-100 hidden md:flex">
                         <div class="py-2 pl-4 flex-1">
-                            <p
-                                class="font-bold font overflow-hidden overflow-ellipsis w-80"
-                            >
+                            <p class="font-bold font overflow-hidden overflow-ellipsis w-80">
                                 {{ chat.name }}
                             </p>
                             <p class="font-thin">
                                 {{ getChatStatus }}
                             </p>
                         </div>
-                        <div
-                            class="h-full flex items-center self-end px-8 space-x-4"
-                        >
-                            <button
-                                @click="popupMeeting"
-                                class="focus:outline-none hover:text-accent"
-                                :class="{
-                                    'text-accent': showSideBar,
-                                    'text-gray-500': !showSideBar,
-                                }"
-                            >
+                        <div class="h-full flex items-center self-end px-8  space-x-4">
+                            <button @click="popupMeeting" class="focus:outline-none hover:text-accent text-gray-500">
                                 <i class="fas fa-video fa-w-12"> </i>
                             </button>
 
@@ -127,7 +94,7 @@
                                 }"
                             >
                                 <i
-                                    class="far fa-window-maximize transform fa-w-12"
+                                    class="far fa-window-maximize transform fa-w-12 "
                                     style="--tw-rotate: 90deg"
                                 >
                                 </i>
@@ -149,26 +116,8 @@
                             ></div>
                         </template>
                     </MessageBox>
-                    <div
-                        v-if="subjectMessage"
-                        class="flex justify-between m-2 p-4 bg-white rounded-xl"
-                    >
-                        <div>
-                            <b>Replying: </b>
-                            <div class="replymsg">
-                                <span>{{ subjectMessage.from }}</span>
-                                <p>{{ subjectMessage.body }}</p>
-                            </div>
-                        </div>
 
-                        <button @click="subjectMessage = null">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <ChatInput
-                        :selectedid="chat.chatId"
-                        @messageSend="scrollToBottom(true)"
-                    />
+                    <ChatInput :selectedid="chat.chatId" @messageSend="scrollToBottom(true)" />
                     <jdialog v-model="showDialog" noActions class="max-w-10">
                         <template v-slot:title class="center">
                             <h1 class="text-center">Blocking</h1>
@@ -178,10 +127,7 @@
                             <b> {{ chat.name }} </b>?
                         </div>
                         <div class="grid grid-cols-2 mt-2">
-                            <button
-                                @click="doBlockChat"
-                                class="bg-red-500 p-2 text-white font-bold"
-                            >
+                            <button @click="doBlockChat" class="bg-red-500 p-2 text-white font-bold">
                                 YES
                             </button>
                             <button @click="showDialog = false" class="p-2">
@@ -207,15 +153,9 @@
                             class="bg-white p-2 pb-6 w-full relative rounded-lg mb-4 mt-0 md:grid place-items-center grid-cols-1 md:px-4"
                         >
                             <div class="place-items-center grid relative">
-                                <AvatarImg
-                                    class="-mt-7"
-                                    :id="chat.chatId"
-                                    :showOnlineStatus="!chat.isGroup"
-                                />
+                                <AvatarImg class="-mt-7" :id="chat.chatId" :showOnlineStatus="!chat.isGroup" />
                             </div>
-                            <h2
-                                class="my-3 break-words text-center w-full overflow-y-auto max-h-28 text-xl"
-                            >
+                            <h2 class="my-3 break-words text-center w-full overflow-y-auto max-h-28 text-xl">
                                 {{ chat.name }}
                             </h2>
                             <p
@@ -243,21 +183,11 @@
 
     import appLayout from '../../layout/AppLayout.vue';
     import moment from 'moment';
-    import {
-        defineComponent,
-        onMounted,
-        watch,
-        ref,
-        toRefs,
-        nextTick,
-        computed,
-        onBeforeMount,
-        onUpdated,
-    } from 'vue';
+    import { defineComponent, onMounted, watch, ref, toRefs, nextTick, computed, onBeforeMount, onUpdated } from 'vue';
 
     import { each } from 'lodash';
     import { statusList } from '@/store/statusStore';
-    import { usechatsState, usechatsActions } from '@/store/chatStore';
+    import { usechatsState, usechatsActions, messageState, MessageAction, clearMessageAction } from '@/store/chatStore';
     import { sendBlockChat, sendRemoveChat } from '@/store/socketStore';
     import { useAuthState } from '@/store/authStore';
     import { popupCenter } from '@/services/popupService';
@@ -270,13 +200,8 @@
     import * as crypto from 'crypto-js';
     import { useIntersectionObserver } from '@/lib/intersectionObserver';
     import { useRoute, useRouter } from 'vue-router';
-    import { subjectMessage } from '@/services/replyService';
     import { showSideBar, toggleSideBar } from '@/services/sidebarService';
-    import {
-        JoinedVideoRoomBody,
-        MessageTypes,
-        SystemMessageTypes,
-    } from '@/types';
+    import { JoinedVideoRoomBody, MessageTypes, SystemMessageTypes } from '@/types';
     import MessageBox from '@/components/MessageBox.vue';
     import { messageBox } from '@/services/messageHelperService';
     import Button from '@/components/Button.vue';
@@ -327,10 +252,7 @@
                 let chatBlockIndex = 0;
 
                 return chat.value.messages.reduce((acc: any, message) => {
-                    if (
-                        acc[chatBlockIndex] &&
-                        acc[chatBlockIndex].user === <string>message.from
-                    ) {
+                    if (acc[chatBlockIndex] && acc[chatBlockIndex].user === <string>message.from) {
                         acc[chatBlockIndex].messages.push(message);
                         return acc;
                     } else {
@@ -364,8 +286,7 @@
                         .filter(c => c.id != user.id)
                         .map(c => ({
                             ...c,
-                            isOnline:
-                                statusList[<string>c.id]?.isOnline ?? false,
+                            isOnline: statusList[<string>c.id]?.isOnline ?? false,
                         })).length;
 
                     if (onlineMembers > 0) {
@@ -375,7 +296,7 @@
                     return message;
                 }
 
-                const status = statusList[<string>user.id];
+                const status = statusList[<string>chat.value.chatId];
                 return status?.isOnline ? 'Online' : 'Offline';
             });
 
@@ -425,9 +346,7 @@
                     if (key === user.id) {
                         return;
                     }
-                    preReads[val] = preReads[val]
-                        ? [key, ...preReads[val]]
-                        : [key];
+                    preReads[val] = preReads[val] ? [key, ...preReads[val]] : [key];
                 });
                 return preReads;
             });
@@ -502,7 +421,6 @@
                 reads,
                 showDialog,
                 showMenu,
-                subjectMessage,
                 showSideBar,
                 toggleSideBar,
                 getChatStatus,
