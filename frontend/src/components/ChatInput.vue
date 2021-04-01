@@ -3,8 +3,8 @@
     <div v-if="action" class="flex justify-between m-2 p-4 bg-white rounded-xl">
         <div class='flex flex-row'>
             <div class='text-accent mr-4 self-center'>
-                <i class='fa fa-reply fa-2x' v-if="action.type === MessageAction.REPLY"></i>
-                <i class='fa fa-pen fa-2x' v-else-if="action.type === MessageAction.EDIT"></i>
+                <i class='fa fa-reply fa-2x' v-if="action?.type === MessageAction.REPLY"></i>
+                <i class='fa fa-pen fa-2x' v-else-if="action?.type === MessageAction.EDIT"></i>
             </div>
             <div class="replymsg">
                 <b>{{ action.message.from }}</b>
@@ -145,9 +145,7 @@
                 if (!props.selectedid) {
                     return;
                 }
-                const bla = messageState?.actions[props.selectedid];
-                console.log("action", bla);
-                return bla;
+                return messageState?.actions[props.selectedid];
             });
 
             const clearAction = () => {

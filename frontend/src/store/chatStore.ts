@@ -28,6 +28,7 @@ const state = reactive<chatstate>({
 });
 
 export const selectedId = ref('');
+export const selectedMessageId = ref(undefined);
 
 export enum MessageAction {
     EDIT = 'EDIT',

@@ -6,6 +6,7 @@
             'my-message': isMine,
         }"
         v-if="message.type !== MessageTypes.SYSTEM"
+        @click='selectedMessageId = message.id'
     >
         <AvatarImg
             small
@@ -34,7 +35,7 @@
                     </div>
                 </div>
 
-                <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
+                <div style="margin-top: auto;" class="actions pb-4 pl-4 md:hidden" :class='{ "flex": selectedMessageId === message.id, "hidden" : selectedMessageId !== message.id}'>
                     <span
                         class="reply text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
                         @click="editMessage(message)"
@@ -108,14 +109,21 @@
 </template>
 
 <script lang="ts">
-    import { defineComponent, onMounted } from 'vue';
+    import { computed, defineComponent, nextTick, onMounted } from 'vue';
     import moment from 'moment';
     import AvatarImg from '@/components/AvatarImg.vue';
     import MessageContent from '@/components/MessageContent.vue';
     import { Message, MessageBodyType, QuoteBodyType, StringMessageType, MessageTypes } from '@/types';
     import { uuidv4 } from '@/common';
     import { useAuthState } from '@/store/authStore';
-    import { MessageAction, sendMessageObject, setMessageAction, usechatsActions } from '@/store/chatStore';
+    import {
+        clearMessageAction,
+        MessageAction,
+        sendMessageObject,
+        setMessageAction,
+        usechatsActions,
+        selectedMessageId
+    } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
     import {clock} from '@/services/clockService'
     import Time from '@/components/Time.vue';
@@ -145,7 +153,11 @@
             };
 
             const replyMessage = message => {
-                setMessageAction(props.chatId, message, MessageAction.REPLY);
+                clearMessageAction(props.chatId);
+                //nextTick is needed because vue throws dom errors if you switch between Reply and Edit
+                nextTick(() => {
+                    setMessageAction(props.chatId, message, MessageAction.REPLY);
+                })
             };
 
             const { addScrollEvent } = useScrollActions();
@@ -194,7 +206,11 @@
             };
 
             const editMessage = message => {
-                setMessageAction(props.chatId, message, MessageAction.EDIT);
+                clearMessageAction(props.chatId);
+                //nextTick is needed because vue throws dom errors if you switch between Reply and Edit
+                nextTick(() => {
+                    setMessageAction(props.chatId, message, MessageAction.EDIT);
+                })
             };
 
             return {
@@ -207,6 +223,7 @@
                 editMessage,
                 MessageTypes,
                 clock,
+                selectedMessageId
             };
         },
     });
@@ -218,12 +235,8 @@
         white-space: pre-wrap;
     }
 
-    .actions {
-        visibility: hidden;
-    }
-
     .messageCard:hover .actions {
-        visibility: visible;
+        display: flex;
     }
 
     .msgcard,
