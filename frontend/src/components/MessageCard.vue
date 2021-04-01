@@ -26,19 +26,10 @@
                     }"
                 >
                     <main class="msgcard flex justify-between">
-                        <MessageContent
-                            :message="message"
-                            :key="message.type"
-                        ></MessageContent>
+                        <MessageContent :message="message" :key="message.type"></MessageContent>
                     </main>
-                    <div
-                        class="h-9 flex items-center absolute right-1.5 bottom-0"
-                        v-if="isMine"
-                    >
-                        <i
-                            class="fas fa-check-double text-accent"
-                            v-if="isread"
-                        ></i>
+                    <div class="h-9 flex items-center absolute right-1.5 bottom-0" v-if="isMine">
+                        <i class="fas fa-check-double text-accent" v-if="isread"></i>
                         <i class="fas fa-check text-gray-400" v-else></i>
                     </div>
                 </div>
@@ -49,8 +40,7 @@
                         @click="editMessage(message)"
                         v-if="
                             message.from === user?.id &&
-                                (message.type === MessageTypes.STRING ||
-                                    message.type === MessageTypes.QUOTE)
+                                (message.type === MessageTypes.STRING || message.type === MessageTypes.QUOTE)
                         "
                     >
                         <i class="fa fa-pen"></i>
@@ -59,46 +49,29 @@
                     <span
                         class="delete text-xs pr-4 cursor-pointer hover:underline"
                         @click="deleteMessage(message)"
-                        v-if="
-                            message.from === user?.id &&
-                                message.type !== MessageTypes.DELETE
-                        "
+                        v-if="message.from === user?.id && message.type !== MessageTypes.DELETE"
                     >
                         <i class="fa fa-trash"></i>
                         <span class="text-gray-600 pl-2">Delete</span>
                     </span>
-                    <span
-                        class="reply text-xs pr-4 cursor-pointer hover:underline"
-                        @click="toggleSendReplyMessage(message)"
-                    >
+                    <span class="reply text-xs pr-4 cursor-pointer hover:underline" @click="replyMessage(message)">
                         <i class="fa fa-reply"></i>
                         <span class="text-gray-600 pl-2"> Reply</span>
                     </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
+                        <span v-if="message.updated" class='mr-4'>edited</span>
                         <Time :time="message.timeStamp" />
                         <!-- {{ message }} -->
                     </div>
                 </div>
             </div>
 
-            <div
-                class="flex flex-col mb-4 ml-4 border-l-2 pl-2"
-                v-if="message.replies?.length > 0"
-            >
+            <div class="flex flex-col mb-4 ml-4 border-l-2 pl-2" v-if="message.replies?.length > 0">
                 <div class="text-gray-400 self-start">
                     Replies:
                 </div>
-                <div
-                    v-for="reply in message.replies"
-                    :key="reply.id"
-                    class="card flex mb-1"
-                >
-                    <AvatarImg
-                        class="mr-2"
-                        small
-                        :id="reply.from"
-                        :showOnlineStatus="false"
-                    />
+                <div v-for="reply in message.replies" :key="reply.id" class="card flex mb-1">
+                    <AvatarImg class="mr-2" small :id="reply.from" :showOnlineStatus="false" />
 
                     <div
                         class="flex rounded-xl overflow-hidden"
@@ -112,24 +85,16 @@
                         </main>
                     </div>
 
-                    <div
-                        style="margin-top: auto;"
-                        class="actions pb-4 pl-4 flex"
-                    >
+                    <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
                         <span
                             class="reply text-xs pr-4 cursor-pointer hover:underline"
                             @click="deleteReply(message, reply)"
-                            v-if="
-                                reply.from === user?.id &&
-                                    reply.body !== 'Message has been deleted'
-                            "
+                            v-if="reply.from === user?.id && reply.body !== 'Message has been deleted'"
                         >
                             <i class="fa fa-trash"></i>
                             <span class="text-gray-600 pl-2">Delete</span>
                         </span>
-                        <div
-                            class="pr-4 text-gray-600 date inline-block text-xs"
-                        >
+                        <div class="pr-4 text-gray-600 date inline-block text-xs">
                             <Time :time="message.timeStamp" />
                         </div>
                     </div>
@@ -149,13 +114,7 @@
     import MessageContent from '@/components/MessageContent.vue';
     import { Message, MessageTypes, StringMessageType } from '@/types';
     import { useAuthState } from '@/store/authStore';
-    import {
-        MessageAction,
-        sendMessageObject,
-        setMessageAction,
-        usechatsActions,
-    } from '@/store/chatStore';
-    import { subjectMessage } from '@/services/replyService';
+    import { MessageAction, sendMessageObject, setMessageAction, usechatsActions } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
     import { clock } from '@/services/clockService';
     import Time from '@/components/Time.vue';
@@ -176,10 +135,6 @@
         setup(props) {
             const { user } = useAuthState();
 
-            const toggleEditMessage = () => {
-                console.log('toggleEditMessage');
-            };
-
             const toggleSendForwardMessage = () => {
                 console.log('toggleSendForwardMessage');
             };
@@ -188,15 +143,8 @@
                 console.log('sendQuoteMessage');
             };
 
-            const toggleSendReplyMessage = message => {
-                if (
-                    subjectMessage.value &&
-                    subjectMessage.value.id === message.id
-                ) {
-                    subjectMessage.value = '';
-                    return;
-                }
-                subjectMessage.value = message;
+            const replyMessage = message => {
+                setMessageAction(props.chatId, message, MessageAction.REPLY);
             };
 
             const { addScrollEvent } = useScrollActions();
@@ -251,10 +199,8 @@
             return {
                 moment,
                 toggleSendForwardMessage,
-                toggleSendReplyMessage,
-                toggleEditMessage,
+                replyMessage,
                 user,
-                subjectMessage,
                 deleteMessage,
                 deleteReply,
                 editMessage,
