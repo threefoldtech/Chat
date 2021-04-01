@@ -82,7 +82,7 @@
                         </div>
                         <div class="h-full flex items-center self-end px-8  space-x-4">
                             <button @click="popupMeeting" class="focus:outline-none hover:text-accent text-gray-500">
-                                <i class="fas fa-video fa-2x"> </i>
+                                <i class="fas fa-video fa-w-12""> </i>
                             </button>
 
                             <button
@@ -93,7 +93,11 @@
                                     'text-gray-500': !showSideBar,
                                 }"
                             >
-                                <i class="far fa-window-maximize transform fa-2x " style="--tw-rotate: 90deg"> </i>
+                                <i
+                                    class="far fa-window-maximize transform fa-w-12 "
+                                    style="--tw-rotate: 90deg"
+                                >
+                                </i>
                             </button>
                         </div>
                     </div>

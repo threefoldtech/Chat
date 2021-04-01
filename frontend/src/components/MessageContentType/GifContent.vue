@@ -1,5 +1,5 @@
 <template>
-    <div class="gif flex items-center justify-center pt-2">
+    <div class="gif flex items-center justify-center">
         <img class="h-48 self-center block" :src="message.body" alt="" />
     </div>
 </template>

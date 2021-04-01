@@ -1,12 +1,15 @@
 <template>
     <div>
-        <div class="bg-gray-200 p-4 border-l-4" v-if="!preventRecursion">
-            <MessageContent
-                :message="message.body.quotedMessage"
-                preventRecursion
-            ></MessageContent>
+        <div class="quote pt-4 px-4">
+            <div class="border-l-2 border-gray-400 my-message:border-icon " v-if="!preventRecursion">
+                <div class="pl-4 font-bold my-message:text-icon" v-if="message.body.quotedMessage !== 'SYSTEM'">
+                    {{ message.body.quotedMessage.from }}
+                </div>
+                <MessageContent :message="message.body.quotedMessage" preventRecursion></MessageContent>
+            </div>
         </div>
-        <div>{{ message.body.message }}</div>
+
+        <div class="px-4 py-2 pr-8">{{ message.body.message }}</div>
     </div>
 </template>
 

@@ -24,17 +24,14 @@
             };
 
             const computedMessage = computed(() => {
-                let escapedHtml = escapeHtml(props.message.body);
+                let escapedHtml = escapeHtml(`${props.message.body}`);
                 const matches = escapedHtml.match(regularExpression);
 
                 if (matches === null) {
                     return escapedHtml;
                 }
 
-                escapedHtml = escapedHtml.replace(
-                    regularExpression,
-                    `<a href='$1' target='_BLANK'>$1</a>`
-                );
+                escapedHtml = escapedHtml.replace(regularExpression, `<a href='$1' target='_BLANK'>$1</a>`);
 
                 return escapedHtml;
             });

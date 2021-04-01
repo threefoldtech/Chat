@@ -1,8 +1,9 @@
 <template>
     <div
-        class="flex flex-row"
+        class="messageCard flex flex-row"
         :class="{
             'mb-2': isLastMessage,
+            'my-message': isMine,
         }"
         v-if="message.type !== MessageTypes.SYSTEM"
     >
@@ -16,11 +17,10 @@
             :showOnlineStatus="false"
         />
         <div class="flex-1">
-            <div class="card flex flex-row flex-wrap">
+            <div class="flex flex-row flex-wrap">
                 <div
-                    class="flex rounded-md rounded-r-xl mb-1 bg-white shadow relative overflow-hidden"
+                    class="flex rounded-md rounded-r-xl mb-1 bg-white shadow relative overflow-hidden my-message:bg-my"
                     :class="{
-                        'my-message': isMine,
                         'rounded-tl-xl': isFirstMessage,
                         'rounded-bl-xl': isLastMessage,
                     }"
@@ -28,7 +28,7 @@
                     <main class="msgcard flex justify-between">
                         <MessageContent :message="message" :key="message.type"></MessageContent>
                     </main>
-                    <div class="h-9 flex items-center absolute right-1.5 bottom-0" v-if="isMine">
+                    <div class="h-9 flex items-center absolute right-1.5 -bottom-3 hidden my-message:block">
                         <i class="fas fa-check-double text-accent" v-if="isread"></i>
                         <i class="fas fa-check text-gray-400" v-else></i>
                     </div>
@@ -36,7 +36,7 @@
 
                 <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
                     <span
-                        class="reply text-xs pr-4 cursor-pointer hover:underline"
+                        class="reply text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
                         @click="editMessage(message)"
                         v-if="
                             message.from === user?.id &&
@@ -47,9 +47,9 @@
                         <span class="text-gray-600 pl-2">Edit</span>
                     </span>
                     <span
-                        class="delete text-xs pr-4 cursor-pointer hover:underline"
+                        class="delete text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
                         @click="deleteMessage(message)"
-                        v-if="message.from === user?.id && message.type !== MessageTypes.DELETE"
+                        v-if="message.type !== 'DELETE'"
                     >
                         <i class="fa fa-trash"></i>
                         <span class="text-gray-600 pl-2">Delete</span>
@@ -77,7 +77,7 @@
                         class="flex rounded-xl overflow-hidden"
                         :class="{
                             'bg-white': reply.from !== user.id,
-                            'my-message': reply.from === user.id,
+                            'bg-my': reply.from === user.id,
                         }"
                     >
                         <main class="replymsg flex justify-between">
@@ -112,11 +112,12 @@
     import moment from 'moment';
     import AvatarImg from '@/components/AvatarImg.vue';
     import MessageContent from '@/components/MessageContent.vue';
-    import { Message, MessageTypes, StringMessageType } from '@/types';
+    import { Message, MessageBodyType, QuoteBodyType, StringMessageType, MessageTypes } from '@/types';
+    import { uuidv4 } from '@/common';
     import { useAuthState } from '@/store/authStore';
     import { MessageAction, sendMessageObject, setMessageAction, usechatsActions } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
-    import { clock } from '@/services/clockService';
+    import {clock} from '@/services/clockService'
     import Time from '@/components/Time.vue';
 
     export default defineComponent({
@@ -217,16 +218,11 @@
         white-space: pre-wrap;
     }
 
-    .threefold-color {
-        background: #44a687;
-    }
-
     .actions {
         visibility: hidden;
     }
 
-    .card:hover > .actions,
-    .card:hover > .actions {
+    .messageCard:hover .actions {
         visibility: visible;
     }
 
@@ -240,9 +236,5 @@
         height: 28px;
         display: flex;
         align-items: center;
-    }
-
-    .my-message {
-        background-color: #d0f0c0;
     }
 </style>
