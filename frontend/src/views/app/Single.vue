@@ -82,7 +82,7 @@
                         </div>
                         <div class="h-full flex items-center self-end px-8  space-x-4">
                             <button @click="popupMeeting" class="focus:outline-none hover:text-accent text-gray-500">
-                                <i class="fas fa-video fa-w-12""> </i>
+                                <i class="fas fa-video fa-w-12"> </i>
                             </button>
 
                             <button
