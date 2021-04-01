@@ -1,6 +1,6 @@
 <template>
     <div
-        class="flex flex-row"
+        class="messageCard flex flex-row"
         :class="{
             'mb-2': isLastMessage,
             'my-message': isMine,
@@ -221,16 +221,11 @@
         white-space: pre-wrap;
     }
 
-    .threefold-color {
-        background: #44a687;
-    }
-
     .actions {
         visibility: hidden;
     }
 
-    .card:hover > .actions,
-    .card:hover > .actions {
+    .messageCard:hover .actions {
         visibility: visible;
     }
 
