@@ -43,5 +43,5 @@ export const startFetchStatusLoop = (contact: Contact) => {
         try {
             fetchStatus(contact.id);
         } catch (e) {}
-    }, 5000);
+    }, 5000 * 60);
 };

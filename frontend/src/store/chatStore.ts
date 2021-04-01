@@ -29,6 +29,45 @@ const state = reactive<chatstate>({
 
 export const selectedId = ref('');
 
+export enum MessageAction {
+    EDIT = 'EDIT',
+    REPLY = 'REPLY',
+}
+
+interface MessageState {
+    actions: {
+        [key: string]: {
+            message: Message<any>;
+            type: MessageAction;
+        };
+    };
+}
+
+export const messageState = reactive<MessageState>({
+    actions: {},
+});
+
+export const setMessageAction = (
+    chatId: string,
+    message: Message<any>,
+    action: MessageAction
+) => {
+    messageState.actions = {
+        ...(messageState.actions ?? {}),
+        [chatId]: {
+            message,
+            type: action,
+        },
+    };
+};
+
+export const clearMessageAction = (chatId: string) => {
+    messageState.actions = {
+        ...(messageState.actions ?? {}),
+        [chatId]: undefined
+    };
+};
+
 const retrievechats = async () => {
     await axios.get(`${config.baseUrl}api/chats`).then(response => {
         const incommingchats = response.data;

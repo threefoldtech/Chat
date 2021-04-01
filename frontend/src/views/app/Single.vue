@@ -104,16 +104,14 @@
                                 {{ getChatStatus }}
                             </p>
                         </div>
-                        <div class="h-full flex items-center self-end px-8  space-x-4">
-
+                        <div
+                            class="h-full flex items-center self-end px-8  space-x-4"
+                        >
                             <button
                                 @click="popupMeeting"
                                 class="focus:outline-none hover:text-accent text-gray-500"
                             >
-                                <i
-                                    class="fas fa-video fa-2x"
-                                >
-                                </i>
+                                <i class="fas fa-video fa-2x"> </i>
                             </button>
 
                             <button
@@ -130,7 +128,6 @@
                                 >
                                 </i>
                             </button>
-
                         </div>
                     </div>
                     <MessageBox :chat="chat" @scrollToBottom="scrollToBottom">
@@ -149,18 +146,23 @@
                         </template>
                     </MessageBox>
                     <div
-                        v-if="subjectMessage"
+                        v-if="action"
                         class="flex justify-between m-2 p-4 bg-white rounded-xl"
                     >
                         <div>
-                            <b>Replying: </b>
+                            <b v-if="action.type === MessageAction.REPLY"
+                                >Replying:
+                            </b>
+                            <b v-else-if="action.type === MessageAction.EDIT"
+                                >Edit:
+                            </b>
                             <div class="replymsg">
-                                <span>{{ subjectMessage.from }}</span>
-                                <p>{{ subjectMessage.body }}</p>
+                                <span>{{ action.message.from }}</span>
+                                <p>{{ action.message.body }}</p>
                             </div>
                         </div>
 
-                        <button @click="subjectMessage = null">
+                        <button @click="clearAction">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -256,7 +258,12 @@
 
     import { each } from 'lodash';
     import { statusList } from '@/store/statusStore';
-    import { usechatsState, usechatsActions } from '@/store/chatStore';
+    import {
+        usechatsState,
+        usechatsActions,
+        messageState,
+        MessageAction, clearMessageAction,
+    } from '@/store/chatStore';
     import { sendBlockChat, sendRemoveChat } from '@/store/socketStore';
     import { useAuthState } from '@/store/authStore';
     import { popupCenter } from '@/services/popupService';
@@ -353,18 +360,21 @@
             });
 
             const getChatStatus = computed(() => {
-                if(!chat.value) {
+                if (!chat.value) {
                     return;
                 }
 
-                if(chat.value.isGroup) {
+                if (chat.value.isGroup) {
                     let message = `${chat.value.contacts.length} members`;
                     const onlineMembers = chat.value.contacts
                         .filter(c => c.id != user.id)
-                        .map(c => ({...c, isOnline: statusList[<string>c.id]?.isOnline ?? false}))
-                        .length;
+                        .map(c => ({
+                            ...c,
+                            isOnline:
+                                statusList[<string>c.id]?.isOnline ?? false,
+                        })).length;
 
-                    if(onlineMembers > 0) {
+                    if (onlineMembers > 0) {
                         message += `, ${onlineMembers} online`;
                     }
 
@@ -372,7 +382,7 @@
                 }
 
                 const status = statusList[<string>chat.value.chatId];
-                return status?.isOnline ? "Online" : "Offline";
+                return status?.isOnline ? 'Online' : 'Offline';
             });
 
             const popupMeeting = () => {
@@ -477,6 +487,17 @@
                 });
             });
 
+            const action = computed(() => {
+                if (!chat?.value?.chatId) {
+                    return;
+                }
+                return messageState?.actions[<string>chat.value.chatId];
+            });
+
+            const clearAction = () => {
+                clearMessageAction(<string>chat.value.chatId);
+            }
+
             return {
                 chats,
                 selectedId,
@@ -502,6 +523,9 @@
                 showSideBar,
                 toggleSideBar,
                 getChatStatus,
+                action,
+                MessageAction,
+                clearAction,
                 moment,
                 ...propRefs,
             };

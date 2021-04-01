@@ -46,10 +46,22 @@
                 <div style="margin-top: auto;" class="actions pb-4 pl-4 flex">
                     <span
                         class="reply text-xs pr-4 cursor-pointer hover:underline"
+                        @click="editMessage(message)"
+                        v-if="
+                            message.from === user?.id &&
+                                (message.type === MessageTypes.STRING ||
+                                    message.type === MessageTypes.QUOTE)
+                        "
+                    >
+                        <i class="fa fa-pen"></i>
+                        <span class="text-gray-600 pl-2">Edit</span>
+                    </span>
+                    <span
+                        class="delete text-xs pr-4 cursor-pointer hover:underline"
                         @click="deleteMessage(message)"
                         v-if="
                             message.from === user?.id &&
-                                message.type !== 'DELETE'
+                                message.type !== MessageTypes.DELETE
                         "
                     >
                         <i class="fa fa-trash"></i>
@@ -131,24 +143,21 @@
 </template>
 
 <script lang="ts">
-    import { defineComponent, onMounted, ref } from 'vue';
+    import { defineComponent, onMounted } from 'vue';
     import moment from 'moment';
     import AvatarImg from '@/components/AvatarImg.vue';
     import MessageContent from '@/components/MessageContent.vue';
-    import {
-        Message,
-        MessageBodyType,
-        QuoteBodyType,
-        StringMessageType,
-    } from '@/types';
-    import { uuidv4 } from '@/common';
+    import { Message, MessageTypes, StringMessageType } from '@/types';
     import { useAuthState } from '@/store/authStore';
-    import { sendMessageObject, usechatsActions } from '@/store/chatStore';
+    import {
+        MessageAction,
+        sendMessageObject,
+        setMessageAction,
+        usechatsActions,
+    } from '@/store/chatStore';
     import { subjectMessage } from '@/services/replyService';
     import { useScrollActions } from '@/store/scrollStore';
     import { clock } from '@/services/clockService';
-
-    import { MessageTypes } from '@/types';
     import Time from '@/components/Time.vue';
 
     export default defineComponent({
@@ -169,10 +178,6 @@
 
             const toggleEditMessage = () => {
                 console.log('toggleEditMessage');
-            };
-
-            const editMessage = () => {
-                console.log('editMessage');
             };
 
             const toggleSendForwardMessage = () => {
@@ -217,7 +222,7 @@
                     to: message.to,
                     body: 'Message has been deleted',
                     timeStamp: message.timeStamp,
-                    type: 'DELETE',
+                    type: MessageTypes.DELETE,
                     replies: [],
                     subject: null,
                 };
@@ -232,11 +237,15 @@
                     to: reply.to,
                     body: 'Message has been deleted',
                     timeStamp: message.timeStamp,
-                    type: 'DELETE',
+                    type: MessageTypes.DELETE,
                     replies: [],
                     subject: message.id,
                 };
                 sendMessageObject(props.chatId, updatedMessage);
+            };
+
+            const editMessage = message => {
+                setMessageAction(props.chatId, message, MessageAction.EDIT);
             };
 
             return {
@@ -248,6 +257,7 @@
                 subjectMessage,
                 deleteMessage,
                 deleteReply,
+                editMessage,
                 MessageTypes,
                 clock,
             };

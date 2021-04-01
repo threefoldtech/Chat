@@ -5,7 +5,6 @@
         style="z-index: 10000"
         v-on:close="hideGif"
     />
-
     <div
         class="md:p-2 md:m-2 md:rounded-3xl bg-white flex flex-col actions md:flex-row"
         @paste="onPaste"
@@ -136,8 +135,8 @@
     ></div>
 </template>
 <script lang="ts">
-    import { nextTick, ref, watch } from 'vue';
-    import { usechatsActions } from '@/store/chatStore';
+    import { computed, nextTick, ref, watch } from 'vue';
+    import { messageState, usechatsActions } from '@/store/chatStore';
     import GifSelector from '@/components/GifSelector.vue';
     import { subjectMessage } from '@/services/replyService';
     import { useAuthState } from '@/store/authStore';
@@ -159,7 +158,7 @@
         },
         emits: ['messageSend'],
         props: {
-            selectedid: {},
+            selectedid: { type: String },
         },
         setup(props, { emit }) {
             // Not actually a vue component but CustomElement ShadowRoot. I know vue doesnt really like it and gives a warning.
@@ -175,7 +174,6 @@
 
             const stopRecording = ref(null);
             const showEmoji = ref(false);
-
 
             watch(subjectMessage, () => {
                 if (subjectMessage.value) {
@@ -305,6 +303,7 @@
                     message.value.focus();
                 });
             });
+
             const onPaste = (e: ClipboardEvent) => {
                 if (!e.clipboardData) {
                     return;
