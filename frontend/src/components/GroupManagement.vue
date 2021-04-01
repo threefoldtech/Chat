@@ -118,7 +118,6 @@
         emits: ['app-call', 'app-block', 'app-delete'],
         components: { AvatarImg },
         setup(props) {
-            console.log(props.groupChat);
             const { contacts } = useContactsState();
             const removeFromGroup = contact => {
                 const { updateContactsInGroup } = usechatsActions();

@@ -48,7 +48,6 @@
             chat: {},
         },
         setup(props: { chat: Chat }) {
-            console.log('mount MessageBox');
             const lastRead = computed(() => {
                 let id = <string>user.id;
                 //@ts-ignore
