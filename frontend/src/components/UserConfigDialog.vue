@@ -24,15 +24,10 @@
                 </div>
             </div>
 
-            <div
-                class="relative w-full h-full"
-                @mouseover="isHoveringAvatar = true"
-                @mouseleave="isHoveringAvatar = false"
-            >
+            <div class="relative w-full h-full">
                 <transition name="fade">
                     <button
                         v-if="!isEditingStatus"
-                        :class="showEdit ? 'block' : 'hidden'"
                         class="absolute top-0 right-0"
                         @click="setEditStatus(true)"
                     >
@@ -166,7 +161,6 @@
         },
         async setup({}, ctx) {
             const { user } = useAuthState();
-            const showEdit = ref(false);
             const showEditPic = ref(false);
             const fileInput = ref();
             const file = ref();
@@ -246,7 +240,6 @@
             };
 
             const setEditStatus = (edit: boolean) => {
-                console.log(edit);
                 isEditingStatus.value = edit;
                 userStatus.value = user.status;
             };
@@ -290,7 +283,6 @@
                 backOrMenu,
                 user,
                 showEditPic,
-                showEdit,
                 fileInput,
                 file,
                 selectFile,
