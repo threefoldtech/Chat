@@ -185,7 +185,7 @@
                     case MessageAction.EDIT: {
                         newMessage.id = <string>action.value.message.id;
                         newMessage.type = MessageTypes.EDIT;
-                        newMessage.body = message.value.value;
+                        newMessage.body = message.value.value
                         break;
                     }
                 }

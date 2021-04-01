@@ -39,13 +39,14 @@
                     <span
                         class="reply text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
                         @click="editMessage(message)"
-                        v-if="
-                            message.from === user?.id &&
-                                (message.type === MessageTypes.STRING || message.type === MessageTypes.QUOTE)
-                        "
+                        v-if="message.type === MessageTypes.STRING"
                     >
                         <i class="fa fa-pen"></i>
                         <span class="text-gray-600 pl-2">Edit</span>
+                    </span>
+                    <span class="reply text-xs pr-4 cursor-pointer hover:underline" @click="replyMessage(message)">
+                        <i class="fa fa-reply"></i>
+                        <span class="text-gray-600 pl-2"> Reply</span>
                     </span>
                     <span
                         class="delete text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
@@ -54,10 +55,6 @@
                     >
                         <i class="fa fa-trash"></i>
                         <span class="text-gray-600 pl-2">Delete</span>
-                    </span>
-                    <span class="reply text-xs pr-4 cursor-pointer hover:underline" @click="replyMessage(message)">
-                        <i class="fa fa-reply"></i>
-                        <span class="text-gray-600 pl-2"> Reply</span>
                     </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
                         <span v-if="message.updated" class='mr-4'>edited</span>
