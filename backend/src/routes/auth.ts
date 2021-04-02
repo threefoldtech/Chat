@@ -7,7 +7,7 @@ const router = Router();
 
 router.get('/', async (request, response) => {
     console.log('in session: ', request.session);
-    if (!request.session.loggedIn) {
+    if (!request.session.loggedIn && process.env.ENVIRONMENT !== 'development') {
         console.log('We dont have a loggedIn session, we shouldnt login now.');
         response.json({ status: false });
     }
@@ -16,7 +16,10 @@ router.get('/', async (request, response) => {
 });
 
 router.get('/signin', async (request, response) => {
-    const loginUrl = await getAppLoginUrl(request, `/api/auth/callback`);
+    let loginUrl = await getAppLoginUrl(request, `/api/auth/callback`);
+    loginUrl = loginUrl + "&username=" + request.query.username
+
+    console.log('url: ', loginUrl);
     response.redirect(loginUrl);
 });
 
@@ -33,7 +36,7 @@ router.get('/callback', async (request, response) => {
 });
 
 router.get('/authenticated', async (request, response) => {
-    if (request.session.userId) {
+    if (request.session.userId || process.env.ENVIRONMENT === 'development') {
         response.send('true');
         return;
     }

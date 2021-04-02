@@ -1,7 +1,7 @@
 <template>
     <app-layout>
         <div class="relative h-full w-full grid md:customgrid">
-            <chat-list v-model="showAddUserDialog" />
+            <ChatList v-model="showAddUserDialog" />
             <div class="hidden w-full h-full md:grid place-items-center">
                 <div class="flex flex-col mb-12 text-center">
                     <p>Select a chat</p>

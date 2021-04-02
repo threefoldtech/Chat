@@ -1,10 +1,11 @@
-import { IdInterface, StringMessageTypeInterface } from './../types/index';
 import {
     ContactRequest,
     FileMessageType,
     MessageBodyTypeInterface,
     MessageInterface,
     MessageTypes,
+    StringMessageTypeInterface,
+    IdInterface,
 } from '../types';
 import Message from '../models/message';
 import { getChat, persistChat, saveFile } from './dataService';
@@ -12,7 +13,7 @@ import { sendEventToConnectedSockets } from './socketService';
 import { determinChatId } from '../routes/messages';
 
 export const parseMessage = (
-    msg: any
+    msg: any,
 ): MessageInterface<MessageBodyTypeInterface> => {
     const type: MessageTypes = <MessageTypes>msg.type;
 
@@ -30,7 +31,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.GIF:
             return new Message<StringMessageTypeInterface>(
@@ -43,7 +45,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.CONTACT_REQUEST:
             return new Message<ContactRequest>(
@@ -56,7 +59,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.GROUP_UPDATE:
             return new Message<any>(
@@ -69,14 +73,15 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.FILE_UPLOAD:
             const url = saveFile(
                 msg.to,
                 msg.id,
                 msg.body.name,
-                msg.body.parsedFile
+                msg.body.parsedFile,
             );
 
             return new Message<FileMessageType>(
@@ -89,7 +94,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.FILE:
             return new Message<FileMessageType>(
@@ -102,7 +108,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.EDIT:
             return new Message<StringMessageTypeInterface>(
@@ -115,7 +122,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.DELETE:
             return new Message<StringMessageTypeInterface>(
@@ -128,7 +136,7 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
             );
         case MessageTypes.QUOTE:
             return new Message<StringMessageTypeInterface>(
@@ -141,7 +149,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
         case MessageTypes.READ:
             return new Message<StringMessageTypeInterface>(
@@ -154,7 +163,8 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
 
         default:
@@ -168,18 +178,46 @@ export const parseMessage = (
                 msg.replies
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
-                msg?.subject
+                msg?.subject,
+                msg?.updated
             );
     }
 };
 
 export const editMessage = (
     chatId: IdInterface,
-    newMessage: Message<MessageBodyTypeInterface>
+    newMessage: Message<MessageBodyTypeInterface>,
 ) => {
+    if (newMessage.subject) {
+        editReply(chatId, newMessage);
+        return;
+    }
+
     const chat = getChat(chatId);
     const index = chat.messages.findIndex(mes => mes.id === newMessage.id);
     chat.messages[index].body = newMessage.body;
+    if (newMessage.type === MessageTypes.DELETE) {
+        chat.messages[index].type = MessageTypes.DELETE;
+    }
+
+    chat.messages[index].updated = new Date();
+    persistChat(chat);
+};
+
+export const editReply = (chatId: IdInterface, newMessage: Message<MessageBodyTypeInterface>) => {
+    const chat = getChat(chatId);
+    const messageIndex = chat.messages.findIndex(mes => mes.id === newMessage.subject);
+    if (messageIndex === -1) {
+        return;
+    }
+
+    const replyIndex = chat.messages[messageIndex]?.replies?.findIndex(r => r.id === newMessage.id);
+    if (replyIndex === -1) {
+        return;
+    }
+
+    chat.messages[messageIndex].replies[replyIndex].body = newMessage.body;
+    chat.messages[messageIndex].replies[replyIndex].updated = new Date();
     persistChat(chat);
 };
 
@@ -191,7 +229,7 @@ export const handleRead = (message: Message<StringMessageTypeInterface>) => {
 
     const newRead = chat.messages.find(m => m.id === message.body);
     const oldRead = chat.messages.find(
-        m => m.id === chat.read[<string>message.from]
+        m => m.id === chat.read[<string>message.from],
     );
 
     if (

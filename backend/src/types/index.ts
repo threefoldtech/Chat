@@ -51,6 +51,7 @@ export interface MessageInterface<T> {
     timeStamp: Date;
     subject: IdInterface | null;
     replies: MessageInterface<MessageBodyTypeInterface>[];
+    updated?: Date | undefined;
 }
 
 export interface MessageBodyTypeInterface {}

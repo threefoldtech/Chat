@@ -1,5 +1,5 @@
 <template>
-    <span v-html="computedMessage"></span>
+    <span class=" pt-2 pl-4 pb-2 pr-8 " v-html="computedMessage"></span>
 </template>
 
 <script lang="ts">
@@ -24,17 +24,14 @@
             };
 
             const computedMessage = computed(() => {
-                let escapedHtml = escapeHtml(props.message.body);
+                let escapedHtml = escapeHtml(`${props.message.body}`);
                 const matches = escapedHtml.match(regularExpression);
 
                 if (matches === null) {
                     return escapedHtml;
                 }
 
-                escapedHtml = escapedHtml.replace(
-                    regularExpression,
-                    `<a href='$1' target='_BLANK'>$1</a>`
-                );
+                escapedHtml = escapedHtml.replace(regularExpression, `<a href='$1' target='_BLANK'>$1</a>`);
 
                 return escapedHtml;
             });
