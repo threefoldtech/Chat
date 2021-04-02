@@ -60,6 +60,7 @@
             </div>
         </template>
         <template v-slot:default>
+            <ImagePreview/>
             <div
                 class="grid grid-cols-1  relative h-full w-full"
                 :class="{
@@ -205,6 +206,7 @@
     import MessageBox from '@/components/MessageBox.vue';
     import { messageBox } from '@/services/messageHelperService';
     import Button from '@/components/Button.vue';
+    import ImagePreview from '@/components/ImagePreview.vue';
 
     export default defineComponent({
         name: 'ChatView',
@@ -218,6 +220,7 @@
             appLayout,
             GroupManagement,
             ChatList,
+            ImagePreview
         },
         setup(props) {
             const route = useRoute();
