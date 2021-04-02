@@ -61,7 +61,7 @@
                         <span class="text-gray-600 pl-2">Delete</span>
                     </span>
                     <div class="pr-4 text-gray-600 date inline-block text-xs">
-                        <span v-if="message.updated" class="mr-4">edited</span>
+                        <!--<span v-if="message.updated" class="mr-4">edited</span>-->
                         <Time :time="new Date(message.timeStamp)" />
                         <!-- {{ message }} -->
                     </div>
