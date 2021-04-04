@@ -3,7 +3,6 @@ var router = express.Router();
 const asyncHandler = require('express-async-handler')
 const config = require('../../config')
 
-const rewrite = require('../../rewrite')
 const logger = require('../../logger')
 const path = require('path')
 
@@ -15,13 +14,29 @@ async function rewriteRoles(content, info){
     if(info.port != 80 && info.port != 443){
         host = `${scheme}://${info.host}:${info.port}`
     }
-    for(var item in rewrite){
-        if (item == 'load'){
-            continue
+
+    var mainDomain = config.mainDomain
+    var mainRepo = config.info.domains[mainDomain].repo
+
+    if (info.host == 'localhost' || info.host == '127.0.0.1'){
+        for(var item in config.info.domains){
+            var site = config.info.domains[item]
+            var isWebsite = site.isWebSite
+    
+            var prefix = ""
+    
+            if(item == mainDomain || site.repo == mainRepo){
+                prefix = "/"
+            }else if(isWebsite){
+                prefix = `/${site.alias}`
+            }else{
+                prefix = `/info/${site.alias}`
+            }  
+            content = content.replace(new RegExp(`https://${item}/`, "g"), `${host}${prefix}`)
+            content = content.replace(new RegExp(`https://${item}`, "g"), `${host}${prefix}`)
+            content = content.replace(new RegExp(`http://${item}/`, "g"), `${host}${prefix}`)
+            content = content.replace(new RegExp(`http://${item}`, "g"), `${host}${prefix}`)
         }
-        var suff = rewrite[item]
-        // content = content.replace(new RegExp(`${config.homeAlias.alias}/`, "g"), "")
-        // content = content.replace(new RegExp(item, "g"), `${suff}`)
     }
     return content
 }

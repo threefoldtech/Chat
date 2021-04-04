@@ -143,6 +143,13 @@ app.use((req, res, next) => {
   }
 })
 
+app.use((req, res, next) => {
+  var info = req.info
+  // redirection happens here
+  // console.log(info.roles)
+  next() 
+})
+
 app.use(express.json());
 
 app.use(threebot)

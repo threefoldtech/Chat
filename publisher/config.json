@@ -29,5 +29,7 @@
         "production": false
     },
 
-    "info": {}
+    "info": {},
+
+    "mainDomain": "threefold.io"
 }

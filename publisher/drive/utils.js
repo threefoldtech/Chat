@@ -22,6 +22,7 @@ async function process(drive, dir){
         var domainfilepath = path.join(dir, ".domains.json")
         var repofilepath = path.join(dir, ".repo")
         var aclfilepath = path.join(dir, '.acls.json')
+        var rolesfilepath = path.join(dir, '.roles.json')
         
         try{
             await drive.promises.stat(domainfilepath)
@@ -44,6 +45,15 @@ async function process(drive, dir){
             console.log(chalk.red(`    ✓ (Drive (${drive.name}) Ignoring path: ${dir} does not contain .repo`))
             continue
         }
+
+        try{
+            await drive.promises.stat(rolesfilepath)
+        }catch(e){
+            console.log(chalk.red(`    ✓ (Drive (${drive.name}) Ignoring path: ${dir} does not contain .roles.json`))
+            continue
+        }
+
+
 
         var domainInfo = {}
         try{
@@ -74,6 +84,17 @@ async function process(drive, dir){
             console.log(chalk.red(`    ✓ (Drive (${drive.name}) Ignoring path: ${dir} Error reading: ${aclfilepath}`))
             continue
         }
+
+        var rolesInfo = {}
+        try{
+            var rolesData = await  drive.promises.readFile(rolesfilepath, 'utf8');
+            rolesInfo = JSON.parse(rolesData)
+        }catch(e){
+            console.log(chalk.red(`    ✓ (Drive (${drive.name}) Ignoring path: ${dir} Error reading: ${rolesfilepath}`))
+            continue
+        }
+
+
         var isWebSite = repoInfo["repo"].startsWith("www")
         
         var item =  isWebSite? "websites" : "wikis"
@@ -109,7 +130,8 @@ async function process(drive, dir){
             "password": acl.passwords[0] || "",
             "username": acl.usernames[0] || "",
             "login": acl.login,
-            "domains": domainInfo.domains
+            "domains": domainInfo.domains,
+            "roles": rolesInfo
         }
 
         info[item][alias] = val
