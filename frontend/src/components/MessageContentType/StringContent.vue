@@ -31,7 +31,10 @@
                     return escapedHtml;
                 }
 
-                escapedHtml = escapedHtml.replace(regularExpression, `<a href='$1' target='_BLANK'>$1</a>`);
+                escapedHtml = escapedHtml.replace(
+                    regularExpression,
+                    `<a class='hover:underline' href='$1' target='_BLANK'>$1</a>`
+                );
 
                 return escapedHtml;
             });
@@ -41,8 +44,4 @@
     });
 </script>
 
-<style>
-    a:hover {
-        text-decoration: underline !important;
-    }
-</style>
+<style></style>

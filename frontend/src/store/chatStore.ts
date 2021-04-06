@@ -219,11 +219,17 @@ const addMessage = (chatId, message) => {
         return;
     }
 
+    if (message.type === 'EDIT') {
+        const index = chat.messages.findIndex(mes => mes.id == message.body.id);
+
+        if (index === -1) return;
+        chat.messages[index] = message.body;
+        return;
+    }
+
     const index = chat.messages.findIndex(mes => mes.id == message.id);
     if (index !== -1) {
         chat.messages[index] = message;
-        chat.messages[index].updated = new Date();
-        return;
     }
 
     chat.messages.push(message);
