@@ -1,16 +1,12 @@
 <template>
-    <img
-        width="450"
-        :src="calcExternalResourceLink(message.body.url)"
-        @load="imageLoaded"
-        class="inner-"
-    />
+    <img width="450" :src="src" @load="imageLoaded" class="cursor-pointer" @click='show' />
 </template>
 
 <script lang="ts">
     import { defineComponent } from 'vue';
     import { calcExternalResourceLink } from '@/services/urlService';
-    import { useScrollActions, useScrollState } from '@/store/scrollStore';
+    import { useScrollActions } from '@/store/scrollStore';
+    import { setImageSrc } from '@/store/imageStore';
 
     export default defineComponent({
         name: 'ImageContent',
@@ -19,11 +15,16 @@
         },
         setup(props) {
             const { addScrollEvent } = useScrollActions();
-
+            const src = calcExternalResourceLink(props.message.body.url)
             const imageLoaded = () => {
                 addScrollEvent();
             };
-            return { imageLoaded, calcExternalResourceLink };
+
+            const show = () => {
+                setImageSrc(src);
+            };
+
+            return { imageLoaded, show, src};
         },
     });
 </script>

@@ -60,6 +60,7 @@
             </div>
         </template>
         <template v-slot:default>
+            <ImagePreview/>
             <div class="flex flex-row relative h-full w-full">
                 <ChatList class="hidden md:inline-block" />
                 <div class="relative h-full flex flex-col flex-1" v-if="chat" :key="chat.id + selectedId">
@@ -193,6 +194,7 @@
     import MessageBox from '@/components/MessageBox.vue';
     import { messageBox } from '@/services/messageHelperService';
     import Button from '@/components/Button.vue';
+    import ImagePreview from '@/components/ImagePreview.vue';
 
     export default defineComponent({
         name: 'ChatView',
@@ -206,6 +208,7 @@
             appLayout,
             GroupManagement,
             ChatList,
+            ImagePreview
         },
         setup(props) {
             const route = useRoute();
