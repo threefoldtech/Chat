@@ -26,6 +26,13 @@
                 'bg-green-500': status && status.isOnline,
             }"
         ></div>
+
+        <div
+            v-if="unreadMessagesAmount > 0"
+            class="absolute -top-1 -right-1 bg-accent h-4 w-4 rounded-full text-xs z-10 align-middle text-center text-white"
+        >
+            {{ unreadMessagesAmount }}
+        </div>
     </div>
 </template>
 
@@ -43,6 +50,7 @@
                 default: true,
                 type: Boolean,
             },
+            unreadMessagesAmount: Number,
             large: { required: false, default: false, type: Boolean },
             small: { required: false, default: false, type: Boolean },
             xsmall: { required: false, default: false, type: Boolean },
