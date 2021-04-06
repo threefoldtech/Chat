@@ -19,11 +19,7 @@
             </a>
         </div>
 
-        <form
-            @submit.prevent="contactAdd"
-            class="w-full"
-            v-if="isActive('user')"
-        >
+        <form @submit.prevent="contactAdd" class="w-full" v-if="isActive('user')">
             <div class="flex place-items-center">
                 <label class="mr-2" for="username">Username:</label>
                 <auto-complete
@@ -36,12 +32,7 @@
             </div>
             <div class="flex place-items-center">
                 <label class="mr-2" for="location">Location:</label>
-                <input
-                    id="location"
-                    v-model="userAddLocation"
-                    class="mb-2"
-                    :placeholder="location"
-                />
+                <input id="location" v-model="userAddLocation" class="mb-2" />
             </div>
 
             <div class="flex mt-4 justify-end w-full">
@@ -51,46 +42,29 @@
                 <button>Add contact</button>
             </div>
         </form>
-        <form
-            @submit.prevent="groupAdd"
-            class="w-full"
-            v-if="isActive('group')"
-        >
+        <form @submit.prevent="groupAdd" class="w-full" v-if="isActive('group')">
             <div class="flex place-items-center">
                 <label class="mr-2" for="username">Group name: </label>
                 <div class="w-full">
-                    <input
-                        v-model="groupnameAdd"
-                        id="username"
-                        class="mb-2"
-                        placeholder="Group name"
-                    />
+                    <input v-model="groupnameAdd" id="username" class="mb-2" placeholder="Group name" />
                     <br />
                     <span class="text-red-600" v-if="groupnameAddError != ''">
                         {{ groupnameAddError }}
                     </span>
                 </div>
             </div>
-            <div
-                class="flex flex-col max-h-52 relative overflow-auto my-2 bg-gray-100 px-4 py-2 rounded-xl"
-            >
+            <div class="flex flex-col max-h-52 relative overflow-auto my-2 bg-gray-100 px-4 py-2 rounded-xl">
                 <div class="h-full">
                     <div v-if="!contacts.length">
                         <p class="text-gray-300 text-center py-4">
                             No users in group yet
                         </p>
                     </div>
-                    <div
-                        v-for="(contact, i) in contacts"
-                        :key="i"
-                        class="grid grid-cols-12 rounded-lg mb-2 py-2"
-                    >
+                    <div v-for="(contact, i) in contacts" :key="i" class="grid grid-cols-12 rounded-lg mb-2 py-2">
                         <div class="col-span-2 place-items-center grid">
                             <AvatarImg :id="contact.id" alt="contact image" />
                         </div>
-                        <div
-                            class="col-span-8 pl-4 flex flex-col justify-center"
-                        >
+                        <div class="col-span-8 pl-4 flex flex-col justify-center">
                             {{ contact.id }}
                         </div>
                         <div class="col-span-2 place-items-center grid">
@@ -121,16 +95,9 @@
 </template>
 
 <script lang="ts">
-    import {
-        selectedId,
-        usechatsActions,
-        usechatsState,
-    } from '@/store/chatStore';
+    import { selectedId, usechatsActions, usechatsState } from '@/store/chatStore';
     import { defineComponent, ref, computed, nextTick, watch } from 'vue';
-    import {
-        useContactsActions,
-        useContactsState,
-    } from '../store/contactStore';
+    import { useContactsActions, useContactsState } from '../store/contactStore';
     import { useAuthState, myYggdrasilAddress } from '../store/authStore';
     import { Chat, Contact, Message } from '../types/index';
     import axios from 'axios';
@@ -160,16 +127,11 @@
                 try {
                     let userId = usernameAdd.value;
                     if (!possibleUsers.value.find(pu => pu.id === userId)) {
-                        usernameAddError.value =
-                            'Not able to find DigitalTwin of this user';
-                        return;
+                        usernameAddError.value = 'Not able to find DigitalTwin of this user';
+                        // return;
                     }
                     const { chats } = usechatsState();
-                    if (
-                        chats.value
-                            .filter(chat => !chat.isGroup)
-                            .find(chat => <string>chat.chatId == userId)
-                    ) {
+                    if (chats.value.filter(chat => !chat.isGroup).find(chat => <string>chat.chatId == userId)) {
                         usernameAddError.value = 'Already added this user';
                         return;
                     }
@@ -192,9 +154,7 @@
             };
 
             const handleClicked = () => {
-                const posUser = possibleUsers.value.find(
-                    pu => pu.id == usernameAdd.value
-                );
+                const posUser = possibleUsers.value.find(pu => pu.id == usernameAdd.value);
                 if (posUser) {
                     userAddLocation.value = posUser.location;
                 }
@@ -220,8 +180,7 @@
                     return;
                 }
                 if (groupnameAdd.value.length > 20) {
-                    groupnameAddError.value =
-                        "The name can't contain more than 20 characters";
+                    groupnameAddError.value = "The name can't contain more than 20 characters";
                     return;
                 }
                 const mylocation = await myYggdrasilAddress();
@@ -249,9 +208,7 @@
             };
 
             const removeUserFromGroup = (contact: Contact) => {
-                const index = usersInGroup.value.findIndex(
-                    u => u.id == contact.id
-                );
+                const index = usersInGroup.value.findIndex(u => u.id == contact.id);
                 usersInGroup.value.splice(index, 1);
             };
 
@@ -259,9 +216,7 @@
             axios.get(`${config.spawnerUrl}api/v1/list`, {}).then(r => {
                 const { user } = useAuthState();
                 const posContacts = <Contact[]>r.data;
-                possibleUsers.value = posContacts.filter(
-                    pu => pu.id !== user.id
-                );
+                possibleUsers.value = posContacts.filter(pu => pu.id !== user.id);
             });
 
             return {
