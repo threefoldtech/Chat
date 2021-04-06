@@ -76,7 +76,9 @@ app.use(function (req, res, next) {
   }
   else{
     info = config.info.domains[host]
-
+    if(!info){
+      return res.status(404).send('Not Found')
+    }
   }
  
   if(req.url != '/'){
@@ -95,7 +97,7 @@ app.use(function (req, res, next) {
     }
 
     if(!info){
-      info = config.info.wikis['/'] || config.info.websites['/']
+      info = config.info.domains[config.mainDomain]
       var splitted = req.url.split("/")
       if(splitted.length == 2){
         const clone = Object.assign({}, info);
