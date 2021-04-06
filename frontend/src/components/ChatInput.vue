@@ -1,10 +1,10 @@
 <template>
     <GifSelector v-if="showGif" v-on:sendgif="sendGif" style="z-index: 10000" v-on:close="hideGif" />
     <div v-if="action" class="flex justify-between m-2 p-4 bg-white rounded-xl">
-        <div class='flex flex-row'>
-            <div class='text-accent mr-4 self-center'>
-                <i class='fa fa-reply fa-2x' v-if="action?.type === MessageAction.REPLY"></i>
-                <i class='fa fa-pen fa-2x' v-else-if="action?.type === MessageAction.EDIT"></i>
+        <div class="flex flex-row">
+            <div class="text-accent mr-4 self-center">
+                <i class="fa fa-reply fa-2x" v-if="action?.type === MessageAction.REPLY"></i>
+                <i class="fa fa-pen fa-2x" v-else-if="action?.type === MessageAction.EDIT"></i>
             </div>
             <div class="replymsg">
                 <b>{{ action.message.from }}</b>
@@ -107,10 +107,10 @@
 </template>
 <script lang="ts">
     import { computed, nextTick, ref, watch } from 'vue';
-    import { clearMessageAction, messageState, usechatsActions, MessageAction } from '@/store/chatStore';
+    import { clearMessageAction, MessageAction, messageState, usechatsActions } from '@/store/chatStore';
     import GifSelector from '@/components/GifSelector.vue';
     import { useAuthState } from '@/store/authStore';
-    import { Message, MessageBodyType, MessageTypes, QuoteBodyType, StringMessageType } from '@/types';
+    import { Message, MessageBodyType, MessageTypes, QuoteBodyType } from '@/types';
     import { uuidv4 } from '@/common';
     import { useScrollActions } from '@/store/scrollStore';
     import { EmojiPickerElement } from 'unicode-emoji-picker';
@@ -159,9 +159,73 @@
                 }
             });
 
+            const createEditBody = action => {
+                let newBody = action.message.body;
+                //space for later types
+                switch (action.message.type) {
+                    case MessageTypes.QUOTE:
+                        newBody.message = message.value.value;
+                        break;
+
+                    default:
+                        newBody = message.value.value;
+                        break;
+                }
+                return newBody;
+            };
+
             const createMessage = () => {
                 const { user } = useAuthState();
-                const newMessage = {
+
+                switch (action?.value?.type) {
+                    case MessageAction.REPLY: {
+                        return {
+                            id: uuidv4(),
+                            from: user.id,
+                            to: <string>props.selectedid,
+                            body: <QuoteBodyType>{
+                                message: message.value.value,
+                                quotedMessage: action.value.message as Message<MessageBodyType>,
+                            },
+                            timeStamp: new Date(),
+                            type: MessageTypes.QUOTE,
+                            replies: [],
+                            subject: null,
+                        };
+                    }
+
+                    case MessageAction.EDIT: {
+                        const newBody = createEditBody(action.value);
+
+                        const editMessage = {
+                            id: <string>action.value.message.id,
+                            from: user.id,
+                            to: <string>props.selectedid,
+                            body: newBody,
+                            timeStamp: action.value.message.timeStamp,
+                            type: action.value.message.type,
+                            replies: action.value.message.replies,
+                            subject: null,
+                            updated: new Date(),
+                        };
+                        const editWrapperMessage = {
+                            id: uuidv4(),
+                            from: user.id,
+                            to: <string>props.selectedid,
+                            body: editMessage,
+                            timeStamp: new Date(),
+                            type: MessageTypes.EDIT,
+                            replies: [],
+                            subject: null,
+                        };
+
+                        console.log(editWrapperMessage);
+
+                        return editWrapperMessage;
+                    }
+                }
+
+                return {
                     id: uuidv4(),
                     from: user.id,
                     to: <string>props.selectedid,
@@ -171,26 +235,6 @@
                     replies: [],
                     subject: null,
                 };
-
-                switch (action?.value?.type) {
-                    case MessageAction.REPLY: {
-                        newMessage.type = MessageTypes.QUOTE;
-                        newMessage.body = <QuoteBodyType>{
-                            message: message.value.value,
-                            quotedMessage: action.value.message as Message<MessageBodyType>,
-                        };
-                        break;
-                    }
-
-                    case MessageAction.EDIT: {
-                        newMessage.id = <string>action.value.message.id;
-                        newMessage.type = MessageTypes.EDIT;
-                        newMessage.body = message.value.value
-                        break;
-                    }
-                }
-
-                return newMessage;
             };
 
             const clearMessage = () => {
@@ -321,11 +365,11 @@
             };
 
             const getActionMessage = computed(() => {
-                if(action.value.message.type === MessageTypes.QUOTE)
+                if (action.value.message.type === MessageTypes.QUOTE)
                     return (action.value.message.body as QuoteBodyType).message;
 
                 return action.value.message.body;
-            })
+            });
 
             const collapsed = ref(true);
             return {

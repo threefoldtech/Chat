@@ -1,6 +1,11 @@
 <template>
     <div>
-        <div class="quote pt-4 px-4">
+        <div
+            class="quote"
+            :class="{
+                'pt-2 px-4 ': !preventRecursion,
+            }"
+        >
             <div class="border-l-2 border-gray-400 my-message:border-icon " v-if="!preventRecursion">
                 <div class="pl-4 font-bold my-message:text-icon" v-if="message.body.quotedMessage !== 'SYSTEM'">
                     {{ message.body.quotedMessage.from }}

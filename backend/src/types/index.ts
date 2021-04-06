@@ -42,7 +42,7 @@ export enum MessageOperations {
     DELETE = 'DELETE',
 }
 
-export interface MessageInterface<T> {
+export interface MessageInterface<T> extends MessageBodyTypeInterface {
     id: IdInterface;
     from: DtIdInterface;
     to: IdInterface | DtIdInterface;
@@ -99,9 +99,12 @@ export interface AnonymousContactInterface {
     id: DtIdInterface;
 }
 
-export interface DtIdInterface extends IdInterface {}
+export interface DtIdInterface extends IdInterface {
+}
 
-export interface IdInterface extends String {}
+export interface IdInterface extends String {
+}
+
 const test: IdInterface = '';
 
 export interface WorkspaceInterface extends GroupChatInterface {

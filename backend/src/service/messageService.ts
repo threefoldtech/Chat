@@ -1,16 +1,17 @@
 import {
     ContactRequest,
     FileMessageType,
+    IdInterface,
     MessageBodyTypeInterface,
     MessageInterface,
     MessageTypes,
     StringMessageTypeInterface,
-    IdInterface,
 } from '../types';
 import Message from '../models/message';
-import { getChat, persistChat, saveFile } from './dataService';
-import { sendEventToConnectedSockets } from './socketService';
-import { determinChatId } from '../routes/messages';
+import {getChat, persistChat, saveFile} from './dataService';
+import {sendEventToConnectedSockets} from './socketService';
+import {determinChatId} from '../routes/messages';
+import {logger} from "../logger";
 
 export const parseMessage = (
     msg: any,
@@ -87,7 +88,7 @@ export const parseMessage = (
             return new Message<FileMessageType>(
                 msg.from,
                 msg.to,
-                <FileMessageType>{ filename: msg.body.name },
+                <FileMessageType>{filename: msg.body.name},
                 new Date(msg.timeStamp),
                 msg.id,
                 MessageTypes.FILE,
@@ -183,27 +184,6 @@ export const parseMessage = (
             );
     }
 };
-
-export const editMessage = (
-    chatId: IdInterface,
-    newMessage: Message<MessageBodyTypeInterface>,
-) => {
-    if (newMessage.subject) {
-        editReply(chatId, newMessage);
-        return;
-    }
-
-    const chat = getChat(chatId);
-    const index = chat.messages.findIndex(mes => mes.id === newMessage.id);
-    chat.messages[index].body = newMessage.body;
-    if (newMessage.type === MessageTypes.DELETE) {
-        chat.messages[index].type = MessageTypes.DELETE;
-    }
-
-    chat.messages[index].updated = new Date();
-    persistChat(chat);
-};
-
 export const editReply = (chatId: IdInterface, newMessage: Message<MessageBodyTypeInterface>) => {
     const chat = getChat(chatId);
     const messageIndex = chat.messages.findIndex(mes => mes.id === newMessage.subject);
@@ -220,6 +200,36 @@ export const editReply = (chatId: IdInterface, newMessage: Message<MessageBodyTy
     chat.messages[messageIndex].replies[replyIndex].updated = new Date();
     persistChat(chat);
 };
+
+export const editMessage = (
+    chatId: IdInterface,
+    newMessage: Message<MessageBodyTypeInterface | Message<MessageBodyTypeInterface>>,
+) => {
+    if (newMessage.subject) {
+        editReply(chatId, newMessage);
+        return;
+    }
+    const chat = getChat(chatId);
+
+    switch (newMessage.type) {
+        case MessageTypes.DELETE: {
+            const index = chat.messages.findIndex(mes => mes.id === newMessage.id);
+            chat.messages[index].body = newMessage.body;
+            chat.messages[index].type = MessageTypes.DELETE;
+            break;
+        }
+
+        case MessageTypes.EDIT: {
+            const editedMessage = parseMessage(newMessage.body);
+            //@todo: error handling when not parsed
+            const index = chat.messages.findIndex(mes => mes.id === editedMessage.id);
+            chat.messages[index] = editedMessage;
+            break;
+        }
+    }
+    persistChat(chat);
+};
+
 
 export const handleRead = (message: Message<StringMessageTypeInterface>) => {
     // console.log('reading');
