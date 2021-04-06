@@ -232,7 +232,9 @@ const addMessage = (chatId, message) => {
         chat.messages[index] = message;
     }
 
-    chat.messages.push(message);
+    if (index === -1) {
+        chat.messages.push(message);
+    }
 
     sortChats();
     setLastMessage(chatId, message);
