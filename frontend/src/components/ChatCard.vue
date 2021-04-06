@@ -1,33 +1,21 @@
 <template>
     <div
-        class="chatcard relative grid grid-cols-12 mb-2 py-2 text-sm"
+        class="chatcard relative text-sm flex flex-row"
         :class="{
-            'bg-gray-50': !router.currentRoute?.value.path.includes(
-                chat.chatId
-            ),
-            'bg-gray-200': router.currentRoute?.value.path.includes(
-                chat.chatId
-            ),
+            'bg-gray-50': !router.currentRoute?.value.path.includes(chat.chatId),
+            'bg-gray-200': router.currentRoute?.value.path.includes(chat.chatId),
         }"
     >
-        <div class="col-span-2 place-items-center grid relative">
-            <span
-                v-if="unreadMessagesAmount > 0"
-                class="absolute right-2 -top-2 px-1 bg-accent rounded-full text-xs z-10"
-            >
-                {{ unreadMessagesAmount }}
-            </span>
-            <AvatarImg :id="chat.chatId" :showOnlineStatus="!chat.isGroup" />
+        <div class=" place-items-center relative">
+            <AvatarImg :id="chat.chatId" :showOnlineStatus="!chat.isGroup" :unreadMessagesAmount="unreadMessagesAmount" />
         </div>
-        <div class="col-span-10 px-2">
-            <p class="flex place-content-between">
-                <span
-                    class="font-bold break-normal overflow-ellipsis overflow-hidden"
-                >
+        <div class="px-2 ml-2 content" v-if="!collapsed">
+            <p class="flex">
+                <span class="font-bold break-normal overflow-ellipsis overflow-hidden name">
                     {{ chat.name }}
                 </span>
-                <span class="font-thin" v-if="chat.isGroup"> group</span>
-                <span class="font-thin" v-if="lastMessage">
+                <span class="font-thin ml-2" v-if="chat.isGroup"> (group)</span>
+                <span class="font-thin ml-auto" v-if="lastMessage">
                     {{ timeAgo(lastMessage.timeStamp) }}
                 </span>
             </p>
@@ -42,12 +30,7 @@
     import { computed, defineComponent, ref } from 'vue';
     import { findLastIndex } from 'lodash';
     import { useAuthState } from '@/store/authStore';
-    import {
-        Message,
-        MessageBodyType,
-        MessageTypes,
-        SystemBody,
-    } from '@/types';
+    import { Message, MessageBodyType, MessageTypes, SystemBody } from '@/types';
     import moment from 'moment';
     import { statusList } from '@/store/statusStore';
     import AvatarImg from '@/components/AvatarImg.vue';
@@ -58,6 +41,7 @@
         components: { AvatarImg },
         props: {
             chat: Object,
+            collapsed: Boolean,
         },
         setup(props) {
             const { user } = useAuthState();
@@ -66,14 +50,11 @@
                 let lastReadMessage = props.chat.read[<string>user.id];
                 return findLastIndex(
                     props.chat.messages,
-                    (message: Message<MessageBodyType>) =>
-                        lastReadMessage === message.id
+                    (message: Message<MessageBodyType>) => lastReadMessage === message.id
                 );
             });
             const lastMessage = computed(() => {
-                return props.chat &&
-                    props.chat.messages &&
-                    props.chat.messages.length
+                return props.chat && props.chat.messages && props.chat.messages.length
                     ? props.chat.messages[props.chat.messages.length - 1]
                     : 'No messages yet';
             });
@@ -114,9 +95,7 @@
                 }
 
                 const lastReadMessageId = props.chat.read[<string>user.id];
-                const index = props.chat.messages?.findIndex(
-                    m => m.id === lastReadMessageId
-                );
+                const index = props.chat.messages?.findIndex(m => m.id === lastReadMessageId);
                 if (!index || index < 1) {
                     return 0;
                 }
@@ -141,7 +120,17 @@
 </script>
 
 <style scoped>
+    .content {
+        width: calc(100% - 4rem);
+    }
+
+    .name {
+        max-width: calc(100% - 150px);
+        box-sizing: border-box;
+    }
     .chatcard {
+        box-sizing: border-box;
+        width: 100%;
     }
     .chatcard:hover {
         background-color: lightgray;

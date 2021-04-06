@@ -60,17 +60,9 @@
             </div>
         </template>
         <template v-slot:default>
-            <div
-                class="grid grid-cols-1  relative h-full w-full"
-                :class="{
-                    'md:singleGrid': showSideBar,
-                    'md:twoGrid': !showSideBar,
-                }"
-            >
-                <div class="hidden md:block relative h-full flex-col overflow-y-auto">
-                    <ChatList />
-                </div>
-                <div class="relative h-full flex flex-col" v-if="chat" :key="chat.id + selectedId">
+            <div class="flex flex-row relative h-full w-full">
+                <ChatList class="hidden md:inline-block" />
+                <div class="relative h-full flex flex-col flex-1" v-if="chat" :key="chat.id + selectedId">
                     <div class="topbar h-14 bg-white flex-row border border-t-0 border-gray-100 hidden md:flex">
                         <div class="py-2 pl-4 flex-1">
                             <p class="font-bold font overflow-hidden overflow-ellipsis w-80">
@@ -93,11 +85,7 @@
                                     'text-gray-500': !showSideBar,
                                 }"
                             >
-                                <i
-                                    class="far fa-window-maximize transform fa-w-12 "
-                                    style="--tw-rotate: 90deg"
-                                >
-                                </i>
+                                <i class="far fa-window-maximize transform fa-w-12 " style="--tw-rotate: 90deg"> </i>
                             </button>
                         </div>
                     </div>
@@ -187,7 +175,7 @@
 
     import { each } from 'lodash';
     import { statusList } from '@/store/statusStore';
-    import { usechatsState, usechatsActions, messageState, MessageAction, clearMessageAction } from '@/store/chatStore';
+    import { usechatsState, usechatsActions } from '@/store/chatStore';
     import { sendBlockChat, sendRemoveChat } from '@/store/socketStore';
     import { useAuthState } from '@/store/authStore';
     import { popupCenter } from '@/services/popupService';
@@ -239,7 +227,6 @@
             const showMenu = ref(false);
             const file = ref();
             let showDialog = ref(false);
-
             const propRefs = toRefs(props);
             const truncate = (value, limit = 20) => {
                 if (value.length > limit) {
@@ -451,5 +438,11 @@
     .replymsg {
         max-width: 750px;
         word-break: break-word;
+    }
+
+    @media (min-width: 768px) {
+        .md\:w-400p {
+            width: 400px;
+        }
     }
 </style>
