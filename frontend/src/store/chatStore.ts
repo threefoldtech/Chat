@@ -227,6 +227,11 @@ const addMessage = (chatId, message) => {
         return;
     }
 
+    const index = chat.messages.findIndex(mes => mes.id == message.id);
+    if (index !== -1) {
+        chat.messages[index] = message;
+    }
+
     chat.messages.push(message);
 
     sortChats();
