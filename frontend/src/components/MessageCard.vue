@@ -46,7 +46,7 @@
                     <span
                         class="reply text-xs pr-4 cursor-pointer hover:underline hidden my-message:inline"
                         @click="editMessage(message)"
-                        v-if="message.type === MessageTypes.STRING"
+                        v-if="message.type === MessageTypes.STRING || message.type === MessageTypes.QUOTE"
                     >
                         <i class="fa fa-pen"></i>
                         <span class="text-gray-600 pl-2">Edit</span>
