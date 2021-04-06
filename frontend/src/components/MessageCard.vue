@@ -20,12 +20,15 @@
         <div class="flex-1">
             <div class="flex flex-row flex-wrap">
                 <div
-                    class="flex rounded-md rounded-r-xl mb-1 bg-white shadow relative overflow-hidden my-message:bg-my"
+                    class="flex flex-col rounded-md rounded-r-xl mb-1 bg-white shadow relative overflow-hidden my-message:bg-my"
                     :class="{
                         'rounded-tl-xl': isFirstMessage,
                         'rounded-bl-xl': isLastMessage,
                     }"
                 >
+                    <header class="p-4 pb-0 font-bold my-message:text-icon " v-if="isFirstMessage && isGroup">
+                        {{ message.from }}
+                    </header>
                     <main class="msgcard flex justify-between">
                         <MessageContent :message="message" :key="message.type"></MessageContent>
                     </main>
@@ -244,11 +247,5 @@
     .replymsg {
         max-width: 500px;
         word-break: break-word;
-    }
-
-    .read {
-        height: 28px;
-        display: flex;
-        align-items: center;
     }
 </style>
