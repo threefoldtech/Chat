@@ -176,6 +176,9 @@ async function handleWikiFile(req, res, info){
     }else if(filename.endsWith('pdf')){
             encoding = 'binary'
             res.type('application/pdf')
+    }else if(filename.endsWith('ico')){
+        encoding = 'binary'
+        res.type('image/x-icon')
     }else if(filename.endsWith("md") ){
         encoding = 'utf-8'  
     }else if (path.extname(filename) == ''){
