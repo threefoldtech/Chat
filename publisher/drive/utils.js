@@ -127,8 +127,7 @@ async function process(drive, dir){
             "alias": repoInfo["alias"],
             "isWebSite": isWebSite,
             "users": users,
-            "password": acl.passwords[0] || "",
-            "username": acl.usernames[0] || "",
+            "password": acl.password || "",
             "login": acl.login,
             "domains": domainInfo.domains,
             "roles": rolesInfo

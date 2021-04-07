@@ -13,9 +13,11 @@ var morgan = require('morgan')
 var path = require('path')
 var rfs = require('rotating-file-stream') 
 const auth = require('basic-auth')
+const bodyParser = require('body-parser');
 
 
 let app = express()
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Session
 var sess = {
@@ -132,16 +134,28 @@ app.use((req, res, next) => {
   var info = req.info
   
   if (info.password != ""){
-    let user = auth(req)
-    if (user === undefined || user['name'] !== info.username || user['pass'] !== info.password) {
-      res.statusCode = 401
-      res.setHeader('WWW-Authenticate', 'Basic realm="Node"')
-      res.end('Unauthorized')
-    } else {
+  //   let user = auth(req)
+  //   if (user === undefined || user['name'] !== info.username || user['pass'] !== info.password) {
+  //     res.statusCode = 401
+  //     res.setHeader('WWW-Authenticate', 'Basic realm="Node"')
+  //     res.end('Unauthorized')
+  //   } else {
+  //     next()
+  //   }
+  // } else{
+  //   next()
+  
+    if(req.session.authorized){
       next()
+      return
+    }else{
+      req.session.pass = info.password
+      req.session.save()
+      return res.redirect(`/login?next=${req.url}`)
     }
-  } else{
+  }else{
     next()
+    return
   }
 })
 

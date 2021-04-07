@@ -18,6 +18,10 @@ async function rewriteRoles(content, info){
     var mainDomain = config.mainDomain
     var mainRepo = config.info.domains[mainDomain].repo
 
+    var site = config.info.domains[info.host]
+    var isWebsite = site.isWebSite
+    content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
+
     if (info.host == 'localhost' || info.host == '127.0.0.1'){
         for(var item in config.info.domains){
             var site = config.info.domains[item]
@@ -100,7 +104,7 @@ async function handleWebsiteFile(req, res, info){
         encoding = 'binary'
         res.type('image/svg+xml')
     }else if (filepath.endsWith("js")){
-        res.type("text/javascript");
+        res.type("application/javascript");
     }else if (filepath.endsWith("css")){
             res.type("text/css");
     }else if (filepath.endsWith("json")){
@@ -236,6 +240,25 @@ async function handleWikiFile(req, res, info){
         return res.status(404).send(`File not found : ${filepath}`);
     }
 }
+
+router.get('/login', asyncHandler(async (req, res) =>  {
+    res.render('sites/login.mustache', {})
+}))
+
+router.post('/login', asyncHandler(async (req, res) =>  {
+    console.log(req.session.pass)
+    var body = req.body
+    console.log(body.psw)
+    if (body && body.psw){
+        if (body.psw == req.session.pass){
+            req.session.authorized = true
+            req.session.save()
+            return res.redirect(req.query.next)
+        }
+    }
+    return res.redirect(`/login?next=${req.query.next}`)
+}))
+
 
 // Home (list of wikis and sites)
 router.get('/publishtools/list', asyncHandler(async (req, res) =>  {
