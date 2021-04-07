@@ -179,6 +179,11 @@ image = "https://raw.githubusercontent.com/threefoldfoundation/www_threefold_io/
   }
 })
 
+app.use((req, res, next) => {
+  res.header('Cache-Control', 'max-age=2592000000');
+  next();
+});
+
 app.use(express.json());
 
 app.use(threebot)
