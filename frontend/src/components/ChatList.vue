@@ -11,15 +11,15 @@
             <div
                 class="chatcard cursor-pointer flex flex-row items-center flex-row collapsed-bar:flex-col-reverse justify-center collapsed-bar:mb-0 mb-2"
             >
-                <div class="flex-1 collapsed-bar:mb-2 flex flex-row">
-                    <button @click="showAddUserDialog = true" class="bg-icon colro rounded-full text-white w-10 h-10">
+                <div class="flex-1 collapsed-bar:mb-2 flex flex-row items-center">
+                    <button @click="showAddUserDialog = true" class="bg-icon rounded-full text-white w-8 h-8 collapsed-bar:w-10 collapsed-bar:h-10">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <h1 style="padding-top: 5px" class="collapsed-bar:hidden">Messages</h1>
+                    <h1 class="collapsed-bar:hidden pt-1">Messages</h1>
                 </div>
-                <div class="ml-auto collapsed-bar:m-0 collapsed-bar:mb-2 hidden md:block">
+                <div class="ml-auto collapsed-bar:m-0 collapsed-bar:mb-2 hidden md:block relative">
                     <button
-                        class="rounded-full w-8 h-8 collapsed-bar:w-12 collapsed-bar:h-12 bg-gray-100 flex justify-center"
+                        class="rounded-full w-8 h-8 collapsed-bar:w-10 collapsed-bar:h-10 bg-gray-100 flex justify-center"
                         @click="collapsed = !collapsed"
                     >
                         <div v-if="collapsed" class="h-full flex items-center justify-center">
@@ -29,9 +29,15 @@
                             <i class="fas fa-chevron-left"></i>
                         </div>
                     </button>
+                    <div
+                        v-if="filteredChatRequests.length > 0"
+                        class="hidden collapsed-bar:block absolute -top-1 right-1 bg-accent h-4 w-4 rounded-full text-xs z-10 align-middle text-center text-white"
+                    >
+                        {{ filteredChatRequests.length }}
+                    </div>
                 </div>
             </div>
-            <div v-if="filteredChatRequests.length > 0">
+            <div v-if="filteredChatRequests.length > 0" class='collapsed-bar:hidden p-2'>
                 <h2 style="font-size: 1.5em">
                     You have
                     <span style="">
@@ -56,7 +62,10 @@
             </div>
         </div>
 
-        <div v-if="filteredChatRequests.length == 0 && filteredChats.length == 0" class="text-center">
+        <div
+            v-if="filteredChatRequests.length == 0 && filteredChats.length == 0"
+            class="text-center collapsed-bar:hidden"
+        >
             <p>It feels lonely over here :(</p>
             <button @click="sendUpdate(true)" class="mt-2 border rounded-full px-4">
                 Add a contact
@@ -176,10 +185,10 @@
     });
 </script>
 
-
 <style scoped type="text/css">
     @media (min-width: 768px) {
-        .md\:w-400p { width: 400px }
+        .md\:w-400p {
+            width: 400px;
+        }
     }
 </style>
-

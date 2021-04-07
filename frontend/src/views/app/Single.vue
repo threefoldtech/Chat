@@ -129,7 +129,7 @@
                     <h2>Loading</h2>
                 </div>
                 <aside
-                    class="hidden relative h-full flex-col overflow-y-auto"
+                    class="hidden relative h-full flex-col overflow-y-auto md:w-400p"
                     :class="{
                         'md:flex': showSideBar,
                         'md:hidden': !showSideBar,
@@ -189,7 +189,7 @@
     import * as crypto from 'crypto-js';
     import { useIntersectionObserver } from '@/lib/intersectionObserver';
     import { useRoute, useRouter } from 'vue-router';
-    import { showSideBar, toggleSideBar } from '@/services/sidebarService';
+    import { getShowSideBar, toggleSideBar } from '@/services/sidebarService';
     import { JoinedVideoRoomBody, MessageTypes, SystemMessageTypes } from '@/types';
     import MessageBox from '@/components/MessageBox.vue';
     import { messageBox } from '@/services/messageHelperService';
@@ -411,7 +411,7 @@
                 reads,
                 showDialog,
                 showMenu,
-                showSideBar,
+                showSideBar: getShowSideBar(),
                 toggleSideBar,
                 getChatStatus,
                 moment,
