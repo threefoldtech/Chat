@@ -145,11 +145,36 @@ app.use((req, res, next) => {
   }
 })
 
+
+
+// stellar.toml
 app.use((req, res, next) => {
-  var info = req.info
-  // redirection happens here
-  // console.log(info.roles)
-  next() 
+  
+  if (req.url == '/.well-known/stellar.toml'){
+    stellar = `[[CURRENCIES]]
+code = "TFT"
+issuer = "GBOVQKJYHXRR3DX6NOX2RRYFRCUMSADGDESTDNBDS6CDVLGVESRTAC47"
+display_decimals = 2
+name = "Threefold Token"
+desc = "A digital currency used to buy autonomous and decentralized Internet services (compute, storage, and application) on the ThreeFold Network"
+image = "https://github.com/threefoldfoundation/www_threefold_io/blob/development/src/favicon.png"
+
+[[CURRENCIES]]
+code = "TFTA"
+issuer = "GBUT4GP5GJ6B3XW5PXENHQA7TXJI5GOPW3NF4W3ZIW6OOO4ISY6WNLN2"
+display_decimals = 2
+name = "Threefold Token"
+desc = "A digital currency used to buy autonomous and decentralized Internet services (compute, storage, and application) on the ThreeFold Network"
+image = "https://github.com/threefoldfoundation/www_threefold_io/blob/development/src/favicon.png"
+`
+    res.set('Content-Type', 'text/plain');
+    res.set('Access-Control-Allow-Origin', '*');
+    res.send(stellar)
+    return
+  }
+  else{
+    next()
+  }
 })
 
 app.use(express.json());
