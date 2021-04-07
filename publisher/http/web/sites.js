@@ -21,7 +21,7 @@ async function rewriteRoles(content, info){
     var site = config.info.domains[info.host]
     var isWebsite = site.isWebSite
     content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
-
+    
     if (info.host == 'localhost' || info.host == '127.0.0.1'){
         for(var item in config.info.domains){
             var site = config.info.domains[item]
@@ -89,6 +89,7 @@ async function handleWebsiteFile(req, res, info){
     driveObj = info.drive
     var url = req.url.replace(`/${info.alias}/`, "")
     var filepath = `${info.dir}/${url}`
+    
     
     var encoding = 'utf-8'
     if(filepath.endsWith('png')){
@@ -246,9 +247,7 @@ router.get('/login', asyncHandler(async (req, res) =>  {
 }))
 
 router.post('/login', asyncHandler(async (req, res) =>  {
-    console.log(req.session.pass)
     var body = req.body
-    console.log(body.psw)
     if (body && body.psw){
         if (body.psw == req.session.pass){
             req.session.authorized = true
@@ -308,7 +307,6 @@ router.get('/', asyncHandler(async (req, res) =>  {
      var driveObj = info.drive
      var dir = info.dir
      var filepath = `${dir}/index.html`
-     var entry = null
      try {
          entry = await driveObj.promises.stat(filepath)
          var content = await  driveObj.promises.readFile(filepath, 'utf8');
@@ -348,8 +346,8 @@ router.get('/info', asyncHandler(async (req, res) =>  {
     
 }))
 
-router.get('/:website', asyncHandler(async (req, res) =>  {
-     if(req.params.website == 'update'){
+router.get('/:path', asyncHandler(async (req, res) =>  {
+     if(req.params.path == 'update'){
         await update(req)
         return res.redirect('/')
      }
@@ -359,12 +357,22 @@ router.get('/:website', asyncHandler(async (req, res) =>  {
     if (info.isWebSite){
         var driveObj = info.drive
         var dir = info.dir
-        var filepath = `${dir}/index.html`
+        var filepath = ""
+
+        // /blog, /team
+        if(info.subPath){
+            filepath = `${dir}${req.url}/index.html`
+        }else{
+            // /cloud (pathprefixed site)
+            filepath = `${dir}/index.html`
+        }
+
+        
         var entry = null
         try {
             entry = await driveObj.promises.stat(filepath)
             var content = await  driveObj.promises.readFile(filepath, 'utf8');
-            content = await(rewriteRoles(content, info))
+            content = await rewriteRoles(content, info)
             return res.send(content)
         } catch (e) {
             logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
@@ -373,7 +381,7 @@ router.get('/:website', asyncHandler(async (req, res) =>  {
     // static file for wikis or wiki file
     }else{
 
-        var name = req.params.website
+        var name = req.params.path
         var driveObj = req.info.drive
         var filepath = ""
         contenttype = 'utf8'
@@ -507,6 +515,7 @@ router.get('/info/:wiki/*', asyncHandler(async (req, res) => {
 // website files
 router.get('/:website/*', asyncHandler(async (req, res) => {
     var info = req.info
+
     if (info.isWebSite){
         return handleWebsiteFile(req, res, info)
     }else{

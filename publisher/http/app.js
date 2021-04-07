@@ -84,9 +84,12 @@ app.use(function (req, res, next) {
   }
  
   if(req.url != '/'){
+    var found = false
+
     for (var alias in config.info.websites){
-      if (req.url == `/${alias}` || req.url == `/${alias}` || req.url.startsWith(`/${alias}/`)){
+      if (req.url == `/${alias}` || req.url.startsWith(`/${alias}/`)){
         info = config.info.websites[alias]
+        found = true
         break
       }
     }
@@ -94,18 +97,14 @@ app.use(function (req, res, next) {
     for (var alias in config.info.wikis){
       if (req.url.startsWith(`/info/${alias}`)){
         info = config.info.wikis[alias]
+        found = true
         break
       }
     }
 
-    if(!info){
-      info = config.info.domains[config.mainDomain]
-      var splitted = req.url.split("/")
-      if(splitted.length == 2){
-        const clone = Object.assign({}, info);
-        clone.dir = path.join(info.dir,  splitted[1])
-        info = clone
-      }
+    // threefold.io/blog   it is not website that is pathprefixed
+    if(!found){
+      info.subPath = true
     }
   }
   req.info = info
@@ -133,18 +132,7 @@ app.use(function (req, res, next) {
 app.use((req, res, next) => {
   var info = req.info
   
-  if (info.password != ""){
-  //   let user = auth(req)
-  //   if (user === undefined || user['name'] !== info.username || user['pass'] !== info.password) {
-  //     res.statusCode = 401
-  //     res.setHeader('WWW-Authenticate', 'Basic realm="Node"')
-  //     res.end('Unauthorized')
-  //   } else {
-  //     next()
-  //   }
-  // } else{
-  //   next()
-  
+  if (info.password != ""){  
     if(req.session.authorized){
       next()
       return
@@ -171,7 +159,7 @@ issuer = "GBOVQKJYHXRR3DX6NOX2RRYFRCUMSADGDESTDNBDS6CDVLGVESRTAC47"
 display_decimals = 2
 name = "Threefold Token"
 desc = "A digital currency used to buy autonomous and decentralized Internet services (compute, storage, and application) on the ThreeFold Network"
-image = "https://github.com/threefoldfoundation/www_threefold_io/blob/development/src/favicon.png"
+image = "https://raw.githubusercontent.com/threefoldfoundation/www_threefold_io/development/src/favicon.png"
 
 [[CURRENCIES]]
 code = "TFTA"
@@ -179,7 +167,7 @@ issuer = "GBUT4GP5GJ6B3XW5PXENHQA7TXJI5GOPW3NF4W3ZIW6OOO4ISY6WNLN2"
 display_decimals = 2
 name = "Threefold Token"
 desc = "A digital currency used to buy autonomous and decentralized Internet services (compute, storage, and application) on the ThreeFold Network"
-image = "https://github.com/threefoldfoundation/www_threefold_io/blob/development/src/favicon.png"
+image = "https://raw.githubusercontent.com/threefoldfoundation/www_threefold_io/development/src/favicon.png"
 `
     res.set('Content-Type', 'text/plain');
     res.set('Access-Control-Allow-Origin', '*');

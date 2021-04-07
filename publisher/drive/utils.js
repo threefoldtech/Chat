@@ -130,7 +130,8 @@ async function process(drive, dir){
             "password": acl.password || "",
             "login": acl.login,
             "domains": domainInfo.domains,
-            "roles": rolesInfo
+            "roles": rolesInfo,
+            "subPath": false
         }
 
         info[item][alias] = val
