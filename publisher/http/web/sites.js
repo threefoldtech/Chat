@@ -243,13 +243,15 @@ async function handleWikiFile(req, res, info){
 }
 
 router.get('/login', asyncHandler(async (req, res) =>  {
-    res.render('sites/login.mustache', {})
+    return res.render('sites/login.mustache', {})
 }))
 
 router.post('/login', asyncHandler(async (req, res) =>  {
+    var info = req.info
     var body = req.body
+
     if (body && body.psw){
-        if (body.psw == req.session.pass){
+        if (body.psw == info.password){
             req.session.authorized = true
             req.session.save()
             return res.redirect(req.query.next)

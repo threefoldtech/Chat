@@ -133,12 +133,11 @@ app.use((req, res, next) => {
   var info = req.info
   
   if (info.password != ""){  
-    if(req.session.authorized){
+
+    if(req.session.authorized || req.url.startsWith('/login?next=')){
       next()
       return
     }else{
-      req.session.pass = info.password
-      req.session.save()
       return res.redirect(`/login?next=${req.url}`)
     }
   }else{
@@ -179,10 +178,10 @@ image = "https://raw.githubusercontent.com/threefoldfoundation/www_threefold_io/
   }
 })
 
-app.use((req, res, next) => {
-  res.header('Cache-Control', 'max-age=2592000000');
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header('Cache-Control', 'max-age=2592000000');
+//   next();
+// });
 
 app.use(express.json());
 
