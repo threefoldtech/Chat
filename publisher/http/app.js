@@ -94,14 +94,16 @@ app.use(function (req, res, next) {
       }
     }
 
-    for (var alias in config.info.wikis){
-      if (req.url.startsWith(`/info/${alias}`)){
-        info = config.info.wikis[alias]
-        found = true
-        break
+    if(!found){
+      for (var alias in config.info.wikis){
+        if (req.url.startsWith(`/info/${alias}`)){
+          info = config.info.wikis[alias]
+          found = true
+          break
+        }
       }
     }
-
+    
     // threefold.io/blog   it is not website that is pathprefixed
     if(!found){
       info.subPath = true
