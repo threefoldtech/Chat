@@ -85,7 +85,6 @@ app.use(function (req, res, next) {
  
   if(req.url != '/'){
     var found = false
-
     for (var alias in config.info.websites){
       if (req.url == `/${alias}` || req.url.startsWith(`/${alias}/`)){
         info = config.info.websites[alias]
@@ -106,9 +105,11 @@ app.use(function (req, res, next) {
     
     // threefold.io/blog   it is not website that is pathprefixed
     if(!found){
+      info = Object.assign({}, info) 
       info.subPath = true
     }
   }
+  
   req.info = info
   req.info.host = host
   req.info.port = port
