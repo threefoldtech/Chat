@@ -167,7 +167,7 @@
             const { addScrollEvent } = useScrollActions();
 
             onMounted(() => {
-                addScrollEvent();
+                //addScrollEvent();
             });
 
             const read = () => {

@@ -1,5 +1,5 @@
 import { reactive } from '@vue/reactivity';
-import { ref, toRefs } from 'vue';
+import { readonly, ref, toRefs } from 'vue';
 import axios from 'axios';
 import moment from 'moment';
 import {
@@ -27,6 +27,7 @@ const state = reactive<chatstate>({
     chatRequests: [],
 });
 
+const isLoading = ref(false);
 export const selectedId = ref('');
 export const selectedMessageId = ref(undefined);
 
@@ -47,6 +48,12 @@ interface MessageState {
 export const messageState = reactive<MessageState>({
     actions: {},
 });
+
+const setIsLoading = (value: boolean) => {
+    isLoading.value = value;
+}
+
+const getIsLoading = () => readonly(isLoading);
 
 export const setMessageAction = (chatId: string, message: Message<any>, action: MessageAction) => {
     messageState.actions = {
@@ -71,11 +78,14 @@ const retrievechats = async () => {
 
         // debugger
         incommingchats.forEach(chat => {
+            console.log(chat);
             addChat(chat);
         });
         sortChats();
     });
 };
+
+const getChat = chatId => state.chats.find(x => x.chatId === chatId);
 
 const addChat = (chat: Chat) => {
     if (!chat.isGroup) {
@@ -175,9 +185,49 @@ function getMessage(chat: Chat, id) {
     return message;
 }
 
+const appendMessages = (chat: Chat, messages: Array<Message<MessageBodyType>> | undefined): void => {
+    if(!messages) return;
+    chat.messages = messages.concat(chat.messages);
+}
+
+const fetchMessages = async (chatId: string, limit: number, lastMessageId: string | undefined): Promise<Array<Message<MessageBodyType>> | undefined> => {
+    const params = new URLSearchParams();
+    if (lastMessageId)
+        params.append('fromId', lastMessageId);
+    params.append('limit', limit.toString());
+
+    const response = await axios.get<Array<Message<MessageBodyType>>>(`${config.baseUrl}api/messages/${chatId}`, {
+        params: params,
+    });
+
+    if (200 > response.status && response.status >= 300) {
+        console.error(response.statusText + ': failed fetching more messages');
+        return;
+    }
+
+    return response.data;
+};
+
+const getNewMessages = async (chatId: string) => {
+    if(isLoading.value) return;
+
+    try {
+        setIsLoading(true);
+
+        const limit = 20;
+        const chat = getChat(chatId);
+        if(!chat) return;
+
+        const messages = await fetchMessages(<string>chat.chatId, limit, <string>chat.messages[0]?.id)
+        appendMessages(chat, messages)
+    } finally {
+        setIsLoading(false);
+    }
+}
+
 const addMessage = (chatId, message) => {
     if (message.type === 'READ') {
-        const chat: Chat = state.chats.find(chat => chat.chatId == chatId);
+        const chat: Chat = getChat(chatId);
 
         const newRead = getMessage(chat, message.body);
         const oldRead = getMessage(chat, <string>message.from);
@@ -194,7 +244,7 @@ const addMessage = (chatId, message) => {
         return;
     }
 
-    const chat: Chat = state.chats.find(chat => chat.chatId == chatId);
+    const chat: Chat = getChat(chatId);
 
     if (message.subject) {
         const subjectMessageIndex = chat.messages.findIndex(m => m.id === message.subject);
@@ -389,6 +439,8 @@ export const usechatsActions = () => {
         acceptChat,
         updateContactsInGroup,
         updateChat,
+        getNewMessages,
+        getIsLoading
     };
 };
 

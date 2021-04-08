@@ -2,12 +2,13 @@ import { IdInterface } from './../types/index';
 import { Router } from 'express';
 import { appCallback, getAppLoginUrl } from '../service/authService';
 import {
-    getAcceptedChats,
+    getAcceptedChatsWithPartialMessages,
     getChatRequests,
     getChatById,
 } from '../service/chatService';
-import { persistChat } from '../service/dataService';
+import { getChat, persistChat } from '../service/dataService';
 import { sendEventToConnectedSockets } from '../service/socketService';
+import { config } from '../config/config';
 
 const router = Router();
 
@@ -38,8 +39,8 @@ router.get('/', (req, res) => {
         return;
     }
 
-    const returnChats = getAcceptedChats();
-    res.json(returnChats);
+    const chats = getAcceptedChatsWithPartialMessages(20);
+    res.json(chats);
 });
 
 //@TODO will need to use this later
@@ -51,6 +52,19 @@ router.get('/chatRequests', (req, res) => {
 
     const returnChats = getChatRequests();
     res.json(returnChats);
+});
+
+router.get('/:chatId', (req, res) => {
+    try {
+        const chat = getChat(req.params.chatId);
+        if (chat.adminId !== config.userid) {
+            res.sendStatus(403);
+            return;
+        }
+        res.json(chat);
+    } catch (e) {
+        res.sendStatus(403);
+    }
 });
 
 export default router;

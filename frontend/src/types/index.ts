@@ -43,7 +43,6 @@ export interface QuoteBodyType extends MessageBodyType {
     message: string;
     quotedMessage: Message<MessageBodyType>;
 }
-
 export interface GroupUpdate extends MessageBodyType {
     type: string;
     contact: Contact;
@@ -84,14 +83,14 @@ export interface Workspace extends GroupChat {
 }
 
 export enum SystemMessageTypes {
-    REMOVE_USER ='REMOVEUSER',
+    REMOVE_USER = 'REMOVEUSER',
     ADD_USER = 'ADDUSER',
     JOINED_VIDEOROOM = 'JOINED_VIDEOROOM',
 }
 
 export interface GroupManagementBody extends SystemBody {
-    adminLocation: any,
-    contact: Contact
+    adminLocation: any;
+    contact: Contact;
 }
 export interface JoinedVideoRoomBody extends SystemBody {
     id: string;

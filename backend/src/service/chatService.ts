@@ -5,7 +5,7 @@ import { IdInterface, MessageBodyTypeInterface } from '../types';
 import Contact from '../models/contact';
 import { getChatIds, persistChat, getChat } from './dataService';
 import messages from '../routes/messages';
-import { parseMessage } from './messageService';
+import { parseMessage, parseMessages } from './messageService';
 import { sendEventToConnectedSockets } from './socketService';
 import { logger } from '../logger';
 import { getChatfromAdmin } from './apiService';
@@ -78,8 +78,8 @@ export const getMessagesFromId = (chatId: IdInterface) => true;
 export const setChatToAccepted = (chatId: IdInterface) => true;
 
 //@TODO filter for acceptedchatss
-export const getAcceptedChats = () => {
-    return getChatIds().map(chatid => getChat(chatid));
+export const getAcceptedChatsWithPartialMessages = (messageAmount: number = 0) => {
+    return getChatIds().map(chatid => getChat(chatid, messageAmount));
     // .filter((chat) => chat.acceptedChat);
 };
 
@@ -94,8 +94,14 @@ export const getChatById = (id: IdInterface) => {
     return getChat(id);
 };
 
-export const parseChat = (chat: any) => {
-    const messages = chat.messages.map((m: any) => parseMessage(m));
+export const parseFullChat = (chat: any) => parseChat(chat, parseMessages(chat.messages));
+export const parsePartialChat = (chat: any, amount: number) => {
+    const start = chat.messages.length - amount;
+    const messages = chat.messages.slice(start < 0 ? 0 : start, chat.messages.length);
+    return parseChat(chat, parseMessages(messages));
+}
+
+export const parseChat = (chat: any, messages: Array<MessageInterface<MessageBodyTypeInterface>>) => {
     return new Chat(
         chat.chatId,
         chat.contacts,

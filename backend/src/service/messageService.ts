@@ -13,6 +13,8 @@ import {sendEventToConnectedSockets} from './socketService';
 import {determinChatId} from '../routes/messages';
 import {logger} from "../logger";
 
+export const parseMessages = (messages: Array<any>) => messages.map(parseMessage);
+
 export const parseMessage = (
     msg: any,
 ): MessageInterface<MessageBodyTypeInterface> => {
@@ -138,6 +140,7 @@ export const parseMessage = (
                     ? [...msg.replies?.map((r: any) => parseMessage(r))]
                     : [],
                 msg?.subject,
+                msg?.updated
             );
         case MessageTypes.QUOTE:
             return new Message<StringMessageTypeInterface>(

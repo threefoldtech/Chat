@@ -60,7 +60,7 @@
             </div>
         </template>
         <template v-slot:default>
-            <ImagePreview/>
+            <ImagePreview />
             <div class="flex flex-row relative h-full w-full">
                 <ChatList class="hidden md:inline-block" />
                 <div class="relative h-full flex flex-col flex-1" v-if="chat" :key="chat.id + selectedId">
@@ -208,7 +208,7 @@
             appLayout,
             GroupManagement,
             ChatList,
-            ImagePreview
+            ImagePreview,
         },
         setup(props) {
             const route = useRoute();
@@ -368,7 +368,7 @@
 
             onUpdated(() => {
                 nextTick(() => {
-                    scrollToBottom(true);
+                    //scrollToBottom(true);
                 });
             });
 
@@ -379,12 +379,7 @@
             const { scrollEvents } = useScrollState();
 
             watch(scrollEvents, () => {
-                nextTick(() => {
-                    scrollToBottom(true);
-                });
-            });
-
-            onMounted(() => {
+                console.log("scrollEvents")
                 nextTick(() => {
                     scrollToBottom(true);
                 });
