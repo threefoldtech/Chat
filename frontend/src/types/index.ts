@@ -101,6 +101,11 @@ export interface SystemBody {
     message: string;
 }
 
+export interface GetMessagesResponse {
+    hasMore: boolean;
+    messages: Array<Message<MessageBodyType>>
+}
+
 export enum MessageTypes {
     STRING = 'STRING',
     SYSTEM = 'SYSTEM',

@@ -4,7 +4,7 @@ import axios from 'axios';
 import moment from 'moment';
 import {
     Chat,
-    Contact,
+    Contact, GetMessagesResponse,
     GroupChat,
     GroupManagementBody,
     Message,
@@ -22,12 +22,13 @@ import { uniqBy } from 'lodash';
 import { useScrollActions } from './scrollStore';
 import { myYggdrasilAddress } from '@/store/authStore';
 
-const state = reactive<chatstate>({
+const messageLimit = 50;
+const state = reactive<ChatState>({
     chats: [],
     chatRequests: [],
+    chatInfo: {},
 });
 
-const isLoading = ref(false);
 export const selectedId = ref('');
 export const selectedMessageId = ref(undefined);
 
@@ -49,12 +50,6 @@ export const messageState = reactive<MessageState>({
     actions: {},
 });
 
-const setIsLoading = (value: boolean) => {
-    isLoading.value = value;
-}
-
-const getIsLoading = () => readonly(isLoading);
-
 export const setMessageAction = (chatId: string, message: Message<any>, action: MessageAction) => {
     messageState.actions = {
         ...(messageState.actions ?? {}),
@@ -73,7 +68,10 @@ export const clearMessageAction = (chatId: string) => {
 };
 
 const retrievechats = async () => {
-    await axios.get(`${config.baseUrl}api/chats`).then(response => {
+    const params = new URLSearchParams();
+    params.append('limit', messageLimit.toString());
+
+    await axios.get(`${config.baseUrl}api/chats`, { params: params }).then(response => {
         const incommingchats = response.data;
 
         // debugger
@@ -86,8 +84,23 @@ const retrievechats = async () => {
 };
 
 const getChat = chatId => state.chats.find(x => x.chatId === chatId);
+const setChatHasMoreMessages = (chatId: string, hasMore: boolean): void => {
+    state.chatInfo[chatId] = {
+        ...(state.chatInfo[chatId] ?? { isLoading: false }),
+        hasMoreMessages: hasMore
+    }
+};
+const setChatMessagesAreLoading = (chatId: string, isLoading: boolean): void => {
+    state.chatInfo[chatId] = {
+        ...(state.chatInfo[chatId] ?? { hasMoreMessages: false }),
+        isLoading: isLoading
+    }
+};
+const getChatInfo = (chatId: string) => readonly(state.chatInfo[chatId]);
 
 const addChat = (chat: Chat) => {
+    setChatHasMoreMessages(<string>chat.chatId, chat.messages && chat.messages.length >= messageLimit);
+
     if (!chat.isGroup) {
         const { user } = useAuthState();
         const otherContact: Contact = <Contact>chat.contacts.find(c => c.id !== user.id);
@@ -186,17 +199,20 @@ function getMessage(chat: Chat, id) {
 }
 
 const appendMessages = (chat: Chat, messages: Array<Message<MessageBodyType>> | undefined): void => {
-    if(!messages) return;
+    if (!messages) return;
     chat.messages = messages.concat(chat.messages);
-}
+};
 
-const fetchMessages = async (chatId: string, limit: number, lastMessageId: string | undefined): Promise<Array<Message<MessageBodyType>> | undefined> => {
+const fetchMessages = async (
+    chatId: string,
+    limit: number,
+    lastMessageId: string | undefined
+): Promise<GetMessagesResponse | undefined> => {
     const params = new URLSearchParams();
-    if (lastMessageId)
-        params.append('fromId', lastMessageId);
+    if (lastMessageId) params.append('fromId', lastMessageId);
     params.append('limit', limit.toString());
 
-    const response = await axios.get<Array<Message<MessageBodyType>>>(`${config.baseUrl}api/messages/${chatId}`, {
+    const response = await axios.get<GetMessagesResponse>(`${config.baseUrl}api/messages/${chatId}`, {
         params: params,
     });
 
@@ -209,21 +225,25 @@ const fetchMessages = async (chatId: string, limit: number, lastMessageId: strin
 };
 
 const getNewMessages = async (chatId: string) => {
-    if(isLoading.value) return;
+    const info = getChatInfo(chatId);
+    if (!info || info.isLoading || !info.hasMoreMessages) return;
 
     try {
-        setIsLoading(true);
+        setChatMessagesAreLoading(chatId, true);
 
-        const limit = 20;
         const chat = getChat(chatId);
-        if(!chat) return;
+        if (!chat) return;
 
-        const messages = await fetchMessages(<string>chat.chatId, limit, <string>chat.messages[0]?.id)
-        appendMessages(chat, messages)
+        const response = await fetchMessages(<string>chat.chatId, messageLimit, <string>chat.messages[0]?.id);
+        setChatHasMoreMessages(<string>chat.chatId, response.hasMore);
+        appendMessages(chat, response.messages);
+        return response.messages.length > 0;
+    } catch (ex){
+        return false;
     } finally {
-        setIsLoading(false);
+        setChatMessagesAreLoading(chatId, false);
     }
-}
+};
 
 const addMessage = (chatId, message) => {
     if (message.type === 'READ') {
@@ -440,13 +460,21 @@ export const usechatsActions = () => {
         updateContactsInGroup,
         updateChat,
         getNewMessages,
-        getIsLoading
+        getChatInfo,
     };
 };
 
-interface chatstate {
+interface  ChatInfo {
+    [chatId: string]: {
+        hasMoreMessages: boolean;
+        isLoading: boolean;
+    };
+}
+
+interface ChatState {
     chats: Chat[];
     chatRequests: Chat[];
+    chatInfo: ChatInfo;
 }
 
 export const handleRead = (message: Message<string>) => {

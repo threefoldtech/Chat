@@ -243,13 +243,18 @@ router.get('/:chatId', (req, res) => {
         return;
     }
 
-    let index = chat.messages.length;
+    let end = chat.messages.length;
     if(page)
-        index = chat.messages.length - (page * limit)
+        end = chat.messages.length - (page * limit)
     else if (fromId)
-        index = chat.messages.findIndex(m => m.id === fromId)
+        end = chat.messages.findIndex(m => m.id === fromId)
 
-    res.json(chat.messages.slice(index - limit, index))
+    const start = end - limit < 0 ? 0 : end - limit;
+
+    res.json({
+        hasMore: start !== 0,
+        messages: chat.messages.slice(start, end)
+    })
 })
 
 export default router;

@@ -39,7 +39,10 @@ router.get('/', (req, res) => {
         return;
     }
 
-    const chats = getAcceptedChatsWithPartialMessages(20);
+    let limit = parseInt(<string | undefined>req.query.limit);
+    limit = limit > 100 ? 100 : limit;
+
+    const chats = getAcceptedChatsWithPartialMessages(limit);
     res.json(chats);
 });
 

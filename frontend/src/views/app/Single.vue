@@ -90,7 +90,7 @@
                             </button>
                         </div>
                     </div>
-                    <MessageBox :chat="chat" @scrollToBottom="scrollToBottom">
+                    <MessageBox :chat="chat">
                         <template v-slot:viewAnchor>
                             <div
                                 id="viewAnchor"
@@ -168,7 +168,7 @@
 </template>
 
 <script lang="ts">
-    import { useScrollState } from '@/store/scrollStore';
+    import { useScrollActions, useScrollState } from '@/store/scrollStore';
 
     import appLayout from '../../layout/AppLayout.vue';
     import moment from 'moment';
@@ -192,7 +192,7 @@
     import { showSideBar, toggleSideBar } from '@/services/sidebarService';
     import { JoinedVideoRoomBody, MessageTypes, SystemMessageTypes } from '@/types';
     import MessageBox from '@/components/MessageBox.vue';
-    import { messageBox } from '@/services/messageHelperService';
+    import { scrollMessageBoxToBottom } from '@/services/messageHelperService';
     import Button from '@/components/Button.vue';
     import ImagePreview from '@/components/ImagePreview.vue';
 
@@ -346,17 +346,12 @@
             const { isIntersecting } = useIntersectionObserver(viewAnchor);
 
             const scrollToBottom = (force = false) => {
-                console.log('scroll');
                 if (!force && !isIntersecting.value) {
                     return;
                 }
 
                 nextTick(() => {
-                    if (!messageBox.value) {
-                        return;
-                    }
-
-                    messageBox.value.scrollTo(0, messageBox.value.scrollHeight);
+                    scrollMessageBoxToBottom();
                 });
             };
 
@@ -366,22 +361,18 @@
                 });
             });
 
-            onUpdated(() => {
-                nextTick(() => {
-                    //scrollToBottom(true);
-                });
-            });
-
             const status = computed(() => {
                 return statusList[selectedId.value];
             });
 
             const { scrollEvents } = useScrollState();
+            const { clearScrollEvents } = useScrollActions();
 
             watch(scrollEvents, () => {
-                console.log("scrollEvents")
+                const forced = scrollEvents.find(x => x);
                 nextTick(() => {
-                    scrollToBottom(true);
+                    scrollToBottom(forced);
+                    clearScrollEvents();
                 });
             });
 
@@ -394,7 +385,6 @@
                 message,
                 file,
                 m,
-                messageBox,
                 scrollToBottom,
                 status,
                 statusList,
