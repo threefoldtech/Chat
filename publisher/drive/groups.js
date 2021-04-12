@@ -55,20 +55,20 @@ class Groups{
         }
 
         this.parseAcl = async function (aclData) {
-            
+            var acls  = {"secrets": [], "users": {}}
+
             var users = {}
             for(var i=0; i < aclData.length; i++){
                 var acl = aclData[i]
                 await acl.groups.forEach(async (g)=>{
-                    console.log(`g is ${g}`)
                     try{
                         var groupObj = await this.get(g)
                         groupObj._allUsers.forEach((u)=>{
                             if(!(u in users)){
-                                users[u] = {"secrets": [], "rights": new Set()}
+                                users[u] = {"rights": new Set()}
                             }
                             var rights = [...acl.rights]
-                            users[u].secrets.push(...acl.secrets)
+                            acls.secrets.push(...acl.secrets)
                             for(var m=0; m < rights.length; m++ ){
                                 users[u].rights.add(rights[m])
                             }
@@ -81,10 +81,10 @@ class Groups{
                 for (var k=0; k < acl.users.length; k++){
                     acl.users.forEach((u)=>{
                         if(!(u in users)){
-                            users[u] = {"secrets": [], "rights": new Set()}
+                            users[u] = {"rights": new Set()}
                         }
                         
-                        users[u].secrets.push(...acl.secrets)
+                        acls.secrets.push(...acl.secrets)
                         var rights = [...acl.rights]
                         for(var m=0; m < rights.length; m++ ){
                             users[u].rights.add(rights[m])
@@ -94,7 +94,9 @@ class Groups{
                 }
 
             }
-            return users
+            acls.secrets = Array.from(new Set(acls.secrets))
+            acls.users = users
+            return acls
         }
     }
 }

@@ -135,8 +135,22 @@ app.use(function (req, res, next) {
 app.use((req, res, next) => {
   var info = req.info
   
-  if (info.password != ""){  
+  var requirePassword = false
+  var threebotConnect = false
 
+  if (info.acls.secrets.length != 0 ){
+    requirePassword = true
+    req.session.requirePassword = true
+    req.session.save()
+  }
+
+  if(Object.keys(info.acls.users).length !== 0){
+    threebotConnect = true
+    req.session.threebotConnect = true
+    req.session.save()
+  }
+
+  if (requirePassword || threebotConnect){  
     if(req.session.authorized || req.url.startsWith('/login?next=')){
       next()
       return
@@ -148,7 +162,6 @@ app.use((req, res, next) => {
     return
   }
 })
-
 
 
 // stellar.toml

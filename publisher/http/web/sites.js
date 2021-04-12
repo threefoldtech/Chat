@@ -311,9 +311,7 @@ router.get('/', asyncHandler(async (req, res) =>  {
      var driveObj = info.drive
      var dir = info.dir
      var filepath = `${dir}/index.html`
-     console.log(filepath)
-     console.log(info)
-     console.log(req.url)
+    
      try {
          entry = await driveObj.promises.stat(filepath)
          

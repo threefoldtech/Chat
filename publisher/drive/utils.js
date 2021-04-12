@@ -115,7 +115,6 @@ async function process(drive, dir){
     }
     info["defs"] = defs
     info["domains"] = domains
-    console.log(info)
     return info
 }
 
