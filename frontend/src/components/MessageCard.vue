@@ -152,10 +152,6 @@
                 console.log('toggleSendForwardMessage');
             };
 
-            const sendForwardMessage = () => {
-                console.log('sendQuoteMessage');
-            };
-
             const replyMessage = message => {
                 clearMessageAction(props.chatId);
                 //nextTick is needed because vue throws dom errors if you switch between Reply and Edit

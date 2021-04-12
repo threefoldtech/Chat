@@ -2,7 +2,7 @@ import { IdInterface, UserInterface } from './../types/index';
 import { config } from '../config/config';
 import fs from 'fs';
 import Chat from '../models/chat';
-import { parseChat } from './chatService';
+import { parseFullChat, parsePartialChat } from './chatService';
 import { uniqBy } from 'lodash';
 import im from 'imagemagick';
 
@@ -13,10 +13,12 @@ export const getChatIds = (): IdInterface[] => {
     return locations;
 };
 
-export const getChat = (id: IdInterface): Chat => {
+export const getChat = (id: IdInterface, messagesAmount: number | undefined = undefined): Chat => {
     const path = config.baseDir + `chats/${id}/chat.json`;
     const chat: Chat = <Chat>JSON.parse(fs.readFileSync(path).toString());
-    return parseChat(chat);
+    return messagesAmount === undefined
+        ? parseFullChat(chat)
+        : parsePartialChat(chat, messagesAmount)
 };
 
 export const getUserdata = () => {

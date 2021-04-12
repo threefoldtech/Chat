@@ -230,17 +230,31 @@ router.put('/', async (req, res) => {
     res.sendStatus(200);
 });
 
+
 router.get('/:chatId', (req, res) => {
-    try {
-        const chat = getChat(req.params.chatId);
-        if (chat.adminId !== config.userid) {
-            res.sendStatus(403);
-            return;
-        }
-        res.json(chat);
-    } catch (e) {
-        res.sendStatus(403);
+    const fromId = <string | undefined>req.query.fromId;
+    const page = parseInt(<string | undefined>req.query.page);
+    let limit = parseInt(<string | undefined>req.query.limit);
+    limit = limit > 100 ? 100 : limit;
+
+    const chat = getChat(req.params.chatId);
+    if(!chat) {
+        res.sendStatus(404);
+        return;
     }
-});
+
+    let end = chat.messages.length;
+    if(page)
+        end = chat.messages.length - (page * limit)
+    else if (fromId)
+        end = chat.messages.findIndex(m => m.id === fromId)
+
+    const start = end - limit < 0 ? 0 : end - limit;
+
+    res.json({
+        hasMore: start !== 0,
+        messages: chat.messages.slice(start, end)
+    })
+})
 
 export default router;
