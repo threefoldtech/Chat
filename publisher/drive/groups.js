@@ -1,4 +1,3 @@
-const path = require('path')
 const chalk = require('chalk');
 
 class Groups{
@@ -30,23 +29,8 @@ class Groups{
             return res
         }  
         
-        this.load = async function(drive){
-            var groupsfilepath = path.join("/", '.groups.json')
-            try{
-                await drive.promises.stat(groupsfilepath)
-                
-            }catch(e){
-                console.log(chalk.red(`    ✓ (Drive (${drive.name}) does not contain .groups file exiting`))
-                process.exit(1)
-            }
-
-            try{
-                this._groups =  await JSON.parse( await drive.promises.readFile(path.join("/", ".groups.json")));
-            }catch(e){
-                console.log(chalk.red(`    ✓ (Drive (${drive.name}) can not read .groups file`))
-                process.exit(1)
-            }
-            
+        this.load = async function(groups){
+            this._groups = groups
             for(var item in this._groups){
                 var g = this._groups[item]
                 // make sure subgroups exis
@@ -71,17 +55,46 @@ class Groups{
         }
 
         this.parseAcl = async function (aclData) {
-            var users = new Set()
-            aclData.users.forEach((u)=>{users.add(u)})
-            await aclData.groups.forEach(async (g)=>{
-                try{
-                    var groupObj = await this.get(g)
-                    groupObj._allUsers.forEach((u)=>{users.add(u)})
-                }catch(e){
-                    console.log(chalk.red(`    ✓ (Group (${g}) can not be found .. ignoring`))
+            
+            var users = {}
+            for(var i=0; i < aclData.length; i++){
+                var acl = aclData[i]
+                await acl.groups.forEach(async (g)=>{
+                    console.log(`g is ${g}`)
+                    try{
+                        var groupObj = await this.get(g)
+                        groupObj._allUsers.forEach((u)=>{
+                            if(!(u in users)){
+                                users[u] = {"secrets": [], "rights": new Set()}
+                            }
+                            var rights = [...acl.rights]
+                            users[u].secrets.push(...acl.secrets)
+                            for(var m=0; m < rights.length; m++ ){
+                                users[u].rights.add(rights[m])
+                            }
+                        })
+                    }catch(e){
+                        console.log(chalk.red(`    ✓ (Group (${g}) can not be found .. ignoring`))
+                    }
+                })
+
+                for (var k=0; k < acl.users.length; k++){
+                    acl.users.forEach((u)=>{
+                        if(!(u in users)){
+                            users[u] = {"secrets": [], "rights": new Set()}
+                        }
+                        
+                        users[u].secrets.push(...acl.secrets)
+                        var rights = [...acl.rights]
+                        for(var m=0; m < rights.length; m++ ){
+                            users[u].rights.add(rights[m])
+                        }
+                    })
+
                 }
-            })
-            return Array.from(users)
+
+            }
+            return users
         }
     }
 }
