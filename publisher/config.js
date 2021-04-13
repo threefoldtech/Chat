@@ -18,7 +18,7 @@ async function load(){
                 throw new Error("THREEBOT_PHRASE Env variable must be set for production")
             }
             if(!secret){
-                throw new Error("THREEBOT_PHRASE Env variable must be set for production")
+                throw new Error("SECRET Env variable must be set for production")
             }
             config.threebot.passPhrase = passPhrase
             config.http.session.secret = secret

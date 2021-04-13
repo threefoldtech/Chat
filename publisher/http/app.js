@@ -87,13 +87,20 @@ app.use(function (req, res, next) {
   else{
     info = config.info.domains[host]
     if(!info){
-      return res.status(404).send('Not Found')
+      return res.status(404).render('sites/404.mustache')
     }
   }
   
   if(req.url.startsWith('/login')){
     var alias = req.query.next.replace('/', '')
-    info = config.info.websites[alias] || config.info.wikis[alias]
+    if(alias == ""){
+      info = config.info.websites['threefold'] || config.info.wikis['threefold']
+    }else{
+      info = config.info.websites[alias] || config.info.wikis[alias]
+      if (!info){
+        return res.status(404).render('sites/404.mustache')
+      }
+    }
 
   }else if(req.url != '/'){
     var found = false
@@ -202,14 +209,17 @@ app.use((req, res, next) => {
     if(req.session.authorization_mechanism == 'password'){
       var pass = req.session.used_pass
       var acl = info.acls.secrets[pass]
-      if(!acl){
-        return res.status(401).send(`Un authorized <a href="/logout?next=${req.url}">Login again with different user</>`)
+
+      if(Object.keys(info.acls.secrets).length !== 0 && !acl){
+        return res.status(401).render("sites/unauthorized.mustache", {
+          'next' : req.url
+        })
       }
     }else if(req.session.authorization_mechanism == '3bot'){
       var user = req.session.user.profile.doubleName.replace('.3bot', '')
       var acl = info.acls.users[user]
       
-      if(!acl){
+      if(Object.keys(info.acls.users).length !== 0  && !acl){
         return res.status(401).send(`Un authorized <a href="/logout?next=${req.url}">Login again with different user</>`)
       }
     }

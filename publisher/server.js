@@ -92,7 +92,7 @@ async function init(){
 
 async function main(){
   
-    var cleanup = await init().catch((e)=>{console.log(e);process.exit(1)})
+    var cleanup = await init().catch((e)=>{console.log(e);process.exit(0)})
 
     if(config.dns.enabled){
       console.log(chalk.green(`✓ (DNS Server) : ${config.dns.port}`));
