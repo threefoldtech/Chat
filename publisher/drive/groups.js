@@ -55,11 +55,19 @@ class Groups{
         }
 
         this.parseAcl = async function (aclData) {
-            var acls  = {"secrets": [], "users": {}}
-
+            var acls  = {"secrets": {}, "users": {}}
             var users = {}
             for(var i=0; i < aclData.length; i++){
                 var acl = aclData[i]
+                for(var j=0; j < acl.secrets.length; j++){
+                    var s = acl.secrets[j]
+                    if(! (s in acl.secrets)){
+                        acls.secrets[s] = []
+                    }
+
+                    acls.secrets[s].push(...acl.rights)
+                }
+
                 await acl.groups.forEach(async (g)=>{
                     try{
                         var groupObj = await this.get(g)
@@ -67,8 +75,8 @@ class Groups{
                             if(!(u in users)){
                                 users[u] = {"rights": new Set()}
                             }
-                            var rights = [...acl.rights]
-                            acls.secrets.push(...acl.secrets)
+                            var rights = [...acl.rights]        
+
                             for(var m=0; m < rights.length; m++ ){
                                 users[u].rights.add(rights[m])
                             }
@@ -77,14 +85,12 @@ class Groups{
                         console.log(chalk.red(`    ✓ (Group (${g}) can not be found .. ignoring`))
                     }
                 })
-
                 for (var k=0; k < acl.users.length; k++){
                     acl.users.forEach((u)=>{
                         if(!(u in users)){
                             users[u] = {"rights": new Set()}
                         }
                         
-                        acls.secrets.push(...acl.secrets)
                         var rights = [...acl.rights]
                         for(var m=0; m < rights.length; m++ ){
                             users[u].rights.add(rights[m])
@@ -94,7 +100,9 @@ class Groups{
                 }
 
             }
-            acls.secrets = Array.from(new Set(acls.secrets))
+            for (var s in acls.secrets){
+                acls.secrets[s] =  Array.from(new Set(acls.secrets[s]))
+            }
             acls.users = users
             return acls
         }

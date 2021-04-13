@@ -245,21 +245,32 @@ async function handleWikiFile(req, res, info){
 }
 
 router.get('/login', asyncHandler(async (req, res) =>  {
-    return res.render('sites/login.mustache', {})
+    
+    return res.render('sites/login.mustache', {
+        'requirePassword': req.session.requirePassword,
+        'require3botConnect': req.session.threebotConnect,
+        'next': req.query.next
+    })
 }))
 
 router.post('/login', asyncHandler(async (req, res) =>  {
     var info = req.info
     var body = req.body
-
     if (body && body.psw){
-        if (body.psw == info.password){
+        if (body.psw in info.acls.secrets){
             req.session.authorized = true
+            req.session.authorization_mechanism = 'password'
+            req.session.used_pass = body.psw
             req.session.save()
             return res.redirect(req.query.next)
         }
     }
     return res.redirect(`/login?next=${req.query.next}`)
+}))
+
+router.get('/logout', asyncHandler(async (req, res) =>  {
+    req.session.destroy();
+    return res.redirect(req.query.next)
 }))
 
 

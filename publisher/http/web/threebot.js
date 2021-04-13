@@ -47,6 +47,7 @@ router.get('/threebot/authorize', asyncHandler(async (req, res) => {
     try{
         const profileData = await login.parseAndValidateRedirectUrl(new url.URL(uri), state)
         req.session.authorized = true
+        req.session.authorization_mechanism = '3bot'
         req.session.user = profileData
         req.user = profileData
         req.session.save()

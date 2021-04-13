@@ -67,9 +67,17 @@ app.use(function (req, res, next) {
     if(req.session.authorized){
       return res.status(201)
     }
+
     next()
     return
   }
+
+  if(req.url.startsWith('/logout')){
+    next()
+    return
+  }
+
+  
 
   var info = null
 
@@ -82,8 +90,12 @@ app.use(function (req, res, next) {
       return res.status(404).send('Not Found')
     }
   }
- 
-  if(req.url != '/'){
+  
+  if(req.url.startsWith('/login')){
+    var alias = req.query.next.replace('/', '')
+    info = config.info.websites[alias] || config.info.wikis[alias]
+
+  }else if(req.url != '/'){
     var found = false
     for (var alias in config.info.websites){
       if (req.url == `/${alias}` || req.url.startsWith(`/${alias}/`)){
@@ -109,36 +121,23 @@ app.use(function (req, res, next) {
       info.subPath = true
     }
   }
-  
   req.info = info
   req.info.host = host
   req.info.port = port
   req.info.secure = req.secure
-
-  if(req.info.login){
-    if(!req.session.authorized){
-      res.redirect(`/threebot/connect?next=${req.url}`)
-    }else{
-      if(req.info.users.length > 0 && (!req.info.users.map((u)=>u.replace('.3bot', '')).includes(req.session.user.profile.doubleName.replace('.3bot', '')))){
-        return res.status(401).json({"error": "Unauthorized access"})
-      }else{
-        next()
-        return 
-      }
-    }
-  }else{
-    next()
-    return
-  }
+  next()
+  return
 })
 
 app.use((req, res, next) => {
+  if(req.url.startsWith('/threebot') || req.url.startsWith('/login') || req.url.startsWith('/logout')){
+    next()
+    return
+  }
   var info = req.info
-  
   var requirePassword = false
   var threebotConnect = false
-
-  if (info.acls.secrets.length != 0 ){
+  if (Object.keys(info.acls.secrets).length !== 0){
     requirePassword = true
     req.session.requirePassword = true
     req.session.save()
@@ -147,6 +146,7 @@ app.use((req, res, next) => {
   if(Object.keys(info.acls.users).length !== 0){
     threebotConnect = true
     req.session.threebotConnect = true
+    
     req.session.save()
   }
 
@@ -194,10 +194,29 @@ image = "https://raw.githubusercontent.com/threefoldfoundation/www_threefold_io/
   }
 })
 
-// app.use((req, res, next) => {
-//   res.header('Cache-Control', 'max-age=2592000000');
-//   next();
-// });
+//ACLS
+app.use((req, res, next) => {
+  
+  if(req.session.authorized && !req.url.startsWith('/logout')){
+    var info = req.info
+    if(req.session.authorization_mechanism == 'password'){
+      var pass = req.session.used_pass
+      var acl = info.acls.secrets[pass]
+      if(!acl){
+        return res.status(401).send(`Un authorized <a href="/logout?next=${req.url}">Login again with different user</>`)
+      }
+    }else if(req.session.authorization_mechanism == '3bot'){
+      var user = req.session.user.profile.doubleName.replace('.3bot', '')
+      var acl = info.acls.users[user]
+      
+      if(!acl){
+        return res.status(401).send(`Un authorized <a href="/logout?next=${req.url}">Login again with different user</>`)
+      }
+    }
+  }
+  next()
+  return
+})
 
 app.use(express.json());
 
