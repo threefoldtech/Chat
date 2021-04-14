@@ -10,7 +10,7 @@ import {
 import Message from '../models/message';
 import {getChat, persistChat, saveFile} from './dataService';
 import {sendEventToConnectedSockets} from './socketService';
-import {determinChatId} from '../routes/messages';
+import {determineChatId} from '../routes/messages';
 import {logger} from "../logger";
 
 export const parseMessages = (messages: Array<any>) => messages.map(parseMessage);
@@ -237,7 +237,7 @@ export const editMessage = (
 export const handleRead = (message: Message<StringMessageTypeInterface>) => {
     // console.log('reading');
 
-    let chatId = determinChatId(message);
+    let chatId = determineChatId(message);
     const chat = getChat(chatId);
 
     const newRead = chat.messages.find(m => m.id === message.body);

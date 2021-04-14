@@ -1,21 +1,25 @@
-import { logger } from './../logger';
 import { Router } from 'express';
-import { user } from '../store/user';
+import { getStatus, getAvatar, getLastSeen, updateAvatar, getImage, getPublicKey } from '../store/user';
 import { connections } from '../store/connections';
 import { UploadedFile } from 'express-fileupload';
 import { deleteAvatar, saveAvatar } from '../service/dataService';
 import { uuidv4 } from '../common';
 import { config } from '../config/config';
-import im from 'imagemagick';
-import fs from 'fs';
+import { uint8ToString } from '../service/encryptionService';
 
 const router = Router();
 
+router.get("/publickey", (req, res) => {
+    const key = getPublicKey();
+    const keyString = uint8ToString(key);
+    res.json(keyString);
+})
+
 router.get('/getStatus', async (req, res) => {
     const isOnline = connections.getConnections().length ? true : false;
-    const status = user.getStatus();
-    const avatar = await user.getAvatar();
-    const lastSeen = user.getLastSeen();
+    const status = getStatus();
+    const avatar = await getAvatar();
+    const lastSeen = getLastSeen();
     const data = {
         status,
         avatar,
@@ -38,10 +42,10 @@ router.post('/avatar', async (req, resp) => {
     const file = <UploadedFile>req.files.file;
     const avatarId = uuidv4();
     await saveAvatar(file.data, avatarId);
-    await deleteAvatar(user.image)
+    await deleteAvatar(getImage())
 
-    user.updateAvatar(avatarId);
-    const newUrl = user.getAvatar();
+    updateAvatar(avatarId);
+    const newUrl = await getAvatar();
     resp.status(200).json(newUrl);
 });
 

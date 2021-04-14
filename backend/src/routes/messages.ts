@@ -8,6 +8,7 @@ import Message from '../models/message';
 import { contactRequests } from '../store/contactRequests';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import {
+    ContactInterface,
     ContactRequest,
     DtIdInterface,
     GroupUpdateType,
@@ -24,11 +25,12 @@ import {
 import { persistMessage, syncNewChatWithAdmin } from '../service/chatService';
 import { getChat } from '../service/dataService';
 import { config } from '../config/config';
-import { sendMessageToApi } from '../service/apiService';
+import { getPublicKey, sendMessageToApi } from '../service/apiService';
 import Chat from '../models/chat';
 import { uuidv4 } from '../common';
 import { handleGroupUpdate } from '../service/groupService';
 import { getMyLocation } from '../service/locationService';
+import { appendSignature, base64ToUint8Array, isSigned, Signed, verifySignature } from '../service/encryptionService';
 
 const router = Router();
 
@@ -36,7 +38,7 @@ async function handleContactRequest(message: Message<ContactRequest>) {
     contactRequests.push(<Contact>(<unknown>message.body));
     const otherContact = new Contact(
         <string>message.from,
-        message.body.location
+        message.body.location,
     );
     const myLocation = await getMyLocation();
     const myself = new Contact(<string>config.userid, myLocation);
@@ -57,31 +59,67 @@ async function handleContactRequest(message: Message<ContactRequest>) {
         [requestMsg],
         <string>message.from,
         false,
-        message.from
+        message.from,
     );
     sendEventToConnectedSockets('connectionRequest', newchat);
     persistChat(newchat);
 }
 
-export const determinChatId = (
-    message: Message<MessageBodyTypeInterface>
-): DtIdInterface => {
+export const determineChatId = (message: Message<MessageBodyTypeInterface>): DtIdInterface => {
     if (message.to === config.userid) {
         return message.from;
-    }
-
-    if (message.from === config.userid) {
-        return message.to;
     }
 
     return message.to;
 };
 
+
+
+export const checkSignature = async (signedMessage: Signed<Message<MessageBodyTypeInterface>>, contact: Contact, signature: string) => {
+    const publicKey = await getPublicKey(contact.location);
+    if (!publicKey) return false;
+
+    return verifySignature(signedMessage, signature, base64ToUint8Array(publicKey));
+};
+
+
+export const verifySignedMessage = async (chat: Chat, signedMessage: Signed<Message<MessageBodyTypeInterface>>): Promise<boolean> => {
+    if(!isSigned(signedMessage)) {
+        console.log("Message is not signed!")
+        return false;
+    }
+
+    let signatureIndex = 0;
+    if(chat.isGroup && chat.adminId === config.userid) {
+        const adminContact = chat.contacts.find(x => x.id === chat.adminId);
+        if (!adminContact) {
+            console.log(`Admin ${chat.adminId} is not found in the contact list`)
+            return false;
+        }
+
+        const adminIsVerified = await checkSignature(signedMessage, adminContact, signedMessage.signatures[signatureIndex])
+        if(!adminIsVerified) {
+            console.log(`Admin signature is not correct`);
+            return false;
+        }
+        signatureIndex++;
+    }
+    const fromContact = chat.contacts.find(x => x.id === signedMessage.original.from);
+    if (!fromContact) {
+        console.log(`Sender ${signedMessage.original.from} is not found in the contact list`)
+        return false;
+    }
+
+    return await checkSignature(signedMessage, fromContact, signedMessage.signatures[signatureIndex])
+}
+
 // Should be externally availble
 router.put('/', async (req, res) => {
     // @ TODO check if valid
     const msg = req.body;
-    let message: Message<MessageBodyTypeInterface>;
+    const signedMessage = msg as Signed<Message<MessageBodyTypeInterface>>;
+    let message = signedMessage.original;
+
     try {
         message = parseMessage(msg);
     } catch (e) {
@@ -90,10 +128,21 @@ router.put('/', async (req, res) => {
     }
 
     const blockList = getBlocklist();
+    const chatId = determineChatId(message);
+    let chat: Chat;
+    try {
+        chat = getChat(chatId);
+    } catch (e) {
+        console.log(e);
+        res.status(403).json('Sorry but I\'m not aware of this chat id');
+        return;
+    }
 
-    const chatId = determinChatId(message);
-
-    // const chatId = message.from === config.userid ? message.to : message.from;
+    const messageIsCorrectlySigned = verifySignedMessage(chat, signedMessage);
+    if(!messageIsCorrectlySigned) {
+        res.sendStatus(500);
+        return;
+    }
 
     if (blockList.includes(<string>chatId)) {
         //@todo what should i return whenblocked
@@ -125,34 +174,27 @@ router.put('/', async (req, res) => {
             console.log('I have been added to a group!');
             syncNewChatWithAdmin(
                 groupUpdateMsg.body.adminLocation,
-                <string>groupUpdateMsg.to
+                <string>groupUpdateMsg.to,
             );
             res.json({ status: 'Successfully added chat' });
             return;
         }
     }
 
-    let chat;
-    try {
-        chat = getChat(chatId);
-    } catch (e) {
-        console.log(e);
-        res.status(403).json("Sorry but I'm not aware of this chat id");
-        return;
-    }
 
     if (chat.isGroup && chat.adminId == config.userid) {
         chat.contacts
             .filter(c => c.id !== config.userid)
             .forEach(c => {
                 console.log(`group sendMessage to ${c.id}`);
-                sendMessageToApi(c.location, message);
+                appendSignature(signedMessage)
+                sendMessageToApi(c.location, signedMessage);
             });
 
         if (message.type === <string>MessageTypes.SYSTEM) {
             handleGroupUpdate(<any>message, chat);
-            //@ts-ignore
-            sendMessageToApi(message.body.contact.location, message);
+            appendSignature(signedMessage)
+            sendMessageToApi(((message as Message<GroupUpdateType>).body.contact as ContactInterface).location, signedMessage);
 
             res.json({ status: 'success' });
             return;
@@ -238,23 +280,23 @@ router.get('/:chatId', (req, res) => {
     limit = limit > 100 ? 100 : limit;
 
     const chat = getChat(req.params.chatId);
-    if(!chat) {
+    if (!chat) {
         res.sendStatus(404);
         return;
     }
 
     let end = chat.messages.length;
-    if(page)
-        end = chat.messages.length - (page * limit)
+    if (page)
+        end = chat.messages.length - (page * limit);
     else if (fromId)
-        end = chat.messages.findIndex(m => m.id === fromId)
+        end = chat.messages.findIndex(m => m.id === fromId);
 
     const start = end - limit < 0 ? 0 : end - limit;
 
     res.json({
         hasMore: start !== 0,
-        messages: chat.messages.slice(start, end)
-    })
-})
+        messages: chat.messages.slice(start, end),
+    });
+});
 
 export default router;

@@ -1,7 +1,6 @@
 import { persistChat } from './../service/dataService';
 import { UploadedFile } from 'express-fileupload';
 import { Router } from 'express';
-import { user } from '../store/user';
 import { connections } from '../store/connections';
 import { getChat, saveFile } from '../service/dataService';
 import { FileMessageType, MessageTypes } from '../types';
@@ -11,6 +10,7 @@ import { sendEventToConnectedSockets } from '../service/socketService';
 import { sendMessageToApi } from '../service/apiService';
 import { getFullIPv6ApiLocation } from '../service/urlService';
 import { getMyLocation } from '../service/locationService';
+import { createSignedMessage } from '../service/encryptionService';
 
 const router = Router();
 
@@ -48,9 +48,10 @@ router.post('/:chatid/:messageid', async (req, resp) => {
     sendEventToConnectedSockets('message', message);
     const chat = getChat(chatId);
     console.log('Sending TO: ', chat);
-    sendMessageToApi(
+    const signedMessage = createSignedMessage(message);
+    await sendMessageToApi(
         chat.contacts.find(contact => contact.id === chat.adminId).location,
-        message
+        signedMessage
     );
     chat.addMessage(message);
     persistChat(chat);
