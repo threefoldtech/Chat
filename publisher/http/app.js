@@ -94,7 +94,7 @@ app.use(function (req, res, next) {
   if(req.url.startsWith('/login')){
     var alias = req.query.next.replace('/', '')
     if(alias == ""){
-      info = config.info.websites['threefold'] || config.info.wikis['threefold']
+      info = config.info.domains[host]
     }else{
       if(alias.includes("info/")){
         info = config.info.wikis[alias.replace("info/", "")]
