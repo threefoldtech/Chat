@@ -95,6 +95,11 @@ async function main(){
     var cleanup = await init().catch((e)=>{console.log(e);process.exit(0)})
 
     if(config.dns.enabled){
+      
+      if (config.nodejs.production){
+        config.dns.port = 53
+      }
+
       console.log(chalk.green(`✓ (DNS Server) : ${config.dns.port}`));
       dnsserver.listen(config.dns.port);
     }
