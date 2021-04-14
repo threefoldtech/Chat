@@ -96,7 +96,11 @@ app.use(function (req, res, next) {
     if(alias == ""){
       info = config.info.websites['threefold'] || config.info.wikis['threefold']
     }else{
-      info = config.info.websites[alias] || config.info.wikis[alias]
+      if(alias.includes("info/")){
+        config.info.wikis[alias.replace("info/", "")]
+      }else{
+        info = config.info.websites[alias]
+      }
       if (!info){
         return res.status(404).render('sites/404.mustache')
       }
