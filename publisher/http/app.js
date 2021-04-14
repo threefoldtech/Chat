@@ -97,7 +97,7 @@ app.use(function (req, res, next) {
       info = config.info.websites['threefold'] || config.info.wikis['threefold']
     }else{
       if(alias.includes("info/")){
-        config.info.wikis[alias.replace("info/", "")]
+        info = config.info.wikis[alias.replace("info/", "")]
       }else{
         info = config.info.websites[alias]
       }
