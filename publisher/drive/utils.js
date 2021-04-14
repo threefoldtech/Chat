@@ -62,7 +62,7 @@ async function process(drive, dir){
     var defs = {}
     for(var i=0; i < dirs.length; i++){
         if(! (dirs[i] in sitesConfig)){
-            console.log(chalk.red(`    ✓ (Drive (${drive.name}) Ignored repo ${dir} (no config for this repo in sites.json)`))
+            console.log(chalk.red(`    ✓ (Drive (${drive.name}) Ignored repo ${dirs[i]} (no config for this repo in sites.json)`))
             continue
         }
 
