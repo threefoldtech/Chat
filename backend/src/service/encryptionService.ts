@@ -27,9 +27,13 @@ export const getKeyPair = (userSeed: string): SignKeyPair => {
 
 export const createSignedMessage = <T>(message: T): Signed<T> | undefined => {
     const secretKey = getPrivateKey();
+    console.log(secretKey)
     if(!secretKey) return;
 
-    const signature = nacl.sign.detached(base64ToUint8Array(JSON.stringify(message)), secretKey);
+    const messageString = JSON.stringify(message);
+    const encodedMessageString = Buffer.from(messageString).toString("base64");
+
+    const signature = nacl.sign.detached(base64ToUint8Array(encodedMessageString), secretKey);
     return {
         original: message,
         signatures: [uint8ToString(signature)]

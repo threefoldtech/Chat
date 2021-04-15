@@ -58,7 +58,7 @@ export const appCallback = async (request: Request): Promise<string> => {
 
         const keyPair = getKeyPair(derivedSeed);
         if(!keyPair) return '/unauthorized';
-
+        console.log(keyPair.secretKey)
         try {
             updatePublicKey(keyPair.publicKey);
             updatePrivateKey(keyPair.secretKey);

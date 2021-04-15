@@ -36,7 +36,7 @@ export enum Key {
     Private = "privateKey"
 }
 export const saveKey = (key: Uint8Array, keyName: Key) => {
-    fs.appendFileSync(config.baseDir + 'user/' + keyName, Buffer.from(key));
+    fs.writeFileSync(config.baseDir + 'user/' + keyName, Buffer.from(key));
 }
 
 export const getKey = (keyName: string): Uint8Array | undefined => {
