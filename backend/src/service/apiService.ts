@@ -19,13 +19,14 @@ export const sendMessageToApi = async (
     }
 };
 
-export const getPublicKey = async(location: string) => {
+export const getPublicKey = async(location: string): Promise<string | undefined> => {
     const url = getFullIPv6ApiLocation(location, '/publickey');
     try {
         const response = await axios.get(url);
-        return response.data;
+        return response.data as string;
     } catch (e) {
-        console.error(`couldn't get publickey ${url}`);
+        console.log(`couldn't get publickey ${url}`);
+        return;
     }
 }
 

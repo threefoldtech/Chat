@@ -1,4 +1,4 @@
-import { getKey, getUserdata, Key, persistUserdata, saveKey } from '../service/dataService';
+import { getUserdata, persistUserdata } from '../service/dataService';
 import { config } from '../config/config';
 import { getMyLocation } from '../service/locationService';
 
@@ -6,8 +6,7 @@ let status: string;
 let image: string;
 let id: string;
 let lastSeen: number;
-let privateKey: Uint8Array;
-let publicKey: Uint8Array;
+
 
 const setUserData = () => {
     try {
@@ -24,10 +23,7 @@ const setUserData = () => {
     }
 };
 
-const setKeys = () => {
-    publicKey = getKey(Key.Public);
-    privateKey = getKey(Key.Private);
-}
+
 
 export const getId = () => {
     return id;
@@ -41,21 +37,6 @@ export const getImage = () => {
     return image;
 };
 
-export const getPrivateKey = () => {
-    return privateKey;
-}
-export const updatePrivateKey = (pk: Uint8Array) => {
-    saveKey(pk, Key.Private);
-    privateKey = pk;
-}
-
-export const getPublicKey = () => {
-    return publicKey;
-}
-export const updatePublicKey = (pk: Uint8Array) => {
-    saveKey(pk, Key.Public);
-    publicKey = pk;
-}
 
 export const getAvatar = async () => {
     const myLocation = await getMyLocation();
@@ -96,4 +77,3 @@ export const updateAvatar = (url:string) => {
 }
 
 setUserData();
-setKeys();

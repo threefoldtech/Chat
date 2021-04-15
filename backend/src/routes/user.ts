@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { getStatus, getAvatar, getLastSeen, updateAvatar, getImage, getPublicKey } from '../store/user';
+import { getStatus, getAvatar, getLastSeen, updateAvatar, getImage } from '../store/user';
 import { connections } from '../store/connections';
 import { UploadedFile } from 'express-fileupload';
 import { deleteAvatar, saveAvatar } from '../service/dataService';
 import { uuidv4 } from '../common';
 import { config } from '../config/config';
 import { uint8ToString } from '../service/encryptionService';
+import { getPublicKey } from '../store/keyStore';
 
 const router = Router();
 

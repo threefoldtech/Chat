@@ -18,6 +18,7 @@ import { sendMessageToApi } from './apiService';
 import { updateLastSeen, updateStatus } from '../store/user';
 import { config } from '../config/config';
 import { appendSignature } from './encryptionService';
+import { appendSignatureToMessage } from './keyService';
 
 const socketio = require('socket.io');
 
@@ -47,7 +48,7 @@ export const startSocketIo = (httpServer: http.Server) => {
 
             const newMessage: Message<MessageBodyTypeInterface> = parseMessage(messageData.message);
             newMessage.from = config.userid;
-            appendSignature(newMessage);
+            appendSignatureToMessage(newMessage);
             const chat = getChatById(newMessage.to);
 
             console.log(`internal send message to  ${chat.adminId}`);
@@ -80,7 +81,7 @@ export const startSocketIo = (httpServer: http.Server) => {
             console.log('updatemsgdata', messageData);
             const newMessage: Message<MessageBodyTypeInterface> = parseMessage(messageData.message);
             editMessage(messageData.chatId, newMessage);
-            appendSignature(newMessage);
+            appendSignatureToMessage(newMessage);
             const chat = getChatById(messageData.chatId);
             let location1 = chat.contacts.find(c => c.id == chat.adminId)
                 .location;

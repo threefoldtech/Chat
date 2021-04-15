@@ -4,7 +4,7 @@ import { ThreefoldLogin } from '@threefoldjimber/threefold_login';
 import { generateRandomString } from '@threefoldjimber/threefold_login/dist';
 import { Key, saveKey } from './dataService';
 import { getKeyPair } from './encryptionService';
-import { updatePrivateKey, updatePublicKey } from '../store/user';
+import { updatePrivateKey, updatePublicKey } from '../store/keyStore';
 
 export const getAppLoginUrl = async (
     request: Request,

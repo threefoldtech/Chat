@@ -16,7 +16,7 @@ import { addChat } from '../service/chatService';
 import { uuidv4 } from '../common';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import { getMyLocation } from '../service/locationService';
-import { appendSignature } from '../service/encryptionService';
+import { appendSignatureToMessage } from '../service/keyService';
 
 const router = Router();
 
@@ -69,7 +69,7 @@ router.post('/', async (req, res) => {
     };
     console.log('sending to ', url);
     console.log(data);
-    appendSignature(data);
+    appendSignatureToMessage(data);
     await sendMessageToApi(contact.location, data);
     sendEventToConnectedSockets('connectionRequest', chat);
     res.sendStatus(200);

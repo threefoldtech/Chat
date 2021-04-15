@@ -1,6 +1,5 @@
 import {
     getBlocklist,
-    getChatIds,
     persistChat,
 } from './../service/dataService';
 import { Router } from 'express';
@@ -25,12 +24,12 @@ import {
 import { persistMessage, syncNewChatWithAdmin } from '../service/chatService';
 import { getChat } from '../service/dataService';
 import { config } from '../config/config';
-import { getPublicKey, sendMessageToApi } from '../service/apiService';
+import { sendMessageToApi } from '../service/apiService';
 import Chat from '../models/chat';
 import { uuidv4 } from '../common';
 import { handleGroupUpdate } from '../service/groupService';
 import { getMyLocation } from '../service/locationService';
-import { appendSignature, base64ToUint8Array, verifySignature } from '../service/encryptionService';
+import { appendSignatureToMessage, verifyMessageSignature } from '../service/keyService';
 
 const router = Router();
 
@@ -74,16 +73,6 @@ export const determineChatId = (message: Message<MessageBodyTypeInterface>): DtI
     return message.to;
 };
 
-
-
-export const checkSignature = async (signedMessage: Message<MessageBodyTypeInterface>, contact: Contact, signature: string) => {
-    const publicKey = await getPublicKey(contact.location);
-    if (!publicKey) return false;
-
-    return verifySignature(signedMessage, signature, base64ToUint8Array(publicKey));
-};
-
-
 export const verifySignedMessage = async (chat: Chat, signedMessage: Message<MessageBodyTypeInterface>): Promise<boolean> => {
     let signatureIndex = 0;
     if(chat.isGroup && chat.adminId === config.userid) {
@@ -93,7 +82,7 @@ export const verifySignedMessage = async (chat: Chat, signedMessage: Message<Mes
             return false;
         }
 
-        const adminIsVerified = await checkSignature(signedMessage, adminContact, signedMessage.signatures[signatureIndex])
+        const adminIsVerified = await verifyMessageSignature(adminContact, signedMessage, signedMessage.signatures[signatureIndex])
         if(!adminIsVerified) {
             console.log(`Admin signature is not correct`);
             return false;
@@ -106,7 +95,7 @@ export const verifySignedMessage = async (chat: Chat, signedMessage: Message<Mes
         return false;
     }
 
-    return await checkSignature(signedMessage, fromContact, signedMessage.signatures[signatureIndex])
+    return await verifyMessageSignature(fromContact, signedMessage, signedMessage.signatures[signatureIndex])
 }
 
 // Should be externally availble
@@ -182,13 +171,13 @@ router.put('/', async (req, res) => {
             .filter(c => c.id !== config.userid)
             .forEach(c => {
                 console.log(`group sendMessage to ${c.id}`);
-                appendSignature(message)
+                appendSignatureToMessage(message)
                 sendMessageToApi(c.location, message);
             });
 
         if (message.type === <string>MessageTypes.SYSTEM) {
             handleGroupUpdate(<any>message, chat);
-            appendSignature(message)
+            appendSignatureToMessage(message)
             sendMessageToApi(((message as Message<GroupUpdateType>).body.contact as ContactInterface).location, message);
 
             res.json({ status: 'success' });
