@@ -15,7 +15,7 @@
                     <button @click="showAddUserDialog = true" class="bg-icon rounded-full text-white w-8 h-8 collapsed-bar:w-10 collapsed-bar:h-10">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <h1 class="collapsed-bar:hidden pt-1">Messages</h1>
+                    <h1 class="collapsed-bar:hidden pt-1">Test</h1>
                 </div>
                 <div class="ml-auto collapsed-bar:m-0 collapsed-bar:mb-2 hidden md:block relative">
                     <button

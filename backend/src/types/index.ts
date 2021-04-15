@@ -51,6 +51,7 @@ export interface MessageInterface<T> extends MessageBodyTypeInterface {
     timeStamp: Date;
     subject: IdInterface | null;
     replies: MessageInterface<MessageBodyTypeInterface>[];
+    signatures: string[],
     updated?: Date | undefined;
 }
 

@@ -4,11 +4,10 @@ import Message from '../models/message';
 import { MessageBodyTypeInterface } from '../types';
 import { parseFullChat } from './chatService';
 import { getFullIPv6ApiLocation } from './urlService';
-import { Signed } from './encryptionService';
 
 export const sendMessageToApi = async (
     location: string,
-    message: Signed<Message<MessageBodyTypeInterface>>,
+    message: Message<MessageBodyTypeInterface>,
 ) => {
     console.log('Location: ', location);
     console.log('newMessage: ', message);

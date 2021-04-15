@@ -35,6 +35,7 @@ export enum Key {
     Public = "publicKey",
     Private = "privateKey"
 }
+
 export const saveKey = (key: Uint8Array, keyName: Key) => {
     fs.writeFileSync(config.baseDir + 'user/' + keyName, Buffer.from(key));
 }

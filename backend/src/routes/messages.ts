@@ -30,7 +30,7 @@ import Chat from '../models/chat';
 import { uuidv4 } from '../common';
 import { handleGroupUpdate } from '../service/groupService';
 import { getMyLocation } from '../service/locationService';
-import { appendSignature, base64ToUint8Array, isSigned, Signed, verifySignature } from '../service/encryptionService';
+import { appendSignature, base64ToUint8Array, verifySignature } from '../service/encryptionService';
 
 const router = Router();
 
@@ -50,6 +50,7 @@ async function handleContactRequest(message: Message<ContactRequest>) {
         type: MessageTypes.SYSTEM,
         timeStamp: new Date(),
         replies: [],
+        signatures: message.signatures ?? [],
         subject: null,
     };
     const newchat = new Chat(
@@ -75,7 +76,7 @@ export const determineChatId = (message: Message<MessageBodyTypeInterface>): DtI
 
 
 
-export const checkSignature = async (signedMessage: Signed<Message<MessageBodyTypeInterface>>, contact: Contact, signature: string) => {
+export const checkSignature = async (signedMessage: Message<MessageBodyTypeInterface>, contact: Contact, signature: string) => {
     const publicKey = await getPublicKey(contact.location);
     if (!publicKey) return false;
 
@@ -83,12 +84,7 @@ export const checkSignature = async (signedMessage: Signed<Message<MessageBodyTy
 };
 
 
-export const verifySignedMessage = async (chat: Chat, signedMessage: Signed<Message<MessageBodyTypeInterface>>): Promise<boolean> => {
-    if(!isSigned(signedMessage)) {
-        console.log("Message is not signed!")
-        return false;
-    }
-
+export const verifySignedMessage = async (chat: Chat, signedMessage: Message<MessageBodyTypeInterface>): Promise<boolean> => {
     let signatureIndex = 0;
     if(chat.isGroup && chat.adminId === config.userid) {
         const adminContact = chat.contacts.find(x => x.id === chat.adminId);
@@ -104,9 +100,9 @@ export const verifySignedMessage = async (chat: Chat, signedMessage: Signed<Mess
         }
         signatureIndex++;
     }
-    const fromContact = chat.contacts.find(x => x.id === signedMessage.original.from);
+    const fromContact = chat.contacts.find(x => x.id === signedMessage.from);
     if (!fromContact) {
-        console.log(`Sender ${signedMessage.original.from} is not found in the contact list`)
+        console.log(`Sender ${signedMessage.from} is not found in the contact list`)
         return false;
     }
 
@@ -117,8 +113,7 @@ export const verifySignedMessage = async (chat: Chat, signedMessage: Signed<Mess
 router.put('/', async (req, res) => {
     // @ TODO check if valid
     const msg = req.body;
-    const signedMessage = msg as Signed<Message<MessageBodyTypeInterface>>;
-    let message = signedMessage.original;
+    let message = msg as Message<MessageBodyTypeInterface>;
 
     try {
         message = parseMessage(msg);
@@ -138,7 +133,7 @@ router.put('/', async (req, res) => {
         return;
     }
 
-    const messageIsCorrectlySigned = verifySignedMessage(chat, signedMessage);
+    const messageIsCorrectlySigned = verifySignedMessage(chat, message);
     if(!messageIsCorrectlySigned) {
         res.sendStatus(500);
         return;
@@ -187,14 +182,14 @@ router.put('/', async (req, res) => {
             .filter(c => c.id !== config.userid)
             .forEach(c => {
                 console.log(`group sendMessage to ${c.id}`);
-                appendSignature(signedMessage)
-                sendMessageToApi(c.location, signedMessage);
+                appendSignature(message)
+                sendMessageToApi(c.location, message);
             });
 
         if (message.type === <string>MessageTypes.SYSTEM) {
             handleGroupUpdate(<any>message, chat);
-            appendSignature(signedMessage)
-            sendMessageToApi(((message as Message<GroupUpdateType>).body.contact as ContactInterface).location, signedMessage);
+            appendSignature(message)
+            sendMessageToApi(((message as Message<GroupUpdateType>).body.contact as ContactInterface).location, message);
 
             res.json({ status: 'success' });
             return;

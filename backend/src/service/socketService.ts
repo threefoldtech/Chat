@@ -15,9 +15,9 @@ import {
     persistBlocklist,
 } from './dataService';
 import { sendMessageToApi } from './apiService';
-import { getId, updateLastSeen, updateStatus } from '../store/user';
+import { updateLastSeen, updateStatus } from '../store/user';
 import { config } from '../config/config';
-import { createSignedMessage } from './encryptionService';
+import { appendSignature } from './encryptionService';
 
 const socketio = require('socket.io');
 
@@ -47,7 +47,7 @@ export const startSocketIo = (httpServer: http.Server) => {
 
             const newMessage: Message<MessageBodyTypeInterface> = parseMessage(messageData.message);
             newMessage.from = config.userid;
-            const signedMessage = createSignedMessage(newMessage);
+            appendSignature(newMessage);
             const chat = getChatById(newMessage.to);
 
             console.log(`internal send message to  ${chat.adminId}`);
@@ -68,23 +68,23 @@ export const startSocketIo = (httpServer: http.Server) => {
 
             if (newMessage.type === MessageTypes.READ) {
                 handleRead(<Message<StringMessageTypeInterface>>newMessage);
-                sendMessageToApi(location, signedMessage);
+                sendMessageToApi(location, newMessage);
                 return;
             }
 
             persistMessage(chat.chatId, newMessage);
-            sendMessageToApi(location, signedMessage);
+            sendMessageToApi(location, newMessage);
         });
 
         socket.on('update_message', messageData => {
             console.log('updatemsgdata', messageData);
             const newMessage: Message<MessageBodyTypeInterface> = parseMessage(messageData.message);
             editMessage(messageData.chatId, newMessage);
-            const signedMessage = createSignedMessage(newMessage);
+            appendSignature(newMessage);
             const chat = getChatById(messageData.chatId);
             let location1 = chat.contacts.find(c => c.id == chat.adminId)
                 .location;
-            sendMessageToApi(location1, signedMessage);
+            sendMessageToApi(location1, newMessage);
         });
         socket.on('status_update', data => {
             const status = data.status;

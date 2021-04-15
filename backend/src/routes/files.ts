@@ -10,7 +10,7 @@ import { sendEventToConnectedSockets } from '../service/socketService';
 import { sendMessageToApi } from '../service/apiService';
 import { getFullIPv6ApiLocation } from '../service/urlService';
 import { getMyLocation } from '../service/locationService';
-import { createSignedMessage } from '../service/encryptionService';
+import { appendSignature } from '../service/encryptionService';
 
 const router = Router();
 
@@ -27,7 +27,7 @@ router.post('/:chatid/:messageid', async (req, resp) => {
     const chatId = req.params.chatid;
     const messageId = req.params.messageid;
     const fileToSave = <UploadedFile>req.files.file;
-    saveFile(chatId, messageId,fileToSave.name, fileToSave.data);
+    saveFile(chatId, messageId, fileToSave.name, fileToSave.data);
     let myLocation = await getMyLocation();
     const message: Message<FileMessageType> = {
         from: config.userid,
@@ -35,7 +35,7 @@ router.post('/:chatid/:messageid', async (req, resp) => {
             filename: fileToSave.name,
             url: getFullIPv6ApiLocation(
                 myLocation,
-                `/files/${chatId}/${messageId}/${fileToSave.name}`
+                `/files/${chatId}/${messageId}/${fileToSave.name}`,
             ),
         },
         id: messageId,
@@ -43,15 +43,16 @@ router.post('/:chatid/:messageid', async (req, resp) => {
         to: chatId,
         type: MessageTypes.FILE,
         replies: [],
+        signatures: [],
         subject: null,
     };
     sendEventToConnectedSockets('message', message);
     const chat = getChat(chatId);
     console.log('Sending TO: ', chat);
-    const signedMessage = createSignedMessage(message);
+    appendSignature(message);
     await sendMessageToApi(
         chat.contacts.find(contact => contact.id === chat.adminId).location,
-        signedMessage
+        message,
     );
     chat.addMessage(message);
     persistChat(chat);
