@@ -49,7 +49,7 @@ export const getKey = (keyName: string): Uint8Array | undefined => {
         if (ex.code === 'ENOENT') {
             console.log('File not found!');
         }
-        return;
+        throw ex;
     }
 }
 
