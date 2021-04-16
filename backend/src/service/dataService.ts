@@ -47,7 +47,7 @@ export const getKey = (keyName: string): Uint8Array | undefined => {
         return fs.readFileSync(config.baseDir + 'user/' + keyName);
     } catch (ex) {
         if (ex.code === 'ENOENT') {
-            console.log('File not found!');
+            console.log(keyName + ' not found!');
         }
         throw ex;
     }

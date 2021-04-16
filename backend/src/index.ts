@@ -8,6 +8,8 @@ import { startSocketIo } from './service/socketService';
 import routes from './routes';
 import morgan from 'morgan';
 import { logger, httpLogger } from './logger';
+import { initKeys } from './store/keyStore';
+import { initUserData } from './store/user';
 
 const corsOptions: CorsOptions = {
     origin: '*',
@@ -59,6 +61,10 @@ app.use(
 );
 
 app.use('/api/', routes);
+
+//Reading data
+initKeys();
+initUserData();
 
 httpServer.listen(3000, 'localhost', () => {
     logger.info('go to http://localhost:3000');

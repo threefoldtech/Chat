@@ -7,8 +7,7 @@ let image: string;
 let id: string;
 let lastSeen: number;
 
-
-const setUserData = () => {
+export const setUserData = () => {
     try {
         const userData = getUserdata();
         status = userData.status;
@@ -16,6 +15,7 @@ const setUserData = () => {
         id = userData.id;
         lastSeen = userData.lastSeen;
     } catch (error) {
+        console.log("setting default user data");
         status = 'Exploring the new DigitalTwin';
         image = `default`;
         id = config.userid;
@@ -23,7 +23,10 @@ const setUserData = () => {
     }
 };
 
-
+export const initUserData = () => {
+    console.log("Init set user data");
+    setUserData();
+};
 
 export const getId = () => {
     return id;
@@ -37,11 +40,11 @@ export const getImage = () => {
     return image;
 };
 
-
 export const getAvatar = async () => {
     const myLocation = await getMyLocation();
     return `http://[${myLocation}]/api/user/avatar/${image}`;
 };
+
 export const getData = () => {
     return {
         status: status,
@@ -76,4 +79,3 @@ export const updateAvatar = (url:string) => {
     saveUserData();
 }
 
-setUserData();

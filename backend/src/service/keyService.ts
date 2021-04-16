@@ -2,12 +2,9 @@ import Message from '../models/message';
 import {
     base64ToUint8Array,
     createBase64Signature,
-    createSignature,
-    uint8ToString, verifySignature,
+    verifySignature,
 } from './encryptionService';
 import { getPrivateKey, getPublicKeyFromCache, setPublicKeyInCache } from '../store/keyStore';
-import Chat from '../models/chat';
-import { getKey } from './dataService';
 import { getPublicKey } from './apiService';
 import Contact from '../models/contact';
 
@@ -17,7 +14,6 @@ export const appendSignatureToMessage = <T>(message: Message<T>) => {
     const signature = createBase64Signature(message, secretKey);
     message.signatures = [signature, ...(message.signatures ?? [])];
 };
-
 
 export const verifyMessageSignature = async <T>(contact: Contact, message: Message<T>, signature: string) => {
     const signatureIndex = message.signatures.findIndex(s => s === signature);
