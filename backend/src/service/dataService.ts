@@ -31,6 +31,28 @@ export const getUserdata = () => {
     }
 };
 
+export enum Key {
+    Public = "publicKey",
+    Private = "privateKey"
+}
+
+export const saveKey = (key: Uint8Array, keyName: Key, force = false) => {
+    if(force || !fs.existsSync(config.baseDir + 'user/' + keyName)) {
+        fs.writeFileSync(config.baseDir + 'user/' + keyName, Buffer.from(key));
+    }
+}
+
+export const getKey = (keyName: string): Uint8Array | undefined => {
+    try {
+        return fs.readFileSync(config.baseDir + 'user/' + keyName);
+    } catch (ex) {
+        if (ex.code === 'ENOENT') {
+            console.log('File not found!');
+        }
+        throw ex;
+    }
+}
+
 const sortChat = (chat: Chat) => {
     const messages = uniqBy(chat.messages, m => m.id);
 
