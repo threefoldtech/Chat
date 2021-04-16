@@ -17,7 +17,6 @@ import {
 import { sendMessageToApi } from './apiService';
 import { updateLastSeen, updateStatus } from '../store/user';
 import { config } from '../config/config';
-import { appendSignature } from './encryptionService';
 import { appendSignatureToMessage } from './keyService';
 
 const socketio = require('socket.io');
