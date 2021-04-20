@@ -9,13 +9,12 @@ const utils = require('./drive/utils')
 const dnsserver = require("./servers/dns")
 var rewrite = require('./rewrite')
 
-const letsencrypt = require('./letsencrypt')
+var letsencrypt = require('./letsencrypt')
 
 var inited = false
 
 async function init(){
     var old_config = Object.assign({}, config.info) 
-    var old_letsencrypt = Object.assign({}, letsencrypt) 
 
     try{
       var domainsList = []
@@ -61,8 +60,8 @@ async function init(){
       return cleanup
 
     }catch(e){
+      console.log(e)
       config.info = old_config
-      letsencrypt = old_letsencrypt
 
       if (config.nodejs.production){
         require('greenlock-express').init({

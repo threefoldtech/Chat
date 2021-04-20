@@ -15,11 +15,10 @@ async function rewriteRoles(content, info){
         host = `${scheme}://${info.host}:${info.port}`
     }
 
-    var mainDomain = config.mainDomain
-    var mainRepo = config.info.domains[mainDomain].repo
-
-    
-    
+    info = config.info.websites['threefold'] || config.info.wikis['threefold']
+    var mainDomains = info.domains
+    var mainRepo  = info.repo
+       
     if (info.host == 'localhost' || info.host == '127.0.0.1'){
         for(var item in config.info.domains){
             var site = config.info.domains[item]
@@ -27,7 +26,7 @@ async function rewriteRoles(content, info){
     
             var prefix = ""
     
-            if(item == mainDomain || site.repo == mainRepo){
+            if(mainDomains.includes(item) || site.repo == mainRepo){
                 prefix = "/"
             }else if(isWebsite){
                 prefix = `/${site.alias}`

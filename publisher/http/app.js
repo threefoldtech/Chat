@@ -12,7 +12,6 @@ var morgan = require('morgan')
 
 var path = require('path')
 var rfs = require('rotating-file-stream') 
-const auth = require('basic-auth')
 const bodyParser = require('body-parser');
 
 
@@ -233,7 +232,6 @@ app.use((req, res, next) => {
 })
 
 app.use(express.json());
-
 app.use(threebot)
 app.use(sites);
 app.use(cors());
