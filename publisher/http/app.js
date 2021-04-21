@@ -91,19 +91,29 @@ app.use(function (req, res, next) {
   }
   
   if(req.url.startsWith('/login')){
-    var alias = req.query.next.replace('/', '')
-    if(alias == ""){
+    var suburl = req.query.next.replace(/^\/|\/$/g, ''); //replace lading, trailing slash
+    var alias = ""
+    var splitted = suburl.split("/")
+    alias = splitted[0]
+    if (suburl == ""){
       info = config.info.domains[host]
+    }
+    else if (splitted.length == 1){
+      alias = splitted[0]
+      info = config.info.website[alias]
     }else{
-      if(alias.includes("info/")){
-        info = config.info.wikis[alias.replace("info/", "")]
+      if(splitted[0] == 'info'){
+        alias = splitted[1].replace("#", "")
+        info = config.info.wikis[alias]
       }else{
-        info = config.info.websites[alias]
+        alias = splitted[0]
+        info = config.info.website[alias]
       }
+    }
       if (!info){
         return res.status(404).render('sites/404.mustache')
       }
-    }
+
 
   }else if(req.url != '/'){
     var found = false
@@ -140,7 +150,7 @@ app.use(function (req, res, next) {
 })
 
 app.use((req, res, next) => {
-  if(req.url.startsWith('/threebot') || req.url.startsWith('/login') || req.url.startsWith('/logout')){
+  if(req.url.startsWith('/threebot') || req.url.startsWith('/logout')){
     next()
     return
   }
@@ -161,11 +171,15 @@ app.use((req, res, next) => {
   }
 
   if (requirePassword || threebotConnect){  
-    if(req.session.authorized || req.url.startsWith('/login?next=')){
+    if(req.session.authorized){
+      
       next()
       return
     }else{
-      return res.redirect(`/login?next=${req.url}`)
+      if(!req.url.startsWith('/login')){
+        return res.redirect(`/login?next=${req.url}`)
+      }
+      next()
     }
   }else{
     next()

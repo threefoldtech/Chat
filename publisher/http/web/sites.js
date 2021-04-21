@@ -15,7 +15,6 @@ async function rewriteRoles(content, info){
         host = `${scheme}://${info.host}:${info.port}`
     }
 
-    info = config.info.websites['threefold'] || config.info.wikis['threefold']
     var mainDomains = info.domains
     var mainRepo  = info.repo
        
@@ -216,7 +215,6 @@ async function handleWikiFile(req, res, info){
         return res.send(content)
        
     } catch (e) {
-        
         newfilename = filename.replace(".md", "")
         var def = config.info.defs[newfilename]
        
@@ -421,7 +419,6 @@ router.get('/:path', asyncHandler(async (req, res) =>  {
                 var content = await  driveObj.promises.readFile(filepath, 'utf8');
                 return res.send(content)
             } catch (e) {
-
                 logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
                 // return res.status(404).send(`File not found : ${filepath}`);
                 return res.status(404).render('sites/404.mustache')
@@ -455,7 +452,6 @@ router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
         var content = await  driveObj.promises.readFile(filepath, 'utf8');
         return res.send(content)
     } catch (e) {
-
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
         // return res.status(404).send(`File not found : ${filepath}`);
         return res.status(404).render('sites/404.mustache')
