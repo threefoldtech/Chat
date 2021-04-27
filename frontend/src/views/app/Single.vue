@@ -124,6 +124,23 @@
                             </button>
                         </div>
                     </jdialog>
+                    <jdialog v-model="showDeleteDialog" noActions class="max-w-10">
+                        <template v-slot:title class="center">
+                            <h1 class="text-center">Deleting Conversation</h1>
+                        </template>
+                        <div>
+                            Do you really want to delete the conversation with
+                            <b> {{ chat.name }} </b>?
+                        </div>
+                        <div class="grid grid-cols-2 mt-2">
+                            <button @click="doDeleteChat" class="bg-red-500 p-2 text-white font-bold">
+                                YES
+                            </button>
+                            <button @click="showDeleteDialog = false" class="p-2">
+                                NO
+                            </button>
+                        </div>
+                    </jdialog>
                 </div>
                 <div class="grid h-full w-full place-items-center" v-else>
                     <h2>Loading</h2>
@@ -217,7 +234,7 @@
                 () => route.params.id,
                 id => {
                     selectedId.value = <string>id;
-                }
+                },
             );
 
             const { retrievechats } = usechatsActions();
@@ -230,6 +247,7 @@
             const showMenu = ref(false);
             const file = ref();
             let showDialog = ref(false);
+            let showDeleteDialog = ref(false);
             const propRefs = toRefs(props);
             const truncate = (value, limit = 20) => {
                 if (value.length > limit) {
@@ -296,9 +314,9 @@
                 const str: string = chat.value.isGroup
                     ? chat.value.chatId
                     : chat.value.contacts
-                          .map(c => c.id)
-                          .sort()
-                          .join();
+                        .map(c => c.id)
+                        .sort()
+                        .join();
 
                 const id = crypto.SHA1(str);
                 sendMessage(
@@ -308,13 +326,16 @@
                         message: `${user.id} joined the video chat`,
                         id: id.toString(),
                     } as JoinedVideoRoomBody,
-                    MessageTypes.SYSTEM
+                    MessageTypes.SYSTEM,
                 );
 
                 popupCenter(`/videoroom/${id}`, 'video room', 800, 550);
             };
 
             const deleteChat = () => {
+                showDeleteDialog.value = true
+            };
+            const doDeleteChat = () => {
                 sendRemoveChat(chat.value.chatId);
                 const router = useRouter();
                 // router is undefined?
@@ -390,11 +411,13 @@
                 statusList,
                 popupMeeting,
                 deleteChat,
+                doDeleteChat,
                 blockChat,
                 doBlockChat,
                 viewAnchor,
                 reads,
                 showDialog,
+                showDeleteDialog,
                 showMenu,
                 showSideBar: getShowSideBar(),
                 toggleSideBar,
