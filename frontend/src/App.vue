@@ -10,7 +10,7 @@
     // const {gitDescribe, gitDescribeSync} = require('git-describe');
 
     // process.env.VUE_APP_GIT_HASH = gitDescribeSync().hash
-    console.log(`Version: ${{version}}`);
+    console.log('Version: '+ version);
     // console.log(`Version: ${process.env.VUE_APP_GIT_VERSION}`);
 
     export default defineComponent({
