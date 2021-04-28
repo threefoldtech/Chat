@@ -145,6 +145,7 @@ app.use(function (req, res, next) {
   req.info.host = host
   req.info.port = port
   req.info.secure = req.secure
+  req.info.url = req.url
   next()
   return
 })

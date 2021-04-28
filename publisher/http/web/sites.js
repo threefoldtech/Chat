@@ -42,6 +42,14 @@ async function rewriteRoles(content, info){
         var isWebsite = site.isWebSite
         content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
     }
+
+    // fix pdf & zip files in wikis
+    var splitted = info.url.split("/")
+    splitted.pop()
+    var prefix = splitted.join("/")
+    content = content.replace(/href="([^\"]+\.pdf)"/g, `href="${prefix}/$1"`)
+    content = content.replace(/href="([^\"]+\.zip)"/g, `href="${prefix}/$1"`)
+
     return content
 }
 
@@ -113,6 +121,9 @@ async function handleWebsiteFile(req, res, info){
     }else if(filepath.endsWith('pdf')){
         encoding = 'binary'
         res.type('application/pdf')
+    }else if(filepath.endsWith('zip')){
+        encoding = 'binary'
+        res.type('application/zip')
     }
 
     var entry = null
@@ -189,6 +200,9 @@ async function handleWikiFile(req, res, info){
         encoding = 'utf-8'  
     }else if (path.extname(filename) == ''){
         filename = `${filename}.md`
+    }else if(filename.endsWith('zip')){
+        encoding = 'binary'
+        res.type('application/zip')
     }
 
     filepath = `/${wikiname}/${filename}`
