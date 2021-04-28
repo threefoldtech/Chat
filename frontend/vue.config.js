@@ -32,6 +32,6 @@ module.exports = {
         devtool: 'source-map',
     },
 };
-const {gitDescribe, gitDescribeSync} = require('git-describe');
-process.env.VUE_APP_GIT_HASH = gitDescribeSync().hash
-process.env.VUE_APP_GIT_VERSION = gitDescribeSync().tag
+// const {gitDescribe, gitDescribeSync} = require('git-describe');
+// process.env.VUE_APP_GIT_HASH = gitDescribeSync().hash
+// process.env.VUE_APP_GIT_VERSION = gitDescribeSync().tag
