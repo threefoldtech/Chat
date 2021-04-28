@@ -1,13 +1,14 @@
 import Message from '../models/message';
-import { MessageBodyTypeInterface } from '../types';
-import { getChatById } from './chatService';
+import { ContactInterface, GroupUpdateType, MessageBodyTypeInterface, SystemMessageType } from '../types';
+import { getChatById, persistMessage } from './chatService';
 import Chat from '../models/chat';
 import { deleteChat, persistChat } from './dataService';
 import { config } from '../config/config';
 import Contact from '../models/contact';
 import { sendEventToConnectedSockets } from './socketService';
+import { sendMessageToApi } from './apiService';
 
-export const handleGroupUpdate = (
+export const handleSystemMessage = (
     message: Message<{ contact: Contact; type: string }>,
     chat: Chat
 ) => {
@@ -16,10 +17,12 @@ export const handleGroupUpdate = (
     }
 
     switch (message.body.type) {
-        case 'ADDUSER':
+        case SystemMessageType.ADDUSER:
             chat.contacts.push(message.body.contact);
+            sendEventToConnectedSockets('chat_updated', chat);
+            sendMessageToApi(message.body.contact.location, message);
             break;
-        case 'REMOVEUSER':
+        case SystemMessageType.REMOVEUSER:
             if (message.body.contact.id === config.userid) {
                 deleteChat(<string>chat.chatId);
                 sendEventToConnectedSockets('chat_removed', chat.chatId);
@@ -28,10 +31,15 @@ export const handleGroupUpdate = (
             chat.contacts = chat.contacts.filter(
                 c => c.id !== message.body.contact.id
             );
+            sendMessageToApi(message.body.contact.location, message);
             break;
+        case SystemMessageType.JOINED_VIDEOROOM: {
+            persistMessage(chat.chatId, message)
+            return;
+        }
         default:
             throw Error('not implemented');
     }
-    sendEventToConnectedSockets('chat_updated', chat);
+
     persistChat(chat);
 };

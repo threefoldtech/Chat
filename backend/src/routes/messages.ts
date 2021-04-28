@@ -20,7 +20,7 @@ import { config } from '../config/config';
 import { sendMessageToApi } from '../service/apiService';
 import Chat from '../models/chat';
 import { uuidv4 } from '../common';
-import { handleGroupUpdate } from '../service/groupService';
+import { handleSystemMessage } from '../service/systemService';
 import { getMyLocation } from '../service/locationService';
 import { appendSignatureToMessage, verifyMessageSignature } from '../service/keyService';
 
@@ -169,10 +169,8 @@ router.put('/', async (req, res) => {
             });
 
         if (message.type === <string>MessageTypes.SYSTEM) {
-            handleGroupUpdate(<any>message, chat);
             appendSignatureToMessage(message)
-            sendMessageToApi(((message as Message<GroupUpdateType>).body.contact as ContactInterface).location, message);
-
+            handleSystemMessage(<any>message, chat);
             res.json({ status: 'success' });
             return;
         }
@@ -235,7 +233,7 @@ router.put('/', async (req, res) => {
     }
 
     if (message.type === <string>MessageTypes.SYSTEM) {
-        handleGroupUpdate(<any>message, chat);
+        handleSystemMessage(<any>message, chat);
 
         res.json({ status: 'success' });
         return;

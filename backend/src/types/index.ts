@@ -36,6 +36,12 @@ export enum MessageTypes {
     QUOTE = 'QUOTE',
 }
 
+export enum SystemMessageType {
+    ADDUSER = 'ADDUSER',
+    REMOVEUSER = 'REMOVEUSER',
+    JOINED_VIDEOROOM = 'JOINED_VIDEOROOM'
+}
+
 export enum MessageOperations {
     NEW = 'NEW',
     UPDATE = 'UPDATE',
@@ -67,8 +73,11 @@ export interface FileMessageType extends MessageBodyTypeInterface {
     url: string;
 }
 
-export interface GroupUpdateType extends MessageBodyTypeInterface {
-    type: string;
+export interface SystemMessageInterface extends MessageBodyTypeInterface {
+    type: SystemMessageType;
+}
+
+export interface GroupUpdateType extends SystemMessageInterface {
     contact: AnonymousContactInterface | ContactInterface;
     adminLocation: string;
 }

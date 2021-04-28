@@ -9,6 +9,6 @@ export const config = {
     appId: `${userid}.${appId}`,
     seedPhrase:
         'calm science teach foil burst until next mango hole sponsor fold bottom cousin push focus track truly tornado turtle over tornado teach large fiscal',
-    baseDir: '/appdata/',
+    baseDir: process.env.BASEDIR || '/appdata/',
     userid,
 };
