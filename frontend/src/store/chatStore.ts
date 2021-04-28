@@ -21,6 +21,7 @@ import { startFetchStatusLoop } from '@/store/statusStore';
 import { uniqBy } from 'lodash';
 import { useScrollActions } from './scrollStore';
 import { myYggdrasilAddress } from '@/store/authStore';
+import { blocklist } from '@/store/blockStore';
 
 const messageLimit = 50;
 const state = reactive<ChatState>({
@@ -76,7 +77,6 @@ const retrievechats = async () => {
 
         // debugger
         incommingchats.forEach(chat => {
-            console.log(chat);
             addChat(chat);
         });
         sortChats();
@@ -391,7 +391,16 @@ const setLastMessage = (chatId: string, message: Message<String>) => {
 };
 
 const sortChats = () => {
+    const blockList = blocklist.value;
     state.chats.sort((a, b) => {
+        const aIsBlocked = blockList.includes(a.chatId);
+        const bIsBlocked = blockList.includes(b.chatId);
+        if(aIsBlocked && !bIsBlocked)
+            return 1;
+
+        if(!aIsBlocked && bIsBlocked)
+            return -1;
+
         var adate = a.messages[a.messages.length - 1]
             ? a.messages[a.messages.length - 1].timeStamp
             : new Date(-8640000000000000);

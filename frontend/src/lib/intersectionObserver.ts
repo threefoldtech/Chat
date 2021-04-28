@@ -1,4 +1,4 @@
-import { onMounted, Ref, ref, onUnmounted } from 'vue';
+import { onMounted, Ref, ref, onUnmounted, watch } from 'vue';
 
 export const useIntersectionObserver = (
     target: Ref<HTMLElement>,
@@ -7,12 +7,12 @@ export const useIntersectionObserver = (
     const intersectionRatio = ref(0);
     const isIntersecting = ref(false);
     const isFullyInView = ref(false);
+    const isObserved = ref(false);
 
-    const observe = () => {
-        if (target.value) {
-            observer.observe(target.value);
-        }
-    };
+    watch(target, () =>{
+        if(isObserved.value || !target.value) return;
+        observer.observe(target.value);
+    })
 
     let observer: IntersectionObserver;
     onMounted(() => {
@@ -27,7 +27,6 @@ export const useIntersectionObserver = (
             isIntersecting.value = false;
         }, options);
 
-        observe();
     });
 
     const unobserve = () => {
@@ -44,7 +43,6 @@ export const useIntersectionObserver = (
         intersectionRatio,
         isIntersecting,
         isFullyInView,
-        observe,
         unobserve,
     };
 };

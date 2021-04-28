@@ -9,8 +9,11 @@
                     <p class="font-bold font overflow-hidden overflow-ellipsis">
                         {{ chat.name }}
                     </p>
-                    <p class="font-thin" v-if="!chat.isGroup">
+                    <p class="font-thin" v-if="!chat.isGroup && !blocked">
                         {{ statusList[chat.chatId]?.isOnline ? 'Is online' : 'Is offline' }}
+                    </p>
+                    <p class="text-red-500" v-if="!chat.isGroup && blocked">
+                        BLOCKED
                     </p>
                     <p class="font-thin" v-if="chat.isGroup">Group chat</p>
                 </div>
@@ -69,8 +72,11 @@
                             <p class="font-bold font overflow-hidden overflow-ellipsis w-80">
                                 {{ chat.name }}
                             </p>
-                            <p class="font-thin">
+                            <p class="font-thin" v-if='!blocked'>
                                 {{ getChatStatus }}
+                            </p>
+                            <p class="text-red-500" v-else>
+                                BLOCKED
                             </p>
                         </div>
                         <div class="h-full flex items-center self-end px-8  space-x-4">
@@ -106,7 +112,7 @@
                         </template>
                     </MessageBox>
 
-                    <ChatInput :selectedid="chat.chatId" @messageSend="scrollToBottom(true)" />
+                    <ChatInput v-if='!blocked' :selectedid="chat.chatId" @messageSend="scrollToBottom(true)" />
                     <jdialog v-model="showDialog" noActions class="max-w-10">
                         <template v-slot:title class="center">
                             <h1 class="text-center">Blocking</h1>
@@ -172,9 +178,10 @@
                             </p>
                         </div>
                         <group-management
-                            :group-chat="chat"
+                            :chat="chat"
                             @app-call="popupMeeting"
                             @app-block="blockChat"
+                            @app-unblock='unBlockChat'
                             @app-delete="deleteChat"
                         ></group-management>
                     </div>
@@ -212,6 +219,7 @@
     import { scrollMessageBoxToBottom } from '@/services/messageHelperService';
     import Button from '@/components/Button.vue';
     import ImagePreview from '@/components/ImagePreview.vue';
+    import { deleteBlockedEntry, isBlocked } from '@/store/blockStore';
 
     export default defineComponent({
         name: 'ChatView',
@@ -234,7 +242,8 @@
                 () => route.params.id,
                 id => {
                     selectedId.value = <string>id;
-                },
+                    scrollToBottom(true);
+                }
             );
 
             const { retrievechats } = usechatsActions();
@@ -351,6 +360,10 @@
                 sendBlockChat(chat.value.chatId);
             };
 
+            const unBlockChat = async () => {
+                await deleteBlockedEntry(chat.value.chatId)
+            }
+
             const reads = computed(() => {
                 const preReads = {};
                 each(chat.value.read, (val: string, key: string) => {
@@ -367,9 +380,8 @@
             const { isIntersecting } = useIntersectionObserver(viewAnchor);
 
             const scrollToBottom = (force = false) => {
-                if (!force && !isIntersecting.value) {
+                if(!force && !isIntersecting.value)
                     return;
-                }
 
                 nextTick(() => {
                     scrollMessageBoxToBottom();
@@ -387,14 +399,19 @@
             });
 
             const { scrollEvents } = useScrollState();
-            const { clearScrollEvents } = useScrollActions();
+            const { shiftScrollEvent } = useScrollActions();
 
             watch(scrollEvents, () => {
-                const forced = scrollEvents.find(x => x);
+                if(!scrollEvents || scrollEvents.length === 0) return;
                 nextTick(() => {
-                    scrollToBottom(forced);
-                    clearScrollEvents();
+                    scrollToBottom(scrollEvents[0]);
+                    shiftScrollEvent();
                 });
+            });
+
+            const blocked = computed(() => {
+                if(!chat.value || chat.value.isGroup) return false;
+                return isBlocked(<string>chat.value.chatId)
             });
 
             return {
@@ -414,6 +431,7 @@
                 doDeleteChat,
                 blockChat,
                 doBlockChat,
+                unBlockChat,
                 viewAnchor,
                 reads,
                 showDialog,
@@ -423,6 +441,7 @@
                 toggleSideBar,
                 getChatStatus,
                 moment,
+                blocked,
                 ...propRefs,
             };
         },
