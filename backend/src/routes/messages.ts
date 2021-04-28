@@ -1,7 +1,4 @@
-import {
-    getBlocklist,
-    persistChat,
-} from './../service/dataService';
+import { getBlocklist, persistChat } from './../service/dataService';
 import { Router } from 'express';
 import Message from '../models/message';
 import { contactRequests } from '../store/contactRequests';
@@ -16,11 +13,7 @@ import {
     StringMessageTypeInterface,
 } from '../types';
 import Contact from '../models/contact';
-import {
-    editMessage,
-    handleRead,
-    parseMessage,
-} from '../service/messageService';
+import { editMessage, handleRead, parseMessage } from '../service/messageService';
 import { persistMessage, syncNewChatWithAdmin } from '../service/chatService';
 import { getChat } from '../service/dataService';
 import { config } from '../config/config';
@@ -282,5 +275,6 @@ router.get('/:chatId', (req, res) => {
         messages: chat.messages.slice(start, end),
     });
 });
+
 
 export default router;

@@ -99,6 +99,7 @@ export const startSocketIo = (httpServer: http.Server) => {
         });
         socket.on('block_chat', id => {
             const blockList = getBlocklist();
+            if(blockList.includes(id)) return;
             blockList.push(id);
             persistBlocklist(blockList);
             sendEventToConnectedSockets('chat_blocked', id);
