@@ -13,7 +13,7 @@ jobs:
       - uses: satackey/action-docker-layer-caching@v0.0.11
         continue-on-error: true
       - name: Find and Replace
-          uses: jacobtomlinson/gha-find-replace@master
+      - uses: jacobtomlinson/gha-find-replace@master
           with:
             find: "{{version}}"
             replace: ${{ github.ref }}
