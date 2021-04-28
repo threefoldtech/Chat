@@ -276,20 +276,5 @@ router.get('/:chatId', (req, res) => {
     });
 });
 
-router.get('/test/chat/:chatId', (req, res) => {
-    persistMessage(req.params.chatId, new Message(
-        config.userid,
-        req.params.chatId,
-        "test",
-        new Date(),
-        uuidv4(),
-        MessageTypes.STRING,
-        [],
-        null,
-        []
-    ));
-
-    res.sendStatus(200);
-})
 
 export default router;
