@@ -47,7 +47,7 @@
 
                 <suspense>
                     <textarea
-                        id="statusArea"
+                        ref="statusInput"
                         :onkeyup="charCounter"
                         v-model="userStatus"
                         class="w-full"
@@ -58,7 +58,7 @@
 
                     </textarea>
                 </suspense>
-              <div style="justify-content: flex-end; display:flex;" v-if="isEditingStatus" id="the-count">
+              <div v-if="isEditingStatus" class="count">
                 <span id="current">{{ statusCurrentChar }}</span>
                 <span id="maximum">&nbsp;/&nbsp;{{ statusMaxChar }}</span>
 
@@ -169,6 +169,7 @@
         created: () => {
             initBlocklist();
 
+
         },
         async setup({}, ctx) {
             const { user } = useAuthState();
@@ -185,6 +186,9 @@
             const showEditAvatar = ref(false);
             const statusCurrentChar = ref();
             const statusMaxChar = ref();
+            const statusInput = ref()
+
+
 
             watchEffect(() => {
                 if(!cropper.value) {
@@ -274,9 +278,8 @@
             };
 
             const charCounter = async () => {
-              const statusArea = document.getElementById("statusArea")
-              statusMaxChar.value = statusArea.getAttribute("maxlength")
-              statusCurrentChar.value =  statusArea.value.length
+              statusMaxChar.value = statusInput.value.getAttribute("maxlength")
+              statusCurrentChar.value =  statusInput.value.value.length
             };
 
             const status = computed(() => {
@@ -322,6 +325,7 @@
                 charCounter,
                 statusCurrentChar,
                 statusMaxChar,
+                statusInput,
             };
         },
     });
@@ -352,5 +356,9 @@
         height: 100%;
         z-index: 20;
         text-align: center;
+    }
+    .count {
+      justify-content: flex-end;
+      display:flex;
     }
 </style>
