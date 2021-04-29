@@ -44,7 +44,7 @@
                 <unicode-emoji-picker v-pre></unicode-emoji-picker>
             </span>
 
-            <button class="action-btn mx-2 my-0 p-0 self-center flex-1" @click.stop="toggleEmoji" v-if="!file">
+            <button class="action-btn mx-2 my-0 p-0 self-center flex-1" @click.stop="toggleEmoji" v-if="!attachment">
                 😃
             </button>
         </div>
@@ -57,12 +57,12 @@
                 <i v-if="collapsed" class="fas fa-chevron-down "></i>
                 <i v-else class="fas fa-chevron-up "></i>
             </button>
-            <div class="bg-indigo-100 inline-flex text-sm rounded flex-row h-8 pl-3 self-center mr-2" v-if="file">
+            <div class="bg-indigo-100 inline-flex text-sm rounded flex-row h-8 pl-3 self-center mr-2" v-if="attachment">
                 <div class="self-center">
                     <i class="fas fa-file"></i>
                 </div>
                 <span class="ml-2 mr-1 leading-relaxed truncate max-w- self-center hidden md:inline-block">
-                    {{ file.name }}
+                    {{ attachment.name }}
                 </span>
                 <button class="action-btn p-2 mx-0 self-center" @click.stop="removeFile">
                     <i class="fas  fa-times"></i>
@@ -133,8 +133,8 @@
             const message = ref(null);
             const messageBox = ref(null);
             const fileinput = ref();
-            const file = ref(null);
             const emojipicker = ref();
+            const attachment = ref();
 
             const stopRecording = ref(null);
             const showEmoji = ref(false);
@@ -260,8 +260,8 @@
                     clearMessage();
                 }
 
-                if (file.value) {
-                    sendFile(props.selectedid, file.value);
+                if (attachment.value) {
+                    sendFile(props.selectedid, attachment.value);
                     removeFile();
                 }
                 emit('messageSend');
@@ -274,12 +274,12 @@
             };
 
             const changeFile = () => {
-                file.value = fileinput.value?.files[0];
+                attachment.value = fileinput.value?.files[0];
                 message.value.focus();
             };
 
             const removeFile = () => {
-                file.value = null;
+                attachment.value = null;
             };
 
             const startRecording = async () => {
@@ -359,7 +359,7 @@
                     }
 
                     var pastedImage: File = items[i].getAsFile();
-                    file.value = pastedImage;
+                    attachment.value = pastedImage;
                     message.value.focus();
                 }
             };
@@ -379,7 +379,6 @@
                 changeFile,
                 selectFile,
                 fileinput,
-                file,
                 removeFile,
                 startRecording,
                 stopRecording,
@@ -398,6 +397,7 @@
                 getActionMessage,
                 MessageAction,
                 MessageTypes,
+                attachment
             };
         },
     };
