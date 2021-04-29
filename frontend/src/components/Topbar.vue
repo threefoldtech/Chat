@@ -67,7 +67,6 @@
     import AvatarImg from '@/components/AvatarImg.vue';
     import {
         deleteBlockedEntry,
-        getBlockList,
         initBlocklist,
     } from '@/store/blockStore';
     import { setNewAvatar } from '@/store/userStore';
@@ -126,9 +125,6 @@
                 isEditingStatus.value = false;
             };
 
-            const blockedUsers = computed(() => {
-                return getBlockList();
-            });
             // @todo: config
 
             onBeforeMount(() => {
@@ -160,7 +156,6 @@
                 userStatus,
                 setEditStatus,
                 isEditingStatus,
-                blockedUsers,
                 unblockUser,
                 route,
             };

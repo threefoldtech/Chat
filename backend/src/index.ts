@@ -66,6 +66,6 @@ app.use('/api/', routes);
 initKeys();
 initUserData();
 
-httpServer.listen(3000, 'localhost', () => {
-    logger.info('go to http://localhost:3000');
+httpServer.listen((process.env.PORT|| 3000) as number, 'localhost', () => {
+    logger.info('go to http://localhost:' + (process.env.PORT || 3000));
 });

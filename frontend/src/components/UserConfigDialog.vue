@@ -148,8 +148,8 @@
     import Dialog from '@/components/Dialog.vue';
     import AvatarImg from '@/components/AvatarImg.vue';
     import {
+        blocklist,
         deleteBlockedEntry,
-        getBlockList,
         initBlocklist,
     } from '@/store/blockStore';
     import { setNewAvatar } from '@/store/userStore';
@@ -264,11 +264,6 @@
                 isEditingStatus.value = false;
             };
 
-            const blockedUsers = computed(() => {
-                return getBlockList();
-            });
-            // @todo: config
-
             const unblockUser = async user => {
                 await deleteBlockedEntry(user);
                 showUserConfigDialog.value = false;
@@ -313,7 +308,7 @@
                 userStatus,
                 setEditStatus,
                 isEditingStatus,
-                blockedUsers,
+                blockedUsers: blocklist,
                 unblockUser,
                 route,
                 showUserConfigDialog,

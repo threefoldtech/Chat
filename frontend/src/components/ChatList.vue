@@ -137,7 +137,7 @@
             };
 
             const filteredChats = computed(() => {
-                if (searchValue.value == '') {
+                if (!searchValue.value) {
                     return chats.value;
                 }
                 console.log('filtered', chats.value);
@@ -163,7 +163,7 @@
             const sendUpdate = newVal => {
                 console.log('update it');
                 showAddUserDialog.value = newVal;
-            };
+            }
 
             return {
                 status,

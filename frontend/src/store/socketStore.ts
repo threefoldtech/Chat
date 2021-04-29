@@ -35,7 +35,6 @@ const initializeSocket = (username: string) => {
         removeChat(chatId);
     });
     state.socket.on('chat_blocked', chatId => {
-        removeChat(chatId);
         addUserToBlockList(chatId);
     });
     state.socket.on('message', message => {
@@ -89,7 +88,6 @@ export const sendRemoveChat = async (id: Id) => {
 };
 export const sendBlockChat = async (id: Id) => {
     state.socket.emit('block_chat', id);
-    state.socket.emit('remove_chat', id);
 };
 
 const sendSocketUserStatus = async (status: string) => {
