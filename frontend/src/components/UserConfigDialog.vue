@@ -183,7 +183,6 @@
             const cropper = ref(null);
             const isHoveringAvatar = ref(false);
             const showEditAvatar = ref(false);
-            const statusCurrentChar = ref();
             const statusInput = ref()
 
 
