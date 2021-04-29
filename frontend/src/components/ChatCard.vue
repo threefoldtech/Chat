@@ -4,6 +4,7 @@
         :class="{
             'bg-gray-50': !router.currentRoute?.value.path.includes(chat.chatId),
             'bg-gray-200': router.currentRoute?.value.path.includes(chat.chatId),
+            'opacity-50': blocked
         }"
     >
         <div class=" place-items-center relative">
@@ -15,6 +16,7 @@
                     {{ chat.name }}
                 </span>
                 <span class="font-thin ml-2" v-if="chat.isGroup"> (group)</span>
+                <span class="ml-2 text-red-500" v-if="blocked"> BLOCKED</span>
                 <span class="font-thin ml-auto" v-if="lastMessage">
                     {{ timeAgo(lastMessage.timeStamp) }}
                 </span>
@@ -35,6 +37,7 @@
     import { statusList } from '@/store/statusStore';
     import AvatarImg from '@/components/AvatarImg.vue';
     import { useRouter } from 'vue-router';
+    import { isBlocked } from '@/store/blockStore';
 
     export default defineComponent({
         name: 'ChatCard',
@@ -103,6 +106,11 @@
                 return props.chat.messages.length - (index + 1);
             });
 
+            const blocked = computed(() => {
+                if(!props.chat || props.chat.isGroup) return false;
+                return isBlocked(props.chat.chatId)
+            });
+
             return {
                 status,
                 newMessages,
@@ -114,6 +122,7 @@
                 user,
                 currentRoute,
                 unreadMessagesAmount,
+                blocked
             };
         },
     });

@@ -12,6 +12,10 @@ const popScrollEvent = () => {
     state.scrollEvents.pop();
 }
 
+const shiftScrollEvent = () => {
+    state.scrollEvents.shift();
+}
+
 const clearScrollEvents = () => {
     state.scrollEvents = [];
 }
@@ -26,7 +30,8 @@ export const useScrollActions = () => {
     return {
         addScrollEvent,
         popScrollEvent,
-        clearScrollEvents
+        clearScrollEvents,
+        shiftScrollEvent
     };
 };
 
