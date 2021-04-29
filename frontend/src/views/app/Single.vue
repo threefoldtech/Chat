@@ -255,6 +255,7 @@
             const m = val => moment(val);
             const showMenu = ref(false);
             const file = ref();
+            const router = useRouter();
             let showDialog = ref(false);
             let showDeleteDialog = ref(false);
             const propRefs = toRefs(props);
@@ -346,10 +347,7 @@
             };
             const doDeleteChat = () => {
                 sendRemoveChat(chat.value.chatId);
-                const router = useRouter();
-                // router is undefined?
-                // router.push({ name: 'chat' });
-                window.location.href = '/chat';
+                router.push({ name: 'chat' });
             };
 
             const blockChat = () => {
@@ -358,6 +356,7 @@
             const doBlockChat = () => {
                 showDialog.value = false;
                 sendBlockChat(chat.value.chatId);
+                router.push({ name: 'chat' });
             };
 
             const unBlockChat = async () => {
