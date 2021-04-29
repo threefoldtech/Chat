@@ -369,6 +369,7 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
     addMessage(chatId, msgToSend);
 
     try {
+
         await axios.post(`${config.baseUrl}api/files/${chatId}/${id}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -376,9 +377,17 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
         });
         console.log('File uploaded.');
     } catch (e) {
-        msgToSend.body = `Failed to send file: ${e.message}`;
+        const msgToSend: Message<Object> = {
+            id,
+            body: 'ERROR: File exceeds 10MB limit!',
+            from: user.id,
+            to: chatId,
+            timeStamp: new Date(),
+            type: 'FILE_UPLOAD',
+            replies: [],
+            subject: null,
+        };
         addMessage(chatId, msgToSend);
-        console.log(e);
     }
 };
 

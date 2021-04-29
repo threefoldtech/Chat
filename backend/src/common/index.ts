@@ -1,4 +1,8 @@
-export function uuidv4() {
+export function uuidv4() {app.use(
+    fileupload({
+        limits: { filesize: 50 * 1024 * 1024 },
+    })
+);
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
         /[xy]/g,
         function (c) {
