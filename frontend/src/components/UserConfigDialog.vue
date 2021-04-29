@@ -47,12 +47,22 @@
 
                 <suspense>
                     <textarea
+                        id="statusArea"
+                        :onkeyup="charCounter"
                         v-model="userStatus"
                         class="w-full"
                         :disabled="!isEditingStatus"
                         :placeholder="myStatus"
-                    ></textarea>
+                        maxlength="150"
+                    >
+
+                    </textarea>
                 </suspense>
+              <div style="justify-content: flex-end; display:flex;" v-if="isEditingStatus" id="the-count">
+                <span id="current">{{ statusCurrentChar }}</span>
+                <span id="maximum">&nbsp;/&nbsp;{{ statusMaxChar }}</span>
+
+              </div>
             </div>
             <input
                 class="hidden"
@@ -158,6 +168,7 @@
         emits: ['addUser'],
         created: () => {
             initBlocklist();
+
         },
         async setup({}, ctx) {
             const { user } = useAuthState();
@@ -172,6 +183,8 @@
             const cropper = ref(null);
             const isHoveringAvatar = ref(false);
             const showEditAvatar = ref(false);
+            const statusCurrentChar = ref();
+            const statusMaxChar = ref();
 
             watchEffect(() => {
                 if(!cropper.value) {
@@ -242,6 +255,7 @@
             const setEditStatus = (edit: boolean) => {
                 isEditingStatus.value = edit;
                 userStatus.value = user.status;
+                charCounter();
             };
             const sendNewStatus = async () => {
                 const { sendSocketUserStatus } = useSocketActions();
@@ -262,6 +276,12 @@
 
             const addUser = () => {
                 ctx.emit('addUser');
+            };
+
+            const charCounter = async () => {
+              const statusArea = document.getElementById("statusArea")
+              statusMaxChar.value = statusArea.getAttribute("maxlength")
+              statusCurrentChar.value =  statusArea.value.length
             };
 
             const status = computed(() => {
@@ -304,6 +324,9 @@
                 isHoveringAvatar,
                 showEditAvatar,
                 cancelNewAvatar,
+                charCounter,
+                statusCurrentChar,
+                statusMaxChar,
             };
         },
     });

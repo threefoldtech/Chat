@@ -6,6 +6,7 @@
             :placeholder="placeholder"
             ref="input"
             tabindex="0"
+            maxlength="50"
         />
         <span class="text-red-600" v-if="error != ''"> {{ error }} </span>
         <span

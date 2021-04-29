@@ -28,11 +28,12 @@
                     placeholder="Search for user..."
                     :error="usernameAddError"
                     @clicked="handleClicked"
+
                 ></auto-complete>
             </div>
             <div class="flex place-items-center">
                 <label class="mr-2" for="location">Location:</label>
-                <input id="location" v-model="userAddLocation" class="mb-2" />
+                <input id="location" v-model="userAddLocation" class="mb-2" maxlength="50" />
             </div>
 
             <div class="flex mt-4 justify-end w-full">
@@ -46,7 +47,7 @@
             <div class="flex place-items-center">
                 <label class="mr-2" for="username">Group name: </label>
                 <div class="w-full">
-                    <input v-model="groupnameAdd" id="username" class="mb-2" placeholder="Group name" />
+                    <input v-model="groupnameAdd" id="username" class="mb-2" placeholder="Group name" maxlength="50"/>
                     <br />
                     <span class="text-red-600" v-if="groupnameAddError != ''">
                         {{ groupnameAddError }}
