@@ -48,7 +48,6 @@
                 <suspense>
                     <textarea
                         ref="statusInput"
-                        :onkeyup="charCounter"
                         v-model="userStatus"
                         class="w-full"
                         :disabled="!isEditingStatus"
@@ -58,9 +57,9 @@
 
                     </textarea>
                 </suspense>
-              <div v-if="isEditingStatus" class="count">
-                <span id="current">{{ statusCurrentChar }}</span>
-                <span id="maximum">&nbsp;/&nbsp;{{ statusMaxChar }}</span>
+              <div v-if="isEditingStatus" class="flex justify-end">
+                <span id="current">{{ userStatus.length }}</span>
+                <span id="maximum">&nbsp;/&nbsp;150</span>
 
               </div>
             </div>
@@ -185,7 +184,6 @@
             const isHoveringAvatar = ref(false);
             const showEditAvatar = ref(false);
             const statusCurrentChar = ref();
-            const statusMaxChar = ref();
             const statusInput = ref()
 
 
@@ -259,7 +257,6 @@
             const setEditStatus = (edit: boolean) => {
                 isEditingStatus.value = edit;
                 userStatus.value = user.status;
-                charCounter();
             };
             const sendNewStatus = async () => {
                 const { sendSocketUserStatus } = useSocketActions();
@@ -276,12 +273,6 @@
             const addUser = () => {
                 ctx.emit('addUser');
             };
-
-            const charCounter = async () => {
-              statusMaxChar.value = statusInput.value.getAttribute("maxlength")
-              statusCurrentChar.value =  statusInput.value.value.length
-            };
-
             const status = computed(() => {
                 return statusList[<string>user.id];
             });
@@ -322,9 +313,6 @@
                 isHoveringAvatar,
                 showEditAvatar,
                 cancelNewAvatar,
-                charCounter,
-                statusCurrentChar,
-                statusMaxChar,
                 statusInput,
             };
         },
@@ -356,9 +344,5 @@
         height: 100%;
         z-index: 20;
         text-align: center;
-    }
-    .count {
-      justify-content: flex-end;
-      display:flex;
     }
 </style>

@@ -361,7 +361,7 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
         from: user.id,
         to: chatId,
         timeStamp: new Date(),
-        type: 'FILE_UPLOAD',
+        type: 'MESSAGE',
         replies: [],
         subject: null,
     };

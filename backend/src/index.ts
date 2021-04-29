@@ -52,8 +52,8 @@ app.use(
 );
 
 app.use(bodyParser.raw());
-app.use(bodyParser.urlencoded({limit: '15mb', extended: false}));
-app.use(bodyParser.json({limit: '15mb'}));
+app.use(bodyParser.urlencoded({limit: '10mb', extended: false}));
+app.use(bodyParser.json({limit: '10mb'}));
 
 app.use(
     fileupload({
