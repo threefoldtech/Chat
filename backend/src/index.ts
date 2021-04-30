@@ -52,11 +52,12 @@ app.use(
 );
 
 app.use(bodyParser.raw());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({limit: '100mb', extended: false}));
+app.use(bodyParser.json({limit: '100mb'}));
+
 app.use(
     fileupload({
-        limits: { filesize: 50 * 1024 * 1024 },
+        limits: { filesize: 100 * 1024 * 1024 },
     })
 );
 

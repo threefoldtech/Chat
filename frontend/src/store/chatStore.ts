@@ -1,5 +1,5 @@
-import { reactive } from '@vue/reactivity';
-import { readonly, ref, toRefs } from 'vue';
+import {reactive} from '@vue/reactivity';
+import {readonly, ref, toRefs} from 'vue';
 import axios from 'axios';
 import moment from 'moment';
 import {
@@ -13,15 +13,15 @@ import {
     SystemBody,
     SystemMessageTypes,
 } from '../types';
-import { useSocketActions } from './socketStore';
-import { useAuthState } from './authStore';
+import {useSocketActions} from './socketStore';
+import {useAuthState} from './authStore';
 import config from '../../public/config/config';
-import { uuidv4 } from '@/common';
-import { startFetchStatusLoop } from '@/store/statusStore';
-import { uniqBy } from 'lodash';
-import { useScrollActions } from './scrollStore';
-import { myYggdrasilAddress } from '@/store/authStore';
-import { blocklist } from '@/store/blockStore';
+import {uuidv4} from '@/common';
+import {startFetchStatusLoop} from '@/store/statusStore';
+import {uniqBy} from 'lodash';
+import {useScrollActions} from './scrollStore';
+import {myYggdrasilAddress} from '@/store/authStore';
+import {blocklist} from '@/store/blockStore';
 
 const messageLimit = 50;
 const state = reactive<ChatState>({
@@ -72,7 +72,7 @@ const retrievechats = async () => {
     const params = new URLSearchParams();
     params.append('limit', messageLimit.toString());
 
-    await axios.get(`${config.baseUrl}api/chats`, { params: params }).then(response => {
+    await axios.get(`${config.baseUrl}api/chats`, {params: params}).then(response => {
         const incommingchats = response.data;
 
         // debugger
@@ -86,13 +86,13 @@ const retrievechats = async () => {
 const getChat = chatId => state.chats.find(x => x.chatId === chatId);
 const setChatHasMoreMessages = (chatId: string, hasMore: boolean): void => {
     state.chatInfo[chatId] = {
-        ...(state.chatInfo[chatId] ?? { isLoading: false }),
+        ...(state.chatInfo[chatId] ?? {isLoading: false}),
         hasMoreMessages: hasMore
     }
 };
 const setChatMessagesAreLoading = (chatId: string, isLoading: boolean): void => {
     state.chatInfo[chatId] = {
-        ...(state.chatInfo[chatId] ?? { hasMoreMessages: false }),
+        ...(state.chatInfo[chatId] ?? {hasMoreMessages: false}),
         isLoading: isLoading
     }
 };
@@ -102,7 +102,7 @@ const addChat = (chat: Chat) => {
     setChatHasMoreMessages(<string>chat.chatId, chat.messages && chat.messages.length >= messageLimit);
 
     if (!chat.isGroup) {
-        const { user } = useAuthState();
+        const {user} = useAuthState();
         const otherContact: Contact = <Contact>chat.contacts.find(c => c.id !== user.id);
         if (otherContact) {
             startFetchStatusLoop(otherContact);
@@ -125,7 +125,7 @@ export const removeChat = chatId => {
 };
 
 const addGroupchat = (name: string, contacts: Contact[]) => {
-    const { user } = useAuthState();
+    const {user} = useAuthState();
     const newGroupchat: GroupChat = {
         isGroup: true,
         chatId: uuidv4(),
@@ -166,7 +166,7 @@ const acceptChat = id => {
             const index = state.chatRequests.findIndex(c => c.chatId == id);
             state.chatRequests[index].acceptedChat = true;
             addChat(state.chatRequests[index]);
-            const { user } = useAuthState();
+            const {user} = useAuthState();
             sendSystemMessage(id, `${user.id} accepted invitation`);
             state.chatRequests.splice(index, 1);
         })
@@ -238,7 +238,7 @@ const getNewMessages = async (chatId: string) => {
         setChatHasMoreMessages(<string>chat.chatId, response.hasMore);
         appendMessages(chat, response.messages);
         return response.messages.length > 0;
-    } catch (ex){
+    } catch (ex) {
         return false;
     } finally {
         setChatMessagesAreLoading(chatId, false);
@@ -256,7 +256,7 @@ const addMessage = (chatId, message) => {
             return;
         }
 
-        chat.read = { ...chat.read, [<string>message.from]: message.body };
+        chat.read = {...chat.read, [<string>message.from]: message.body};
         return;
     }
 
@@ -309,13 +309,13 @@ const addMessage = (chatId, message) => {
     sortChats();
     setLastMessage(chatId, message);
 
-    const { addScrollEvent } = useScrollActions();
+    const {addScrollEvent} = useScrollActions();
     addScrollEvent();
 };
 
 const sendMessage = (chatId, message, type: string = 'STRING') => {
-    const { sendSocketMessage } = useSocketActions();
-    const { user } = useAuthState();
+    const {sendSocketMessage} = useSocketActions();
+    const {user} = useAuthState();
     const msg: Message<String> = {
         id: uuidv4(),
         body: message,
@@ -331,11 +331,11 @@ const sendMessage = (chatId, message, type: string = 'STRING') => {
 };
 
 const sendSystemMessage = (chatId, message: string) => {
-    sendMessage(chatId, { message: message } as SystemBody, MessageTypes.SYSTEM);
+    sendMessage(chatId, {message: message} as SystemBody, MessageTypes.SYSTEM);
 };
 
 export const sendMessageObject = (chatId, message: Message<MessageBodyType>) => {
-    const { sendSocketMessage } = useSocketActions();
+    const {sendSocketMessage} = useSocketActions();
     // console.log(chatId, message);
     // @TODO when doing add message on SYSTEM/groupupdate results in  max call stack exeeded
     if (message.type !== 'SYSTEM') {
@@ -346,7 +346,7 @@ export const sendMessageObject = (chatId, message: Message<MessageBodyType>) => 
 };
 
 const sendFile = async (chatId, selectedFile, isBlob = false) => {
-    const { user } = useAuthState();
+    const {user} = useAuthState();
     const id = uuidv4();
     var formData = new FormData();
     if (!isBlob) {
@@ -361,7 +361,7 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
         from: user.id,
         to: chatId,
         timeStamp: new Date(),
-        type: 'FILE_UPLOAD',
+        type: 'MESSAGE',
         replies: [],
         subject: null,
     };
@@ -369,6 +369,7 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
     addMessage(chatId, msgToSend);
 
     try {
+
         await axios.post(`${config.baseUrl}api/files/${chatId}/${id}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -376,9 +377,20 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
         });
         console.log('File uploaded.');
     } catch (e) {
-        msgToSend.body = `Failed to send file: ${e.message}`;
-        addMessage(chatId, msgToSend);
-        console.log(e);
+        let errorBody = '';
+        if (e.message == "Request failed with status code 413"){
+            errorBody = 'ERROR: File exceeds 100MB limit!'
+            }
+        else{
+            errorBody = 'ERROR: File failed to send!'
+        }
+
+        const failedMsg = {
+            ...msgToSend,
+            body: errorBody,
+            type: 'STRING'
+        };
+        addMessage(chatId, failedMsg);
     }
 };
 
@@ -395,10 +407,10 @@ const sortChats = () => {
     state.chats.sort((a, b) => {
         const aIsBlocked = blockList.includes(a.chatId);
         const bIsBlocked = blockList.includes(b.chatId);
-        if(aIsBlocked && !bIsBlocked)
+        if (aIsBlocked && !bIsBlocked)
             return 1;
 
-        if(!aIsBlocked && bIsBlocked)
+        if (!aIsBlocked && bIsBlocked)
             return -1;
 
         var adate = a.messages[a.messages.length - 1]
@@ -412,7 +424,7 @@ const sortChats = () => {
 };
 
 const readMessage = (chatId, messageId) => {
-    const { user } = useAuthState();
+    const {user} = useAuthState();
 
     const newMessage: Message<string> = {
         id: uuidv4(),
@@ -428,7 +440,7 @@ const readMessage = (chatId, messageId) => {
 };
 
 const updateContactsInGroup = async (groupId, contact: Contact, remove: boolean) => {
-    const { user } = useAuthState();
+    const {user} = useAuthState();
     const myLocation = await myYggdrasilAddress();
     const message: Message<GroupManagementBody> = {
         id: uuidv4(),
@@ -473,7 +485,7 @@ export const usechatsActions = () => {
     };
 };
 
-interface  ChatInfo {
+interface ChatInfo {
     [chatId: string]: {
         hasMoreMessages: boolean;
         isLoading: boolean;
@@ -487,11 +499,11 @@ interface ChatState {
 }
 
 export const handleRead = (message: Message<string>) => {
-    const { user } = useAuthState();
+    const {user} = useAuthState();
 
     let chatId = message.to === user.id ? message.from : message.to;
 
-    const { chats } = usechatsState();
+    const {chats} = usechatsState();
     const chat = chats.value.find(c => c.chatId == chatId);
 
     const newRead = getMessage(chat, message.body);

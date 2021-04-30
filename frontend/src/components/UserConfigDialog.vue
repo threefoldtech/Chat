@@ -47,12 +47,21 @@
 
                 <suspense>
                     <textarea
+                        ref="statusInput"
                         v-model="userStatus"
                         class="w-full"
                         :disabled="!isEditingStatus"
                         :placeholder="myStatus"
-                    ></textarea>
+                        maxlength="150"
+                    >
+
+                    </textarea>
                 </suspense>
+              <div v-if="isEditingStatus" class="flex justify-end">
+                <span id="current">{{ userStatus.length }}</span>
+                <span id="maximum">&nbsp;/&nbsp;150</span>
+
+              </div>
             </div>
             <input
                 class="hidden"
@@ -158,6 +167,8 @@
         emits: ['addUser'],
         created: () => {
             initBlocklist();
+
+
         },
         async setup({}, ctx) {
             const { user } = useAuthState();
@@ -172,6 +183,8 @@
             const cropper = ref(null);
             const isHoveringAvatar = ref(false);
             const showEditAvatar = ref(false);
+
+
 
             watchEffect(() => {
                 if(!cropper.value) {
@@ -258,7 +271,6 @@
             const addUser = () => {
                 ctx.emit('addUser');
             };
-
             const status = computed(() => {
                 return statusList[<string>user.id];
             });
@@ -299,6 +311,7 @@
                 isHoveringAvatar,
                 showEditAvatar,
                 cancelNewAvatar,
+
             };
         },
     });
