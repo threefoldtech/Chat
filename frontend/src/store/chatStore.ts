@@ -32,6 +32,7 @@ const state = reactive<ChatState>({
 
 export const selectedId = ref('');
 export const selectedMessageId = ref(undefined);
+export const isLoading = ref(false);
 
 export enum MessageAction {
     EDIT = 'EDIT',
@@ -71,7 +72,7 @@ export const clearMessageAction = (chatId: string) => {
 const retrievechats = async () => {
     const params = new URLSearchParams();
     params.append('limit', messageLimit.toString());
-
+    isLoading.value = true;
     await axios.get(`${config.baseUrl}api/chats`, {params: params}).then(response => {
         const incommingchats = response.data;
 
@@ -80,7 +81,9 @@ const retrievechats = async () => {
             addChat(chat);
         });
         sortChats();
+        isLoading.value = false;
     });
+
 };
 
 const getChat = chatId => state.chats.find(x => x.chatId === chatId);

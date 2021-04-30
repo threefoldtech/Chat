@@ -158,7 +158,11 @@
                     </FileDropArea>
                 </div>
                 <div class='grid h-full w-full place-items-center' v-else>
-                    <h2>Loading</h2>
+                    <h2 v-if='isLoading'>Loading</h2>
+                    <div class='flex flex-col justify-center items-center' v-else>
+                        <h1 class='text-3xl'>404</h1>
+                        <h2>Chat '{{selectedId}}' does not exist</h2>
+                    </div>
                 </div>
                 <aside
                     class='hidden relative h-full flex-col overflow-y-auto md:w-400p'
@@ -209,7 +213,7 @@
 
     import { each } from 'lodash';
     import { statusList } from '@/store/statusStore';
-    import { usechatsState, usechatsActions } from '@/store/chatStore';
+    import { usechatsState, usechatsActions, isLoading } from '@/store/chatStore';
     import { sendBlockChat, sendRemoveChat } from '@/store/socketStore';
     import { useAuthState } from '@/store/authStore';
     import { popupCenter } from '@/services/popupService';
@@ -464,6 +468,7 @@
                 moment,
                 blocked,
                 sendFile,
+                isLoading,
                 ...propRefs,
             };
         },
