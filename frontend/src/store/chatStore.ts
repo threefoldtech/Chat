@@ -379,7 +379,7 @@ const sendFile = async (chatId, selectedFile, isBlob = false) => {
     } catch (e) {
         let errorBody = '';
         if (e.message == "Request failed with status code 413"){
-            errorBody = 'ERROR: File exceeds 10MB limit!'
+            errorBody = 'ERROR: File exceeds 100MB limit!'
             }
         else{
             errorBody = 'ERROR: File failed to send!'
