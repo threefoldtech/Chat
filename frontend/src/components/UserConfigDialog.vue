@@ -183,7 +183,6 @@
             const cropper = ref(null);
             const isHoveringAvatar = ref(false);
             const showEditAvatar = ref(false);
-            const statusInput = ref()
 
 
 
@@ -312,7 +311,7 @@
                 isHoveringAvatar,
                 showEditAvatar,
                 cancelNewAvatar,
-                statusInput,
+
             };
         },
     });
