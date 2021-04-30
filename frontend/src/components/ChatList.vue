@@ -20,7 +20,7 @@
                 <div class="ml-auto collapsed-bar:m-0 collapsed-bar:mb-2 hidden md:block relative">
                     <button
                         class="rounded-full w-8 h-8 collapsed-bar:w-10 collapsed-bar:h-10 bg-gray-100 flex justify-center"
-                        @click="collapsed = !collapsed"
+                        @click="collapsed = !collapsed; searchValue = ''"
                     >
                         <div v-if="collapsed" class="h-full flex items-center justify-center">
                             <i class="fas fa-chevron-right"></i>
@@ -37,7 +37,15 @@
                     </div>
                 </div>
             </div>
-            <div v-if="filteredChatRequests.length > 0" class='collapsed-bar:hidden p-2'>
+            <div class='collapsed-bar:hidden px-2'>
+                <input
+                    type='text'
+                    placeholder='Search'
+                    class='px2-2 border-gray-200 border-2 focus:border-accent border-r rounded-lg'
+                    v-model='searchValue'
+                />
+            </div>
+            <div v-if="filteredChatRequests.length > 0" class='collapsed-bar:hidden px-2'>
                 <h2 style="font-size: 1.5em">
                     You have
                     <span style="">
@@ -140,7 +148,6 @@
                 if (!searchValue.value) {
                     return chats.value;
                 }
-                console.log('filtered', chats.value);
                 return chats.value.filter(c => c.name.toLowerCase().includes(searchValue.value.toLowerCase()));
             });
             onBeforeMount(() => {
