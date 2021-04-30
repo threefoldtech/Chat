@@ -10,7 +10,7 @@
                         {{ chat.name }}
                     </p>
                     <p class='font-thin' v-if='!chat.isGroup && !blocked'>
-                        {{ statusList[chat.chatId]?.isOnline ? 'Is online' : 'Is offline' }}
+                        {{ status?.isOnline ? 'Is online' : 'Is offline' }}
                     </p>
                     <p class='text-red-500' v-if='!chat.isGroup && blocked'>
                         BLOCKED
@@ -77,9 +77,12 @@
                                     {{ chat.name }}
                                 </p>
                                 <p class='font-thin' v-if='!blocked'>
-                                    {{ getChatStatus }}
+                                    {{getChatStatus.message}}
+                                    <span v-if='!chat.isGroup && getChatStatus?.lastSeen'>
+                                        , active <TimeContent :time='getChatStatus.lastSeen.toDate()'/>
+                                    </span>
                                 </p>
-                                <p class='text-red-500' v-else>
+                                <p class='text-red-500' v-if='blocked'>
                                     BLOCKED
                                 </p>
                             </div>
@@ -227,10 +230,12 @@
     import ImagePreview from '@/components/ImagePreview.vue';
     import { deleteBlockedEntry, isBlocked } from '@/store/blockStore';
     import FileDropArea from '@/components/FileDropArea.vue';
+    import TimeContent from '@/components/TimeContent.vue';
 
     export default defineComponent({
         name: 'ChatView',
         components: {
+            TimeContent,
             FileDropArea,
             Button,
             MessageBox,
@@ -319,11 +324,20 @@
                         message += `, ${onlineMembers} online`;
                     }
 
-                    return message;
+                    return {
+                        message: message,
+                        lastSeen: undefined
+                    };
                 }
 
                 const status = statusList[<string>chat.value.chatId];
-                return status?.isOnline ? 'Online' : 'Offline';
+                let lastSeen: string | undefined = undefined;
+                lastSeen = status?.isOnline ? undefined : status?.lastSeen?.toString();
+                lastSeen = lastSeen?.slice(0, -3);
+                return {
+                    message: status?.isOnline ? 'Online' : 'Offline',
+                    lastSeen: lastSeen ? moment.unix( Number(lastSeen)) : undefined
+                };
             });
 
             const popupMeeting = () => {
