@@ -301,7 +301,7 @@
                         const audioBlob = new Blob(audioChunks);
                         console.log(props.selectedid);
                         console.log(audioBlob);
-                        sendFile(props.selectedid, audioBlob, true);
+                        sendFile(props.selectedid, audioBlob, true, true);
                         stopRecording.value = null;
                     });
 

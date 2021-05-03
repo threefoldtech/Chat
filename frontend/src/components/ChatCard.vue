@@ -1,38 +1,39 @@
 <template>
     <div
-        class="chatcard relative text-sm flex flex-row"
+        class='chatcard relative text-sm flex flex-row'
         :class="{
             'bg-gray-50': !router.currentRoute?.value.path.includes(chat.chatId),
             'bg-gray-200': router.currentRoute?.value.path.includes(chat.chatId),
             'opacity-50': blocked
         }"
     >
-        <div class=" place-items-center relative">
-            <AvatarImg :id="chat.chatId" :showOnlineStatus="!chat.isGroup" :unreadMessagesAmount="unreadMessagesAmount" />
+        <div class=' place-items-center relative'>
+            <AvatarImg :id='chat.chatId' :showOnlineStatus='!chat.isGroup'
+                       :unreadMessagesAmount='unreadMessagesAmount' />
         </div>
-        <div class="px-2 ml-2 content" v-if="!collapsed">
-            <p class="flex">
-                <span class="font-bold break-normal overflow-ellipsis overflow-hidden name">
+        <div class='px-2 ml-2 content' v-if='!collapsed'>
+            <p class='flex'>
+                <span class='font-bold break-normal overflow-ellipsis overflow-hidden name'>
                     {{ chat.name }}
                 </span>
-                <span class="font-thin ml-2" v-if="chat.isGroup"> (group)</span>
-                <span class="ml-2 text-red-500" v-if="blocked"> BLOCKED</span>
-                <span class="font-thin ml-auto" v-if="lastMessage">
+                <span class='font-thin ml-2' v-if='chat.isGroup'> (group)</span>
+                <span class='ml-2 text-red-500' v-if='blocked'> BLOCKED</span>
+                <span class='font-thin ml-auto' v-if='lastMessage'>
                     {{ timeAgo(lastMessage.timeStamp) }}
                 </span>
             </p>
-            <p class="col-end-13 col-span-2 font-thin truncate">
+            <p class='col-end-13 col-span-2 font-thin truncate'>
                 {{ lastMessageBody }}
             </p>
         </div>
     </div>
 </template>
 
-<script lang="ts">
+<script lang='ts'>
     import { computed, defineComponent, ref } from 'vue';
     import { findLastIndex } from 'lodash';
     import { useAuthState } from '@/store/authStore';
-    import { Message, MessageBodyType, MessageTypes, SystemBody } from '@/types';
+    import { FileTypes, Message, MessageBodyType, MessageTypes, SystemBody } from '@/types';
     import moment from 'moment';
     import { statusList } from '@/store/statusStore';
     import AvatarImg from '@/components/AvatarImg.vue';
@@ -53,7 +54,7 @@
                 let lastReadMessage = props.chat.read[<string>user.id];
                 return findLastIndex(
                     props.chat.messages,
-                    (message: Message<MessageBodyType>) => lastReadMessage === message.id
+                    (message: Message<MessageBodyType>) => lastReadMessage === message.id,
                 );
             });
             const lastMessage = computed(() => {
@@ -77,6 +78,7 @@
 
             const lastMessageBody = computed(() => {
                 const lstmsg = lastMessage.value;
+                console.log(';', lstmsg);
                 switch (lstmsg.type) {
                     case 'GIF':
                         return 'Gif was sent';
@@ -84,8 +86,11 @@
                         return lstmsg.body.message;
                     case MessageTypes.SYSTEM:
                         return (lstmsg.body as SystemBody).message;
-                    case 'FILE':
+                    case 'FILE': {
+                        if (lstmsg.body.type === FileTypes.RECORDING)
+                            return 'Voice recording was sent';
                         return 'File has been uploaded';
+                    }
                     case 'DELETE':
                     default:
                         return lstmsg.body;
@@ -107,8 +112,8 @@
             });
 
             const blocked = computed(() => {
-                if(!props.chat || props.chat.isGroup) return false;
-                return isBlocked(props.chat.chatId)
+                if (!props.chat || props.chat.isGroup) return false;
+                return isBlocked(props.chat.chatId);
             });
 
             return {
@@ -122,7 +127,7 @@
                 user,
                 currentRoute,
                 unreadMessagesAmount,
-                blocked
+                blocked,
             };
         },
     });
@@ -137,10 +142,12 @@
         max-width: calc(100% - 150px);
         box-sizing: border-box;
     }
+
     .chatcard {
         box-sizing: border-box;
         width: 100%;
     }
+
     .chatcard:hover {
         background-color: lightgray;
     }
