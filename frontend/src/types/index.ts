@@ -88,6 +88,11 @@ export enum SystemMessageTypes {
     JOINED_VIDEOROOM = 'JOINED_VIDEOROOM',
 }
 
+export enum FileTypes {
+    RECORDING = 'RECORDING',
+    OTHER = 'OTHER',
+}
+
 export interface GroupManagementBody extends SystemBody {
     adminLocation: any;
     contact: Contact;

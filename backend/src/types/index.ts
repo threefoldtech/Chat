@@ -42,6 +42,11 @@ export enum SystemMessageType {
     JOINED_VIDEOROOM = 'JOINED_VIDEOROOM'
 }
 
+export enum FileTypes {
+    RECORDING = 'RECORDING',
+    OTHER = 'OTHER',
+}
+
 export enum MessageOperations {
     NEW = 'NEW',
     UPDATE = 'UPDATE',
@@ -69,6 +74,7 @@ export interface ContactRequest
     extends MessageBodyTypeInterface,
         ContactInterface {}
 export interface FileMessageType extends MessageBodyTypeInterface {
+    type: FileTypes;
     filename: string;
     url: string;
 }
