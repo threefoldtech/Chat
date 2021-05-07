@@ -10,6 +10,8 @@ import morgan from 'morgan';
 import { logger, httpLogger } from './logger';
 import { initKeys } from './store/keyStore';
 import { initUserData } from './store/user';
+import { errorMiddleware } from './middlewares/errorHandlingMiddleware';
+import './utils/extensions';
 
 const corsOptions: CorsOptions = {
     origin: '*',
@@ -28,8 +30,9 @@ app.use(
                 httpLogger.http(text);
             },
         },
-    })
+    }),
 );
+app.use(errorMiddleware);
 
 app.use(cors(corsOptions));
 
@@ -48,17 +51,19 @@ app.use(
             httpOnly: false,
             secure: false,
         },
-    })
+    }),
 );
 
 app.use(bodyParser.raw());
-app.use(bodyParser.urlencoded({limit: '100mb', extended: false}));
-app.use(bodyParser.json({limit: '100mb'}));
+app.use(bodyParser.urlencoded({ limit: '100mb', extended: false }));
+app.use(bodyParser.json({ limit: '100mb' }));
 
 app.use(
     fileupload({
         limits: { filesize: 100 * 1024 * 1024 },
-    })
+        useTempFiles: true,
+        parseNested: true,
+    }),
 );
 
 app.use('/api/', routes);
@@ -67,6 +72,6 @@ app.use('/api/', routes);
 initKeys();
 initUserData();
 
-httpServer.listen((process.env.PORT|| 3000) as number, 'localhost', () => {
+httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
     logger.info('go to http://localhost:' + (process.env.PORT || 3000));
 });
