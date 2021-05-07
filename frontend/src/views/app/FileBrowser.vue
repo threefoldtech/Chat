@@ -1,46 +1,41 @@
 <template>
-    <app-layout>
-        <iframe
-            :src="computedUrl"
-            style="
-                position: relative;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                right: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                z-index: 999999;
-            "
-        >
-            Your browser doesn't support iframes
-        </iframe>
-    </app-layout>
+    <appLayout>
+        <template v-slot:default>
+            <div class='flex flex-row w-full h-full'>
+                <div>
+                    <SideBar/>
+                </div>
+                <div class='flex flex-col flex-1'>
+                    <TopBar/>
+                    <DirectoryContent/>
+                </div>
+            </div>
+
+        </template>
+    </appLayout>
 </template>
 
 <script lang="ts">
     import appLayout from '../../layout/AppLayout.vue';
-    import { defineComponent, computed } from 'vue';
-    import { useAuthState } from '../../store/authStore';
+    import { defineComponent, onBeforeMount } from 'vue';
+    import DirectoryContent from '@/components/fileBrowser/DirectoryContent.vue';
+    import SideBar from '@/components/fileBrowser/SideBar.vue'
+    import { updateContent } from '@/store/fileBrowserStore';
+    import TopBar from '@/components/fileBrowser/TopBar.vue';
 
     export default defineComponent({
         name: 'Apps',
         components: {
-            appLayout,
+            TopBar,
+            appLayout, DirectoryContent, SideBar
         },
         setup() {
-            const { user } = useAuthState();
-
-            const computedUrl = computed(() => {
-                return `https://filebrowser.jimbertesting.be/auth/login/user/?username=${user.id}.3bot`;
-            });
+            onBeforeMount(async() => {
+               await updateContent();
+            })
 
             return {
-                computedUrl,
+
             };
         },
     });
