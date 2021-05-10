@@ -1,5 +1,7 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import config from '../../public/config/config';
+import {PathInfoModel} from "@/store/fileBrowserStore";
+
 const endpoint = `${config.baseUrl}api/browse`;
 
 export interface PathInfo {
@@ -18,13 +20,13 @@ export interface PathInfo {
 export const getDirectoryContent = async (path: string): Promise<AxiosResponse<PathInfo[]>> => {
     const params = new URLSearchParams();
     params.append('path', path);
-    return await axios.get<PathInfo[]>(`${endpoint}/directories/content`, { params: params });
+    return await axios.get<PathInfo[]>(`${endpoint}/directories/content`, {params: params});
 };
 
 export const getDirectoryInfo = async (path: string) => {
     const params = new URLSearchParams();
     params.append('path', path);
-    return await axios.get(`${endpoint}/directories/info`, { params: params });
+    return await axios.get(`${endpoint}/directories/info`, {params: params});
 };
 
 export const createDirectory = async (path: string, name: string): Promise<AxiosResponse<PathInfo>> => {
@@ -52,6 +54,18 @@ export const uploadFile = async (path: string, file: File): Promise<AxiosRespons
     });
 };
 
+export const deleteFile = async (path: string) => {
+    return await axios.delete<PathInfo>(`${endpoint}/files`, { data: { filepath: path }});
+};
+
+export const downloadFile = async (path: string) => {
+    const params = new URLSearchParams();
+    params.append('path', path);
+    return await axios.get<File>(`${endpoint}/files`, {
+        params: params,
+        responseType: "blob"
+    });
+};
 
 
 

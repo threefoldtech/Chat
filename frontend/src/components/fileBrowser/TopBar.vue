@@ -30,21 +30,78 @@
                 </span>
             </template>
         </div>
+      <div
+          v-if="selectedPaths.length > 0"
+          class='mx-2 hover:bg-green-600 pointer'>
+        <p>{{selectedPaths.length}} File(s) selected </p>
+
+      </div>
+      <div
+          v-if="selectedPaths.length > 0"
+          class='mx-2 hover:bg-green-600 pointer'
+          @click="downloadFiles"
+      >
+        <i class='fas fa-download fa-2x text-accent'></i>
+
+      </div>
+
+      <div
+          v-if="selectedPaths.length > 0"
+          class='mx-2 hover:bg-green-600 pointer'
+          @click='showDeleteDialog = true'
+      >
+
+        <i class='fas fa-trash-alt fa-2x text-accent'></i>
+      </div>
+      <jdialog v-model='showDeleteDialog' noActions class='max-w-10'>
+        <template v-slot:title class='center'>
+          <h1 class='text-center'>Deleting Files</h1>
+        </template>
+        <div>
+          Do you really want to delete {{ selectedPaths.length }} file(s)?
+        </div>
+        <div class='grid grid-cols-2 mt-2'>
+          <button @click='deleteFiles();showDeleteDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
+            YES
+          </button>
+          <button @click='showDeleteDialog = false' class='p-2'>
+            NO
+          </button>
+        </div>
+      </jdialog>
     </div>
+
 </template>
 
 <script lang='ts'>
-    import { defineComponent } from 'vue';
-    import { currentDirectory, goToHome, goToAPreviousDirectory, goBack } from '@/store/fileBrowserStore';
+  import {defineComponent, ref} from 'vue';
+  let showDeleteDialog = ref(false);
+    import {
+      currentDirectory,
+      logSelected,
+      goToHome,
+      goToAPreviousDirectory,
+      goBack,
+      selectedPaths,
+        deleteFiles,
+      downloadFiles,
+    } from '@/store/fileBrowserStore';
+    import Dialog from "@/components/Dialog.vue";
 
     export default defineComponent({
         name: 'TopBar',
+        components: {jdialog: Dialog},
         setup() {
             return {
                 goToHome,
                 goBack,
                 goToAPreviousDirectory,
                 currentDirectory,
+                logSelected,
+                selectedPaths,
+                deleteFiles,
+              showDeleteDialog,
+              downloadFiles
             };
         },
     });
