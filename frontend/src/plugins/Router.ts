@@ -7,6 +7,7 @@ import Chat from '@/views/app/Chat.vue';
 import Single from '@/views/app/Single.vue';
 import Callback from '@/views/Callback.vue';
 import Unauthorised from '@/views/Unauthorised.vue';
+import EditFile from '@/views/app/EditFile.vue';
 import { isUserAuthenticated } from '@/store/userStore';
 
 const routes: Array<RouteRecordRaw> = [
@@ -52,6 +53,17 @@ const routes: Array<RouteRecordRaw> = [
         name: 'filebrowser',
         path: '/filebrowser',
         component: FileBrowser,
+        children: [
+            {
+                path: '/edit/:id',
+                name: 'editfile',
+                component: EditFile,
+                meta: {
+                    back: 'filebrowser',
+                    requiresAuth: true,
+                },
+            }
+        ],
         meta: { requiresAuth: true },
     },
     {

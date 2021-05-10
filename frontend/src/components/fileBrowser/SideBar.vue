@@ -63,7 +63,7 @@
 
 <script lang='ts'>
     import { defineComponent, ref } from 'vue';
-    import Dialog from '@/components/Dialog';
+    import Dialog from '@/components/Dialog.vue';
     import FileDropArea from '@/components/FileDropArea.vue';
     import { createDirectory, uploadFiles } from '@/store/fileBrowserStore';
     import Button from '@/components/Button.vue';
@@ -78,7 +78,7 @@
             const showCreateFileDialog = ref(false);
             const newFolderInput = ref<HTMLInputElement>();
             const newFileInput = ref<HTMLInputElement>();
-            const selectedFiles = ref<Files[]>([]);
+            const selectedFiles = ref<File[]>([]);
 
             const updateCreateFolderDialog = (val: boolean) => {
                 if (!val) {

@@ -25,6 +25,14 @@ export const selectedPaths = ref<PathInfoModel[]>([]);
 
 watch([currentDirectory], () => updateContent());
 
+export const getFile = async(fullPath: string): Promise<PathInfoModel> => {
+    const result = await Api.getFileInfo(fullPath);
+    if (result.status !== 200 || !result.data)
+        throw new Error('Could not get file')
+
+    return createModel(result.data);
+}
+
 export const updateContent = async (path = currentDirectory.value) => {
     const result = await Api.getDirectoryContent(path);
     if (result.status !== 200 || !result.data)

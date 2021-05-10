@@ -35,10 +35,10 @@ export const createDirectory = async (path: string, name: string): Promise<Axios
     return await axios.post<PathInfo>(`${endpoint}/directories`, body);
 };
 
-export const getFileInfo = async (path: string) => {
+export const getFileInfo = async (path: string): Promise<AxiosResponse<PathInfo>> => {
     const params = new URLSearchParams();
     params.append('path', path);
-    await axios.get(`${endpoint}/files/info`, { params: params });
+    return await axios.get(`${endpoint}/files/info`, { params: params });
 };
 
 export const uploadFile = async (path: string, file: File): Promise<AxiosResponse<PathInfo>> => {
