@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import {
-    createDirectoryWithRetry,
+    createDirectoryWithRetry, doesPathExist, getFile, getFileStream,
     getFormattedDetails,
-    getStats,
+    getStats, isPathDirectory,
     Path,
-    readDir,
+    readDir, removeFile,
     saveFileWithRetry,
 } from '../utils/files';
 import { HttpError } from '../types/errors/httpError';
@@ -65,6 +65,8 @@ router.get('/files/info', async (req, res) => {
 router.post('/files', async (req, res) => {
     const files = req.files.newFiles as UploadedFile[] | UploadedFile;
     const dto = req.body as FileDto;
+    console.log(files);
+    console.log(dto);
     if (!dto.path) dto.path = '/';
     if (Array.isArray(files)) {
         const results = [] as PathInfo[];
@@ -84,6 +86,31 @@ router.post('/files', async (req, res) => {
     const result = await saveFileWithRetry(path, files as UploadedFile);
     res.json(result);
     res.status(StatusCodes.CREATED);
+});
+router.delete('/files', async (req, res) => {
+    try {
+        const pathClass = new Path(req.body.filepath)
+        const result = await removeFile(pathClass)
+        res.json(result);
+        res.status(StatusCodes.CREATED);
+    } catch (e) {
+        console.log(e);
+    }
+});
+
+router.get('/files', async (req, res) => {
+    try {
+        let p = req.query.path
+        if (!p || typeof p !== 'string')
+            throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
+
+        const path = new Path(p);
+
+        res.download(path.securedPath);
+        res.status(StatusCodes.CREATED);
+    } catch (e) {
+        console.log(e);
+    }
 });
 
 export default router;

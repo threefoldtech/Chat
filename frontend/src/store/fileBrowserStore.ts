@@ -1,4 +1,5 @@
-import { ref, watch } from 'vue';
+import {ref, watch} from 'vue';
+import fileDownload from 'js-file-download';
 import * as Api from '@/services/fileBrowserService';
 
 export enum FileType {
@@ -39,6 +40,7 @@ export const createDirectory = async (name: string, path = currentDirectory.valu
         throw new Error('Could not create new folder');
 
     currentDirectoryContent.value.push(createModel(result.data));
+    await updateContent()
 };
 
 export const uploadFiles = async (files: File[], path = currentDirectory.value) => {
@@ -48,6 +50,31 @@ export const uploadFiles = async (files: File[], path = currentDirectory.value) 
             throw new Error('Could not create new folder');
 
         currentDirectoryContent.value.push(createModel(result.data));
+        await updateContent()
+    }));
+};
+
+export const deleteFiles = async () => {
+    await Promise.all(selectedPaths.value.map(async f => {
+        const result = await Api.deleteFile(f.directory);
+        if (result.status !== 200 && result.status !== 201)
+            throw new Error('Could not delete file');
+        selectedPaths.value = []
+        await updateContent()
+
+    }));
+};
+export const downloadFiles = async () => {
+    await Promise.all(selectedPaths.value.map(async f => {
+        const result = await Api.downloadFile(f.directory);
+        if (result.status !== 200 && result.status !== 201)
+            throw new Error('Could not download file');
+
+        console.log(result.data)
+        fileDownload(result.data, f.fullName);
+        //unselecting
+        selectedPaths.value = []
+
     }));
 };
 
@@ -61,7 +88,9 @@ export const goToFolderInCurrentDirectory = (item: PathInfoModel) => {
 export const goToHome = () => {
     currentDirectory.value = rootDirectory;
 };
-
+export const logSelected = () => {
+    console.log(selectedPaths.value.length)
+};
 export const goToAPreviousDirectory = (index: number) => {
     if (currentDirectory.value === rootDirectory) return;
     const parts = currentDirectory.value.split('/');

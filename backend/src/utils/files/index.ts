@@ -1,6 +1,6 @@
 import PATH, { ParsedPath } from 'path';
 
-import { BaseEncodingOptions, Dirent, promises as FS, Stats } from 'fs';
+import { BaseEncodingOptions, Dirent, promises as FS, Stats, lstatSync, rmdirSync } from 'fs';
 import { FileSystemError, FileSystemErrorType as ErrorType } from '../../types/errors/fileSystemError';
 import { DirectoryContent, DirectoryDto, PathInfo, FileInformation } from '../../types/dtos/fileDto';
 import { ReadableStreamBuffer } from 'stream-buffers';
@@ -173,6 +173,15 @@ export const doesPathExist = async (
         return false;
     }
 };
+export const isPathDirectory = async (
+    path: Path,
+): Promise<boolean> => {
+    try {
+        return await lstatSync(path.securedPath).isDirectory();
+    } catch (e) {
+        return false
+    }
+};
 
 export const saveFileWithRetry = async (path: Path, file: UploadedFile, count = 0): Promise<PathInfo> => {
     const result = await saveFile(count === 0 ? path : new Path(path.path.insert(path.path.lastIndexOf('.'), ` (${count})`)), file);
@@ -261,8 +270,8 @@ export const getFileStream = async (path: Path) => {
     return buffer;
 };
 
-const readFile = (path: Path) => {
-    return FS.readFile(path.securedPath);
+const readFile = async (path: Path) => {
+    return await FS.readFile(path.securedPath);
 };
 
 const createDirectory = (path: Path) => {
@@ -289,7 +298,10 @@ const writeFile = async (path: Path, file: Buffer) => {
     return await FS.writeFile(path.securedPath, file);
 };
 
-const removeFile = async (path: Path) => {
+export const removeFile = async (path: Path) => {
+    if (await isPathDirectory(path)){
+        return rmdirSync(path.securedPath, { recursive: true });
+    }
     if (!(await doesPathExist(path))) {
         throw new FileSystemError(ErrorType.FileNotFound);
     }
