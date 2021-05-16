@@ -95,7 +95,7 @@ async function update(req) {
 
 async function handleWebsiteFile(req, res, info){
     driveObj = info.drive
-    var url = req.url.replace(`/${info.alias}/`, "")
+    var url = req.url.replace(`/${info.alias}/`, "").toLowerCase()
     var filepath = `${info.dir}/${url}`
     
     
@@ -146,7 +146,7 @@ async function handleWebsiteFile(req, res, info){
 }
 
 async function handleWikiFile(req, res, info){
-    var filename = req.url.replace(`/info`, "").replace(`/${info.alias}/`, "")
+    var filename = req.url.replace(`/info`, "").replace(`/${info.alias}/`, "").toLowerCase()
     var wikiname = info.dir.substring(1)
 
     if (filename.startsWith('/')){
@@ -400,6 +400,7 @@ router.get('/:path', asyncHandler(async (req, res) =>  {
             filepath = `${dir}/index.html`
         }
 
+        filepath = filepath.toLowerCase()
         
         var entry = null
         try {
@@ -444,7 +445,7 @@ router.get('/:path', asyncHandler(async (req, res) =>  {
 }))
 
 router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
-    var name = req.params.wiki
+    var name = req.params.wiki.toLowerCase()
     var driveObj = req.info.drive
     var filepath = ""
     contenttype = 'utf8'
