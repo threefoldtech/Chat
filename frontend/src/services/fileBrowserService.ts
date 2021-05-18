@@ -61,7 +61,7 @@ export const uploadFile = async (path: string, file: File): Promise<AxiosRespons
 };
 
 export const deleteFile = async (path: string) => {
-    return await axios.delete<PathInfo>(`${endpoint}/files`, { data: { filepath: path }});
+    return await axios.delete<PathInfo>(`${endpoint}/files`, { data: { filepath: path}});
 };
 
 export const downloadFileEndpoint = `${endpoint}/files`;
@@ -73,7 +73,12 @@ export const downloadFile = async (path: string) => {
         responseType: "blob"
     });
 };
-
+export const pasteFile = async (path: string, directory: string, name: string) => {
+    return await axios.post<PathInfo>(`${endpoint}/pasteFiles`, { data: { filepath: path, currentDir: directory, name: name }});
+};
+export const renameFile = async (oldPath: string, newPath: string) => {
+    return await axios.post<PathInfo>(`${endpoint}/renameFiles`, { data: { oldPath: oldPath, newPath: newPath }});
+};
 
 
 

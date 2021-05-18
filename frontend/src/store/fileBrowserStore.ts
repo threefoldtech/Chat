@@ -28,6 +28,8 @@ export const rootDirectory = '/';
 export const currentDirectory = ref<string>(rootDirectory);
 export const currentDirectoryContent = ref<PathInfoModel[]>([]);
 export const selectedPaths = ref<PathInfoModel[]>([]);
+export const copyStatus = ref<string>('Copy Selected');
+export const copiedFiles = ref<PathInfoModel[]>([]);
 
 watch([currentDirectory], () => updateContent());
 
@@ -103,9 +105,52 @@ export const goToFolderInCurrentDirectory = (item: PathInfoModel) => {
 export const goToHome = () => {
     currentDirectory.value = rootDirectory;
 };
-export const logSelected = () => {
-    console.log(selectedPaths.value.length);
+export const copyPasteSelected = async () => {
+    //copy
+    if (copiedFiles.value.length === 0) {
+        copiedFiles.value = selectedPaths.value;
+        selectedPaths.value = [];
+        copyStatus.value = `Paste ${copiedFiles.value.length} files`;
+        return;
+    }
+    //paste
+    await Promise.all(copiedFiles.value.map(async f => {
+        const result = await Api.pasteFile(f.directory, currentDirectory.value, f.fullName);
+        if (result.status !== 200 && result.status !== 201)
+            throw new Error('Could not paste file');
+    }));
+    copiedFiles.value = [];
+    selectedPaths.value = [];
+    copyStatus.value = `Copy Selected`;
+    await updateContent();
+
 };
+export const clearClipboard = () => {
+    copyStatus.value = `Copy Selected`;
+    copiedFiles.value = [];
+
+};
+export const renameFile = async (item: PathInfoModel, name: string) => {
+    if (name === ''){
+        return
+    }
+    const oldPath = item.directory;
+    let newPath = ""
+    if (item.extension != ""){
+        newPath = currentDirectory.value + '/' + name + '.' + item.extension;
+    }else{
+        newPath = currentDirectory.value + '/' + name;
+    }
+
+    const result = await Api.renameFile(oldPath, newPath);
+    console.log(result.status);
+    if (result.status !== 201)
+        throw new Error('Could not rename file');
+
+    selectedPaths.value = [];
+    await updateContent();
+};
+
 export const goToAPreviousDirectory = (index: number) => {
     if (currentDirectory.value === rootDirectory) return;
     const parts = currentDirectory.value.split('/');
@@ -123,22 +168,18 @@ export const goBack = () => {
 
 export const selectItem = (item: PathInfoModel) => {
     selectedPaths.value.push(item);
-    console.log('add', selectedPaths.value);
 };
 
 export const deselectItem = (item: PathInfoModel) => {
     selectedPaths.value = selectedPaths.value.filter(x => !(x.fullName === item.fullName && x.isDirectory === item.isDirectory && x.extension === item.extension));
-    console.log('deselect', selectedPaths.value);
 };
 
 export const selectAll = () => {
     selectedPaths.value = [...currentDirectoryContent.value];
-    console.log('selectall', selectedPaths.value);
 };
 
 export const deselectAll = () => {
     selectedPaths.value = [];
-    console.log('deselectall', selectedPaths.value);
 };
 
 export const itemAction = (item: PathInfoModel, router: Router, path = currentDirectory.value) => {

@@ -1,12 +1,17 @@
 import express, { Router } from 'express';
 import {
-    createDirectoryWithRetry,
+    copyFile,
+    createDirectoryWithRetry, doesPathExist, getFile, getFileStream,
     getFormattedDetails,
     getStats,
+    isPathDirectory,
     Path,
     readDir,
     removeFile, saveFile,
     saveFileWithRetry,
+    renameFile,
+    copyFileWithRetry,
+    copyDirectoryWithRetry
 } from '../utils/files';
 import { HttpError } from '../types/errors/httpError';
 import { StatusCodes } from 'http-status-codes';
@@ -18,6 +23,8 @@ import { isBlocked, Permission, Token, TokenData } from '../store/tokenStore';
 import syncRequest from "sync-request";
 import { config } from '../config/config';
 import { uuidv4 } from '../common';
+import * as fs from 'fs';
+const AdmZip = require('adm-zip');
 
 const router = Router();
 
@@ -26,7 +33,6 @@ interface FileToken extends TokenData {
 }
 
 router.get('/directories/content', requiresAuthentication, async (req: express.Request, res: express.Response) => {
-    console.log('here');
     let p = req.query.path;
     if (!p || typeof p !== 'string') p = '/';
     const path = new Path(p);
@@ -126,9 +132,24 @@ router.get('/files', requiresAuthentication, async (req: express.Request, res: e
         throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
 
     const path = new Path(p);
-    res.download(path.securedPath);
-    res.status(StatusCodes.OK);
+    if(await isPathDirectory(path)){
+        const zip = new AdmZip();
+        let uploadDir = fs.readdirSync(path.securedPath);
 
+        for(let i = 0; i < uploadDir.length;i++){
+            zip.addLocalFile(path.securedPath+ "/"+uploadDir[i]);
+        }
+        const data = zip.toBuffer();
+
+        // code to download zip file
+        res.set('Content-Type','application/octet-stream');
+        res.set('Content-Disposition',`attachment`);
+        res.set('Content-Length',data.length);
+        res.send(data);
+    }else{
+        res.download(path.securedPath);
+        res.status(StatusCodes.CREATED);
+    }
 });
 
 interface OnlyOfficeCallback {
@@ -191,5 +212,37 @@ router.post('/internal/files', async (req: express.Request, res: express.Respons
     res.json({error: 0});
     res.status(StatusCodes.OK);
 });
+
+router.post('/pasteFiles', async (req, res) => {
+    try {
+        const path = new Path(req.body.data.filepath);
+        let result: PathInfo;
+        const pathToPaste = new Path(req.body.data.currentDir + "/" + req.body.data.name);
+        if(!await isPathDirectory(path)) {
+            const file = await getFile(path)
+            result = await copyFileWithRetry(pathToPaste, file)
+        }else
+        {
+            result = await copyDirectoryWithRetry(path, pathToPaste)
+        }
+        res.json(result);
+        res.status(StatusCodes.CREATED);
+    } catch (e) {
+        console.log(e);
+    }
+});
+router.post('/renameFiles', async (req, res) => {
+    try {
+        const oldPath = new Path(req.body.data.oldPath);
+        const newPath = new Path(req.body.data.newPath);
+        const result = await renameFile(oldPath, newPath)
+
+        res.json(result);
+        res.status(StatusCodes.CREATED);
+    } catch (e) {
+        console.log(e);
+    }
+});
+
 
 export default router;
