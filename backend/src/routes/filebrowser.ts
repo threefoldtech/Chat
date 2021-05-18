@@ -11,7 +11,7 @@ import {
     saveFileWithRetry,
     renameFile,
     copyFileWithRetry,
-    copyDirectoryWithRetry
+    copyDirectoryWithRetry,
 } from '../utils/files';
 import { HttpError } from '../types/errors/httpError';
 import { StatusCodes } from 'http-status-codes';
@@ -20,10 +20,11 @@ import { UploadedFile } from 'express-fileupload';
 import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
 import { createJwtToken, verifyJwtToken } from '../service/jwtService';
 import { isBlocked, Permission, Token, TokenData } from '../store/tokenStore';
-import syncRequest from "sync-request";
+import syncRequest from 'sync-request';
 import { config } from '../config/config';
 import { uuidv4 } from '../common';
 import * as fs from 'fs';
+
 const AdmZip = require('adm-zip');
 
 const router = Router();
@@ -116,14 +117,10 @@ router.post('/files', requiresAuthentication, async (req: express.Request, res: 
 });
 
 router.delete('/files', requiresAuthentication, async (req: express.Request, res: express.Response) => {
-    try {
-        const pathClass = new Path(req.body.filepath);
-        const result = await removeFile(pathClass);
-        res.json(result);
-        res.status(StatusCodes.CREATED);
-    } catch (e) {
-        console.log(e);
-    }
+    const pathClass = new Path(req.body.filepath);
+    const result = await removeFile(pathClass);
+    res.json(result);
+    res.status(StatusCodes.CREATED);
 });
 
 router.get('/files', requiresAuthentication, async (req: express.Request, res: express.Response) => {
@@ -132,21 +129,21 @@ router.get('/files', requiresAuthentication, async (req: express.Request, res: e
         throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
 
     const path = new Path(p);
-    if(await isPathDirectory(path)){
+    if (await isPathDirectory(path)) {
         const zip = new AdmZip();
         let uploadDir = fs.readdirSync(path.securedPath);
 
-        for(let i = 0; i < uploadDir.length;i++){
-            zip.addLocalFile(path.securedPath+ "/"+uploadDir[i]);
+        for (let i = 0; i < uploadDir.length; i++) {
+            zip.addLocalFile(path.securedPath + '/' + uploadDir[i]);
         }
         const data = zip.toBuffer();
 
         // code to download zip file
-        res.set('Content-Type','application/octet-stream');
-        res.set('Content-Disposition',`attachment`);
-        res.set('Content-Length',data.length);
+        res.set('Content-Type', 'application/octet-stream');
+        res.set('Content-Disposition', `attachment`);
+        res.set('Content-Length', data.length);
         res.send(data);
-    }else{
+    } else {
         res.download(path.securedPath);
         res.status(StatusCodes.CREATED);
     }
@@ -167,14 +164,14 @@ router.get('/internal/files', async (req: express.Request, res: express.Response
     if (!p || typeof p !== 'string')
         throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
 
-    if(isBlocked(token))
-        throw new HttpError(StatusCodes.FORBIDDEN, "Provided token is blocked")
+    if (isBlocked(token))
+        throw new HttpError(StatusCodes.FORBIDDEN, 'Provided token is blocked');
 
     const [payload, err] = verifyJwtToken<Token<FileToken>>(token);
-    if(err)
+    if (err)
         throw new HttpError(StatusCodes.UNAUTHORIZED, err.message);
-    if(!payload || !payload.data || payload.data.permissions.indexOf(Permission.FileBrowserRead) === -1 || payload.data.file !== p)
-        throw new HttpError(StatusCodes.UNAUTHORIZED, "No permission for reading file");
+    if (!payload || !payload.data || payload.data.permissions.indexOf(Permission.FileBrowserRead) === -1 || payload.data.file !== p)
+        throw new HttpError(StatusCodes.UNAUTHORIZED, 'No permission for reading file');
 
     const path = new Path(p);
     res.download(path.securedPath);
@@ -187,61 +184,58 @@ router.post('/internal/files', async (req: express.Request, res: express.Respons
     if (!token || typeof token !== 'string')
         throw new HttpError(StatusCodes.UNAUTHORIZED, 'No valid token provided');
 
-    if(body.status !== 2 && body.status !== 6) {
-        res.json({error: 0});
+    if (body.status !== 2 && body.status !== 6) {
+        res.json({ error: 0 });
         return;
     }
 
-    if(isBlocked(token))
-        throw new HttpError(StatusCodes.FORBIDDEN, "Provided token is blocked")
+    if (isBlocked(token))
+        throw new HttpError(StatusCodes.FORBIDDEN, 'Provided token is blocked');
 
     const [payload, err] = verifyJwtToken<Token<FileToken>>(token);
-    if(err)
+    if (err)
         throw new HttpError(StatusCodes.UNAUTHORIZED, err.message);
-    if(!payload || !payload.data || payload.data.permissions.indexOf(Permission.FileBrowserWrite) === -1)
-        throw new HttpError(StatusCodes.UNAUTHORIZED, "No permission for reading file");
+    if (!payload || !payload.data || payload.data.permissions.indexOf(Permission.FileBrowserWrite) === -1)
+        throw new HttpError(StatusCodes.UNAUTHORIZED, 'No permission for reading file');
 
     if (!payload.data.file || !body.url)
         throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
     const url = new URL(body.url);
-    url.hostname = "onlyoffice-documentserver";
-    url.protocol = "http:"
-    const fileResponse = syncRequest("GET", url);
+    url.hostname = 'onlyoffice-documentserver';
+    url.protocol = 'http:';
+    const fileResponse = syncRequest('GET', url);
     const fileBuffer = <Buffer>fileResponse.body;
-    await saveFile(new Path(payload.data.file), fileBuffer)
-    res.json({error: 0});
+    await saveFile(new Path(payload.data.file), fileBuffer);
+    res.json({ error: 0 });
     res.status(StatusCodes.OK);
 });
 
-router.post('/pasteFiles', async (req, res) => {
-    try {
-        const path = new Path(req.body.data.filepath);
-        let result: PathInfo;
-        const pathToPaste = new Path(req.body.data.currentDir + "/" + req.body.data.name);
-        if(!await isPathDirectory(path)) {
-            const file = await getFile(path)
-            result = await copyFileWithRetry(pathToPaste, file)
-        }else
-        {
-            result = await copyDirectoryWithRetry(path, pathToPaste)
-        }
-        res.json(result);
-        res.status(StatusCodes.CREATED);
-    } catch (e) {
-        console.log(e);
-    }
-});
-router.post('/renameFiles', async (req, res) => {
-    try {
-        const oldPath = new Path(req.body.data.oldPath);
-        const newPath = new Path(req.body.data.newPath);
-        const result = await renameFile(oldPath, newPath)
+router.post('/files/copy', async (req, res) => {
+    let data = req.body.paths;
+    const result = await Promise.all(
+        data.map(
+            async function(item: { directory: any; fullName: any; }) {
+                const pathObj = new Path(item.directory);
+                const pathToPaste = new Path(req.body.pathToPaste + '/' + item.fullName);
+                if (!await isPathDirectory(pathObj)) {
+                    const file = await getFile(pathObj);
+                    await copyFileWithRetry(pathToPaste, file);
+                } else {
+                    await copyDirectoryWithRetry(pathObj, pathToPaste);
+                }
+            }));
+    res.json(result);
+    res.status(StatusCodes.CREATED);
 
-        res.json(result);
-        res.status(StatusCodes.CREATED);
-    } catch (e) {
-        console.log(e);
-    }
+});
+router.put('/files/rename', async (req, res) => {
+    const oldPath = new Path(req.body.oldPath);
+    const newPath = new Path(req.body.newPath);
+    const result = await renameFile(oldPath, newPath);
+
+    res.json(result);
+    res.status(StatusCodes.CREATED);
+
 });
 
 

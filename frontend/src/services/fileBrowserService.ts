@@ -73,13 +73,12 @@ export const downloadFile = async (path: string) => {
         responseType: "blob"
     });
 };
-export const pasteFile = async (path: string, directory: string, name: string) => {
-    return await axios.post<PathInfo>(`${endpoint}/pasteFiles`, { data: { filepath: path, currentDir: directory, name: name }});
+export const pasteFile = async (paths: PathInfo[], pathToPaste: string) => {
+    return await axios.post<PathInfo[]>(`${endpoint}/files/copy`, { paths: paths, pathToPaste: pathToPaste});
 };
 export const renameFile = async (oldPath: string, newPath: string) => {
-    return await axios.post<PathInfo>(`${endpoint}/renameFiles`, { data: { oldPath: oldPath, newPath: newPath }});
+    return await axios.put<PathInfo>(`${endpoint}/files/rename`, { oldPath: oldPath, newPath: newPath });
 };
-
 
 
 
