@@ -235,8 +235,6 @@ router.put('/files/rename', async (req, res) => {
 
     res.json(result);
     res.status(StatusCodes.CREATED);
-
 });
-
 
 export default router;
