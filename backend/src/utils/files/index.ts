@@ -184,7 +184,7 @@ export const isPathDirectory = async (
 };
 
 export const saveFileWithRetry = async (path: Path, file: UploadedFile, count = 0): Promise<PathInfo> => {
-    const result = await saveFile(count === 0 ? path : new Path(path.path.insert(path.path.lastIndexOf('.'), ` (${count})`)), file);
+    const result = await saveUploadedFile(count === 0 ? path : new Path(path.path.insert(path.path.lastIndexOf('.'), ` (${count})`)), file);
     if (!result) {
         return await saveFileWithRetry(path, file, count + 1);
     }
@@ -193,11 +193,11 @@ export const saveFileWithRetry = async (path: Path, file: UploadedFile, count = 
 };
 
 /**
- * Encrypt the file and store it in the correct category of the space
+ * Saved file
  * @param path
  * @param file
  */
-export const saveFile = async (
+export const saveUploadedFile = async (
     path: Path,
     file: UploadedFile,
 ) => {
@@ -206,13 +206,22 @@ export const saveFile = async (
     }
 
     if (await doesPathExist(path)) return;
+    return saveFile(path, file.data);
+}
+
+
+export const saveFile = async (
+    path: Path,
+    file: Buffer,
+) => {
+
 
     const directory = new Path(path.path.removeAfterLastOccurrence('/'));
     if (!(await doesPathExist(directory))) {
         await createDir(directory);
     }
 
-    await writeFile(path, file.data);
+    await writeFile(path, file);
     return await getFormattedDetails(path);
 };
 
@@ -268,6 +277,22 @@ export const getFileStream = async (path: Path) => {
     buffer.put(file);
     buffer.stop();
     return buffer;
+};
+export const getFileData = async (path: Path) => {
+    const fileDetails = await getDetails(path);
+
+    if (!fileDetails) {
+        throw new FileSystemError(ErrorType.FileNotFound);
+    }
+
+    const contentType = await getMimeType(path);
+    const fileStream = await getFileStream(path);
+
+    return {
+        fileDetails,
+        fileStream,
+        contentType,
+    };
 };
 
 const readFile = async (path: Path) => {

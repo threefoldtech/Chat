@@ -1,6 +1,7 @@
-import {ref, watch} from 'vue';
+import { ref, watch } from 'vue';
 import fileDownload from 'js-file-download';
 import * as Api from '@/services/fileBrowserService';
+import { Router, useRouter } from 'vue-router';
 
 export enum FileType {
     Unknown,
@@ -19,6 +20,10 @@ export interface PathInfoModel extends Api.PathInfo {
     fileType: FileType;
 }
 
+export interface FullPathInfoModel extends Api.FullPathInfo {
+    fileType: FileType;
+}
+
 export const rootDirectory = '/';
 export const currentDirectory = ref<string>(rootDirectory);
 export const currentDirectoryContent = ref<PathInfoModel[]>([]);
@@ -26,13 +31,18 @@ export const selectedPaths = ref<PathInfoModel[]>([]);
 
 watch([currentDirectory], () => updateContent());
 
-export const getFile = async(fullPath: string): Promise<PathInfoModel> => {
+function pathJoin(parts, separator = '/') {
+    const replace = new RegExp(separator + '{1,}', 'g');
+    return parts.join(separator).replace(replace, separator);
+}
+
+export const getFile = async (fullPath: string): Promise<FullPathInfoModel> => {
     const result = await Api.getFileInfo(fullPath);
     if (result.status !== 200 || !result.data)
-        throw new Error('Could not get file')
+        throw new Error('Could not get file');
 
-    return createModel(result.data);
-}
+    return createModel(result.data) as FullPathInfoModel;
+};
 
 export const updateContent = async (path = currentDirectory.value) => {
     const result = await Api.getDirectoryContent(path);
@@ -48,7 +58,7 @@ export const createDirectory = async (name: string, path = currentDirectory.valu
         throw new Error('Could not create new folder');
 
     currentDirectoryContent.value.push(createModel(result.data));
-    await updateContent()
+    await updateContent();
 };
 
 export const uploadFiles = async (files: File[], path = currentDirectory.value) => {
@@ -58,7 +68,7 @@ export const uploadFiles = async (files: File[], path = currentDirectory.value) 
             throw new Error('Could not create new folder');
 
         currentDirectoryContent.value.push(createModel(result.data));
-        await updateContent()
+        await updateContent();
     }));
 };
 
@@ -67,8 +77,8 @@ export const deleteFiles = async () => {
         const result = await Api.deleteFile(f.directory);
         if (result.status !== 200 && result.status !== 201)
             throw new Error('Could not delete file');
-        selectedPaths.value = []
-        await updateContent()
+        selectedPaths.value = [];
+        await updateContent();
 
     }));
 };
@@ -78,11 +88,8 @@ export const downloadFiles = async () => {
         if (result.status !== 200 && result.status !== 201)
             throw new Error('Could not download file');
 
-        console.log(result.data)
         fileDownload(result.data, f.fullName);
-        //unselecting
-        selectedPaths.value = []
-
+        selectedPaths.value = [];
     }));
 };
 
@@ -97,7 +104,7 @@ export const goToHome = () => {
     currentDirectory.value = rootDirectory;
 };
 export const logSelected = () => {
-    console.log(selectedPaths.value.length)
+    console.log(selectedPaths.value.length);
 };
 export const goToAPreviousDirectory = (index: number) => {
     if (currentDirectory.value === rootDirectory) return;
@@ -116,28 +123,32 @@ export const goBack = () => {
 
 export const selectItem = (item: PathInfoModel) => {
     selectedPaths.value.push(item);
-    console.log("add", selectedPaths.value)
+    console.log('add', selectedPaths.value);
 };
 
 export const deselectItem = (item: PathInfoModel) => {
     selectedPaths.value = selectedPaths.value.filter(x => !(x.fullName === item.fullName && x.isDirectory === item.isDirectory && x.extension === item.extension));
-    console.log("deselect", selectedPaths.value)
+    console.log('deselect', selectedPaths.value);
 };
 
 export const selectAll = () => {
     selectedPaths.value = [...currentDirectoryContent.value];
-    console.log("selectall", selectedPaths.value)
-}
+    console.log('selectall', selectedPaths.value);
+};
 
 export const deselectAll = () => {
     selectedPaths.value = [];
-    console.log("deselectall", selectedPaths.value)
-}
+    console.log('deselectall', selectedPaths.value);
+};
 
-export const itemAction = (item: PathInfoModel) => {
+export const itemAction = (item: PathInfoModel, router: Router, path = currentDirectory.value) => {
     if (item.isDirectory) {
         goToFolderInCurrentDirectory(item);
         return;
+    }
+
+    if ([FileType.Excel, FileType.Word, FileType.Powerpoint].some(x => x === item.fileType)) {
+        router.push({ name: 'editfile', params: { id: btoa(pathJoin([path, item.fullName])) } });
     }
 };
 
@@ -168,7 +179,7 @@ export const getIcon = (item: PathInfoModel) => {
     }
 };
 
-export const createModel = (pathInfo: Api.PathInfo): PathInfoModel => {
+export const createModel = <T extends Api.PathInfo>(pathInfo: T): PathInfoModel => {
     console.log(pathInfo);
     return {
         ...pathInfo,

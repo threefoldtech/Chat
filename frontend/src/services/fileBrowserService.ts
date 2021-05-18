@@ -17,6 +17,12 @@ export interface PathInfo {
     lastAccessed: Date;
 }
 
+export interface FullPathInfo extends PathInfo {
+    key: string,
+    readToken: string,
+    writeToken: string;
+}
+
 export const getDirectoryContent = async (path: string): Promise<AxiosResponse<PathInfo[]>> => {
     const params = new URLSearchParams();
     params.append('path', path);
@@ -37,7 +43,7 @@ export const createDirectory = async (path: string, name: string): Promise<Axios
     return await axios.post<PathInfo>(`${endpoint}/directories`, body);
 };
 
-export const getFileInfo = async (path: string): Promise<AxiosResponse<PathInfo>> => {
+export const getFileInfo = async (path: string): Promise<AxiosResponse<FullPathInfo>> => {
     const params = new URLSearchParams();
     params.append('path', path);
     return await axios.get(`${endpoint}/files/info`, { params: params });
@@ -58,10 +64,11 @@ export const deleteFile = async (path: string) => {
     return await axios.delete<PathInfo>(`${endpoint}/files`, { data: { filepath: path }});
 };
 
+export const downloadFileEndpoint = `${endpoint}/files`;
 export const downloadFile = async (path: string) => {
     const params = new URLSearchParams();
     params.append('path', path);
-    return await axios.get<File>(`${endpoint}/files`, {
+    return await axios.get<File>(downloadFileEndpoint, {
         params: params,
         responseType: "blob"
     });

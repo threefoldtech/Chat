@@ -10,8 +10,9 @@ import morgan from 'morgan';
 import { logger, httpLogger } from './logger';
 import { initKeys } from './store/keyStore';
 import { initUserData } from './store/user';
-import { errorMiddleware } from './middlewares/errorHandlingMiddleware';
+import errorMiddleware from './middlewares/errorHandlingMiddleware';
 import './utils/extensions';
+import { initTokens } from './store/tokenStore';
 
 const corsOptions: CorsOptions = {
     origin: '*',
@@ -71,7 +72,8 @@ app.use('/api/', routes);
 //Reading data
 initKeys();
 initUserData();
+initTokens();
 
 httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
-    logger.info('go to http://localhost:' + (process.env.PORT || 3000));
+    logger.info( 'go to http://localhost:' + (process.env.PORT || 3000));
 });

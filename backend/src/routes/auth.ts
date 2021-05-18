@@ -1,8 +1,5 @@
-import express, { Router } from 'express';
-import session from 'express-session';
-import { uuidv4 } from '../common';
+import { Router } from 'express';
 import { appCallback, getAppLoginUrl } from '../service/authService';
-
 const router = Router();
 
 router.get('/', async (request, response) => {

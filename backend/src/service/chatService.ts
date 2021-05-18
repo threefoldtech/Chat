@@ -1,13 +1,10 @@
-import { DtIdInterface, MessageInterface } from './../types/index';
+import { DtIdInterface, MessageInterface } from '../types/index';
 import Chat from '../models/chat';
-import Message from '../models/message';
 import { IdInterface, MessageBodyTypeInterface } from '../types';
 import Contact from '../models/contact';
 import { getChatIds, persistChat, getChat } from './dataService';
-import messages from '../routes/messages';
-import { parseMessage, parseMessages } from './messageService';
+import { parseMessages } from './messageService';
 import { sendEventToConnectedSockets } from './socketService';
-import { logger } from '../logger';
 import { getChatfromAdmin } from './apiService';
 import { config } from '../config/config';
 

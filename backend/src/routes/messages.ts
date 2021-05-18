@@ -4,7 +4,6 @@ import Message from '../models/message';
 import { contactRequests } from '../store/contactRequests';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import {
-    ContactInterface,
     ContactRequest,
     DtIdInterface,
     GroupUpdateType,

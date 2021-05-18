@@ -1,4 +1,3 @@
-import { IdInterface } from './../types/index';
 import axios from 'axios';
 import Message from '../models/message';
 import { MessageBodyTypeInterface } from '../types';

@@ -36,7 +36,7 @@
                     </div>
                     <span
                         class='hover:underline'
-                        @click='itemAction(item)'
+                        @click='handleItemClick(item)'
                     >
                         {{ item.name }}
                     </span>
@@ -59,11 +59,12 @@
         PathInfoModel, selectItem, deselectAll, selectAll,
         selectedPaths, deselectItem,
     } from '@/store/fileBrowserStore';
+    import { useRouter } from 'vue-router';
 
     export default defineComponent({
         name: 'DirectoryContent',
         setup() {
-
+            const router = useRouter();
             const handleSelect = (val: any, item: PathInfoModel) => {
                 if (val.target.checked)
                     selectItem(item);
@@ -78,11 +79,15 @@
                     deselectAll();
             };
 
+            const handleItemClick = (item: PathInfoModel) => {
+                itemAction(item, router);
+            }
+
             return {
                 handleSelect,
                 handleAllSelect,
                 getIcon,
-                itemAction,
+                handleItemClick,
                 currentDirectoryContent,
                 currentDirectory,
                 selectedPaths,

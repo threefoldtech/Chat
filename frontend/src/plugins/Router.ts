@@ -53,18 +53,16 @@ const routes: Array<RouteRecordRaw> = [
         name: 'filebrowser',
         path: '/filebrowser',
         component: FileBrowser,
-        children: [
-            {
-                path: '/edit/:id',
-                name: 'editfile',
-                component: EditFile,
-                meta: {
-                    back: 'filebrowser',
-                    requiresAuth: true,
-                },
-            }
-        ],
         meta: { requiresAuth: true },
+    },
+    {
+        path: '/filebrowser/edit/:id',
+        name: 'editfile',
+        component: EditFile,
+        meta: {
+            back: 'filebrowser',
+            requiresAuth: true,
+        }
     },
     {
         name: 'videoroom',
