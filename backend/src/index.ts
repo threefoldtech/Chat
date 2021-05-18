@@ -62,7 +62,7 @@ app.use(bodyParser.json({ limit: '100mb' }));
 app.use(
     fileupload({
         limits: { filesize: 100 * 1024 * 1024 },
-        useTempFiles: false,
+        useTempFiles: process.env.ENVIRONMENT !== 'development',
         parseNested: true,
     }),
 );
