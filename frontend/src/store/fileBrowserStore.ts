@@ -2,6 +2,8 @@ import { ref, watch } from 'vue';
 import fileDownload from 'js-file-download';
 import * as Api from '@/services/fileBrowserService';
 import { Router, useRouter } from 'vue-router';
+import { setImageSrc } from '@/store/imageStore';
+import { getDownloadFileEndpoint } from '@/services/fileBrowserService';
 
 export enum FileType {
     Unknown,
@@ -31,9 +33,12 @@ export const selectedPaths = ref<PathInfoModel[]>([]);
 export const copyStatus = ref<string>('Copy Selected');
 export const copiedFiles = ref<PathInfoModel[]>([]);
 
-watch([currentDirectory], () => updateContent());
+watch([currentDirectory], () => {
+    updateContent();
+    selectedPaths.value = [];
+});
 
-function pathJoin(parts, separator = '/') {
+function pathJoin(parts, separator = '/'): string {
     const replace = new RegExp(separator + '{1,}', 'g');
     return parts.join(separator).replace(replace, separator);
 }
@@ -74,9 +79,18 @@ export const uploadFiles = async (files: File[], path = currentDirectory.value) 
     }));
 };
 
+export const uploadFile = async (file: File, path = currentDirectory.value) => {
+    const result = await Api.uploadFile(path, file);
+    if ((result.status !== 200 && result.status !== 201) || !result.data)
+        throw new Error('Could not create new folder');
+
+    currentDirectoryContent.value.push(createModel(result.data));
+    await updateContent();
+};
+
 export const deleteFiles = async () => {
     await Promise.all(selectedPaths.value.map(async f => {
-        const result = await Api.deleteFile(f.directory);
+        const result = await Api.deleteFile(f.path);
         if (result.status !== 200 && result.status !== 201)
             throw new Error('Could not delete file');
         selectedPaths.value = [];
@@ -86,13 +100,19 @@ export const deleteFiles = async () => {
 };
 export const downloadFiles = async () => {
     await Promise.all(selectedPaths.value.map(async f => {
-        const result = await Api.downloadFile(f.directory);
+        const result = await Api.downloadFile(f.path);
         if (result.status !== 200 && result.status !== 201)
             throw new Error('Could not download file');
 
         fileDownload(result.data, f.fullName);
         selectedPaths.value = [];
     }));
+};
+
+export const downloadFileForPreview = async (path: string) => {
+    const response = await Api.downloadFile(path);
+    const result = window.URL.createObjectURL(response.data);
+    setImageSrc(result);
 };
 
 export const goToFolderInCurrentDirectory = (item: PathInfoModel) => {
@@ -114,11 +134,10 @@ export const copyPasteSelected = async () => {
         return;
     }
     //paste
-    await Promise.all(copiedFiles.value.map(async f => {
-        const result = await Api.pasteFile(f.directory, currentDirectory.value, f.fullName);
-        if (result.status !== 200 && result.status !== 201)
-            throw new Error('Could not paste file');
-    }));
+    const result = await Api.pasteFile(copiedFiles.value, currentDirectory.value);
+    if (result.status !== 200 && result.status !== 201)
+        throw new Error('Could not paste file');
+
     copiedFiles.value = [];
     selectedPaths.value = [];
     copyStatus.value = `Copy Selected`;
@@ -131,16 +150,13 @@ export const clearClipboard = () => {
 
 };
 export const renameFile = async (item: PathInfoModel, name: string) => {
-    if (name === ''){
-        return
+    if (name === '') {
+        return;
     }
-    const oldPath = item.directory;
-    let newPath = ""
-    if (item.extension != ""){
-        newPath = currentDirectory.value + '/' + name + '.' + item.extension;
-    }else{
-        newPath = currentDirectory.value + '/' + name;
-    }
+    const oldPath = item.path;
+    let newPath = pathJoin([currentDirectory.value, name]);
+    if (item.extension != '')
+        newPath = pathJoin([currentDirectory.value, `${name}.${item.extension}`]);
 
     const result = await Api.renameFile(oldPath, newPath);
     console.log(result.status);
@@ -156,14 +172,14 @@ export const goToAPreviousDirectory = (index: number) => {
     const parts = currentDirectory.value.split('/');
     if (index < 1 || index === parts.length - 1) return;
     parts.splice(index + 1);
-    currentDirectory.value = parts.join('/');
+    currentDirectory.value = pathJoin(parts);
 };
 
 export const goBack = () => {
     if (currentDirectory.value === rootDirectory) return;
     const parts = currentDirectory.value.split('/');
     parts.pop();
-    currentDirectory.value = parts.join('/');
+    currentDirectory.value = pathJoin(parts);
 };
 
 export const selectItem = (item: PathInfoModel) => {
@@ -182,43 +198,28 @@ export const deselectAll = () => {
     selectedPaths.value = [];
 };
 
-export const itemAction = (item: PathInfoModel, router: Router, path = currentDirectory.value) => {
+export const itemAction = async (item: PathInfoModel, router: Router, path = currentDirectory.value) => {
     if (item.isDirectory) {
         goToFolderInCurrentDirectory(item);
-        return;
-    }
-
-    if ([FileType.Excel, FileType.Word, FileType.Powerpoint].some(x => x === item.fileType)) {
+    } else if ([FileType.Excel, FileType.Word, FileType.Powerpoint].some(x => x === item.fileType)) {
         router.push({ name: 'editfile', params: { id: btoa(pathJoin([path, item.fullName])) } });
+    } else if (item.fileType === FileType.Image) {
+        const response = await Api.downloadFile(item.path);
+        const result = window.URL.createObjectURL(response.data);
+        setImageSrc(result);
+    } else if (item.fileType === FileType.Pdf) {
+        const response = await Api.downloadFile(item.path, 'arraybuffer');
+        const file = new Blob([response.data], { type: 'application/pdf' });
+        const url = URL.createObjectURL(file);
+        window.open(url, '_blank');
+    } else if (item.fileType === FileType.Video) {
+        const response = await Api.downloadFile(item.path, 'arraybuffer');
+        const file = new Blob([response.data], { type: `video/${item.extension}` });
+        const url = URL.createObjectURL(file);
+        window.open(url, '_blank');
     }
 };
 
-
-export const getIcon = (item: PathInfoModel) => {
-    if (item.isDirectory) return 'far fa-folder';
-    switch (item.fileType) {
-        case FileType.Video:
-            return 'far fa-file-video';
-        case FileType.Word:
-            return 'far fa-file-word';
-        case FileType.Image:
-            return 'far fa-file-image';
-        case FileType.Pdf:
-            return 'far fa-file-pdf';
-        case FileType.Csv:
-            return 'far fa-file-csv';
-        case FileType.Audio:
-            return 'far fa-file-audio';
-        case FileType.Archive:
-            return 'far fa-file-archive';
-        case FileType.Excel:
-            return 'far fa-file-excel';
-        case FileType.Powerpoint:
-            return 'far fa-file-powerpoint';
-        default:
-            return 'far fa-file';
-    }
-};
 
 export const createModel = <T extends Api.PathInfo>(pathInfo: T): PathInfoModel => {
     console.log(pathInfo);

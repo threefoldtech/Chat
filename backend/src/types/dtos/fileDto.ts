@@ -1,7 +1,7 @@
 export interface PathInfo {
     isFile: boolean,
     isDirectory: boolean,
-    directory: string,
+    path: string,
     fullName: string,
     name: string,
     size: number;

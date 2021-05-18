@@ -1,13 +1,16 @@
 <template>
     <div class='flex flex-row h-12 bg-white border border-gray-200 items-center'>
-        <div class='mx-2 hover:bg-green-600 pointer'>
+        <div
+            class='mx-2 hover:text-green-500 cursor-pointer'
+            @click='goToHome'
+        >
             <i class='fas fa-home fa-2x text-accent'></i>
         </div>
         <div
-            class='rounded-full w-6 h-6 flex justify-center items-center '
+            class='rounded-full w-6 h-6 flex justify-center items-center'
             @click='goBack'
             :class='{
-                "bg-accent hover:bg-green-600 pointer": currentDirectory !== "/",
+                "bg-accent hover:text-green-500 cursor-pointer": currentDirectory !== "/",
                 "bg-gray-500": currentDirectory === "/"
             }'
         >
@@ -31,50 +34,50 @@
             </template>
         </div>
         <div
-            v-if="selectedPaths.length > 0"
+            v-if='selectedPaths.length > 0'
             class='mx-2'>
             <p>{{ selectedPaths.length }} File(s) selected </p>
 
         </div>
         <div
-            v-if="selectedPaths.length === 1"
-            class='mx-2 hover:bg-green-600 cursor-pointer'
+            v-if='selectedPaths.length === 1'
+            class='mx-2 cursor-pointer'
             @click='showRenameDialog = true'
         >
-            <span style="color: #9ca3af">
-            <i class='fas fa-pen'></i>
+            <span class='text-gray-400 hover:text-gray-500'>
+                <i class='fas fa-pen'></i>
             </span>
         </div>
         <div
-            v-if="selectedPaths.length > 0"
-            class='mx-2 hover:bg-green-600 cursor-pointer'
-            @click="downloadFiles"
+            v-if='selectedPaths.length > 0'
+            class='mx-2 cursor-pointer'
+            @click='downloadFiles'
         >
-             <span style="color: #9ca3af">
-            <i class='fas fa-download'></i>
+             <span class='text-gray-400 hover:text-gray-500'>
+                <i class='fas fa-download'></i>
              </span>
         </div>
 
         <div
-            v-if="selectedPaths.length > 0"
-            class='mx-2 hover:bg-green-600 cursor-pointer'
+            v-if='selectedPaths.length > 0'
+            class='mx-2 cursor-pointer'
             @click='showDeleteDialog = true'
         >
-        <span style="color: lightcoral">
+        <span class='text-red-300 hover:text-red-500'>
             <i class='fas fa-trash-alt'></i>
         </span>
         </div>
         <div
-            v-if="selectedPaths.length > 0 || copiedFiles.length  > 0"
+            v-if='selectedPaths.length > 0 || copiedFiles.length  > 0'
             class='mx-2 px-2 py-1 text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer flex fex-row'
-            @click="copyPasteSelected"
+            @click='copyPasteSelected'
         >
-            <div v-if="copiedFiles.length <= 0"><i class='fas fa-copy mr-1'></i></div>
+            <div v-if='copiedFiles.length <= 0'><i class='fas fa-copy mr-1'></i></div>
             <p>{{ copyStatus }}</p>
             <div
-                @click.stop="clearClipboard"
-                v-if="copiedFiles.length
-                > 0">
+                @click.stop='clearClipboard'
+                v-if='copiedFiles.length
+                > 0'>
                 <i class='fas fill-current text-red-400 fa-window-close fa-1x ml-1'></i>
             </div>
         </div>
@@ -102,14 +105,15 @@
             </template>
             <div>
                 <input
-                    v-model="newName"
-                    :placeholder="selectedPaths[0].name"
-                    tabindex="0"
-                    maxlength="50"
+                    v-model='newName'
+                    :placeholder='selectedPaths[0].name'
+                    tabindex='0'
+                    maxlength='50'
                 />
             </div>
             <div class='grid grid-cols-2 mt-2'>
-                <button @click='renameFile(selectedPaths[0], newName);newName = "";showRenameDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
+                <button @click='renameFile(selectedPaths[0], newName);newName = "";showRenameDialog = false;'
+                        class='bg-red-500 p-2 text-white font-bold'>
                     RENAME
                 </button>
                 <button @click='showRenameDialog = false;newName = ""' class='p-2'>
@@ -126,7 +130,7 @@
 
     let showDeleteDialog = ref(false);
     let showRenameDialog = ref(false);
-    let newName = ref<string>("");
+    let newName = ref<string>('');
 
     import {
         currentDirectory,
@@ -140,7 +144,7 @@
         copyStatus,
         copiedFiles,
         clearClipboard,
-        renameFile
+        renameFile,
     } from '@/store/fileBrowserStore';
     import Dialog from '@/components/Dialog.vue';
 
@@ -163,7 +167,7 @@
                 copiedFiles,
                 clearClipboard,
                 newName,
-                renameFile
+                renameFile,
             };
         },
     });

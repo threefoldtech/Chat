@@ -24,6 +24,7 @@
             >
                 <div class="relative w-full h-full overflow-y-auto">
                     <div class="absolute w-full h-full">
+                        <ImagePreview/>
                         <slot></slot>
                     </div>
                 </div>
@@ -38,10 +39,11 @@
     import UserConfigDialog from '@/components/UserConfigDialog.vue';
     import Topbar from '@/components/Topbar.vue';
     import { useSocketState } from '../store/socketStore';
+    import ImagePreview from '@/components/ImagePreview.vue';
 
     export default defineComponent({
         name: 'AppLayout',
-        components: { Sidebar, Topbar, UserConfigDialog },
+        components: { Sidebar, Topbar, UserConfigDialog, ImagePreview },
         setup({}, ctx) {
             const { notification } = useSocketState();
 

@@ -100,7 +100,7 @@ export const getFormattedDetails = async (
     return {
         isFile: stats.isFile(),
         isDirectory: stats.isDirectory(),
-        directory: path.path,
+        path: path.path,
         fullName: details.base,
         name: details.name,
         extension: extension,
