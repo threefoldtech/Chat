@@ -7,7 +7,7 @@ import { ReadableStreamBuffer } from 'stream-buffers';
 import { config } from '../../config/config';
 import mimeType from 'mime';
 import { UploadedFile } from 'express-fileupload';
-const fse = require('fs-extra');
+import * as fse from 'fs-extra';
 
 export class Path {
     private _path: string;
@@ -255,13 +255,11 @@ export const copyFile = async (path: Path, file: Buffer) => {
 export const copyDir = async (destPath: Path, path: Path) => {
     if( !await doesPathExist(destPath) || path === destPath)
     {
-        console.log("Normaal");
         await copyDirectory(path, destPath);
         return await getFormattedDetails(destPath);
-    }else {
-        console.log("Nummer");
-       return undefined
     }
+    return undefined
+
 };
 
 

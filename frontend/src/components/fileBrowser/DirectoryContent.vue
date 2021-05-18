@@ -10,17 +10,17 @@
                         :checked='currentDirectoryContent.length === selectedPaths.length'
                     >
                 </th>
-                <th class='text-left cursor-pointer' @click="sort('name')" >Name</th>
-                <th class='text-left cursor-pointer' @click="sort('extension')" >Extension</th>
-                <th class='text-left cursor-pointer' @click="sort('size')" >Size</th>
-                <th class='text-left cursor-pointer' @click="sort('lastModified')" >Last Modified</th>
+                <th class='text-left cursor-pointer' >Name</th>
+                <th class='text-left cursor-pointer' >Extension</th>
+                <th class='text-left cursor-pointer' >Size</th>
+                <th class='text-left cursor-pointer' >Last Modified</th>
             </tr>
             </thead>
             <tbody>
             <tr
                 v-for='item in currentDirectoryContent'
                 class='hover:bg-gray-200 cursor-pointer h-10 border border-gray-300'
-                :key='item.name'
+                :key='item.fullName'
             >
                 <td class='text-left p-2'>
                     <input
