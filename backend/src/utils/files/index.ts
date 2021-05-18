@@ -7,6 +7,7 @@ import { ReadableStreamBuffer } from 'stream-buffers';
 import { config } from '../../config/config';
 import mimeType from 'mime';
 import { UploadedFile } from 'express-fileupload';
+const fse = require('fs-extra');
 
 export class Path {
     private _path: string;
@@ -94,8 +95,8 @@ export const getFormattedDetails = async (
     const stats = await getStats(path);
     const details = PATH.parse(path.securedPath);
     const extension = details.ext.replace('.', '');
-    console.log('Stats', stats);
-    console.log('Details', details);
+    // console.log('Stats', stats);
+    // console.log('Details', details);
     return {
         isFile: stats.isFile(),
         isDirectory: stats.isDirectory(),
@@ -191,6 +192,23 @@ export const saveFileWithRetry = async (path: Path, file: UploadedFile, count = 
 
     return result;
 };
+export const copyFileWithRetry = async (path: Path, file: Buffer, count = 0): Promise<PathInfo> => {
+    const result = await copyFile(count === 0 ? path : new Path(path.path.insert(path.path.lastIndexOf('.'), ` (${count})`)), file);
+    console.log(result);
+    if (!result) {
+        return await copyFileWithRetry(path, file, count + 1);
+    }
+
+    return result;
+};
+export const copyDirectoryWithRetry = async (path: Path, destPath: Path, count = 0): Promise<PathInfo> => {
+    const result = await copyDir(count === 0 ? destPath : new Path(destPath.path.insert(destPath.path.length, ` (${count})`)), path);
+    if (!result) {
+        return await copyDirectoryWithRetry(path, destPath, count + 1);
+    }
+
+    return result;
+};
 
 /**
  * Encrypt the file and store it in the correct category of the space
@@ -199,7 +217,7 @@ export const saveFileWithRetry = async (path: Path, file: UploadedFile, count = 
  */
 export const saveFile = async (
     path: Path,
-    file: UploadedFile,
+    file: UploadedFile ,
 ) => {
     if (!Buffer.isBuffer(file.data)) {
         throw new FileSystemError(ErrorType.WrongFormat);
@@ -225,9 +243,27 @@ export const copyFile = async (path: Path, file: Buffer) => {
     if (!Buffer.isBuffer(file)) {
         throw new FileSystemError(ErrorType.WrongFormat);
     }
+    if (await doesPathExist(path)) return;
+    const directory = new Path(path.path.removeAfterLastOccurrence('/'));
+
+    if (!(await doesPathExist(directory))) {
+        await createDir(directory);
+    }
     await writeFile(path, file);
     return await getFormattedDetails(path);
 };
+export const copyDir = async (destPath: Path, path: Path) => {
+    if( !await doesPathExist(destPath) || path === destPath)
+    {
+        console.log("Normaal");
+        await copyDirectory(path, destPath);
+        return await getFormattedDetails(destPath);
+    }else {
+        console.log("Nummer");
+       return undefined
+    }
+};
+
 
 /**
  * Copy the file to a new location on filesystem
@@ -297,7 +333,9 @@ const readDirectory = async (
 const writeFile = async (path: Path, file: Buffer) => {
     return await FS.writeFile(path.securedPath, file);
 };
-
+const copyDirectory = async (srcDir: Path, destDir: Path)=>{
+    return await fse.copySync(srcDir.securedPath, destDir.securedPath)
+}
 export const removeFile = async (path: Path) => {
     if (await isPathDirectory(path)){
         return rmdirSync(path.securedPath, { recursive: true });
@@ -308,7 +346,7 @@ export const removeFile = async (path: Path) => {
     return await FS.rm(path.securedPath);
 };
 
-const renameFile = async (oldPath: Path, newPath: Path) => {
+export const renameFile = async (oldPath: Path, newPath: Path) => {
     if (!(await doesPathExist(oldPath)) || await doesPathExist(newPath)) {
         return;
     }

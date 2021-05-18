@@ -1,4 +1,4 @@
-import {ref, watch} from 'vue';
+import { ref, watch } from 'vue';
 import fileDownload from 'js-file-download';
 import * as Api from '@/services/fileBrowserService';
 
@@ -23,16 +23,18 @@ export const rootDirectory = '/';
 export const currentDirectory = ref<string>(rootDirectory);
 export const currentDirectoryContent = ref<PathInfoModel[]>([]);
 export const selectedPaths = ref<PathInfoModel[]>([]);
+export const copyStatus = ref<string>('Copy Selected');
+export const copiedFiles = ref<PathInfoModel[]>([]);
 
 watch([currentDirectory], () => updateContent());
 
-export const getFile = async(fullPath: string): Promise<PathInfoModel> => {
+export const getFile = async (fullPath: string): Promise<PathInfoModel> => {
     const result = await Api.getFileInfo(fullPath);
     if (result.status !== 200 || !result.data)
-        throw new Error('Could not get file')
+        throw new Error('Could not get file');
 
     return createModel(result.data);
-}
+};
 
 export const updateContent = async (path = currentDirectory.value) => {
     const result = await Api.getDirectoryContent(path);
@@ -48,7 +50,7 @@ export const createDirectory = async (name: string, path = currentDirectory.valu
         throw new Error('Could not create new folder');
 
     currentDirectoryContent.value.push(createModel(result.data));
-    await updateContent()
+    await updateContent();
 };
 
 export const uploadFiles = async (files: File[], path = currentDirectory.value) => {
@@ -58,7 +60,7 @@ export const uploadFiles = async (files: File[], path = currentDirectory.value) 
             throw new Error('Could not create new folder');
 
         currentDirectoryContent.value.push(createModel(result.data));
-        await updateContent()
+        await updateContent();
     }));
 };
 
@@ -67,8 +69,8 @@ export const deleteFiles = async () => {
         const result = await Api.deleteFile(f.directory);
         if (result.status !== 200 && result.status !== 201)
             throw new Error('Could not delete file');
-        selectedPaths.value = []
-        await updateContent()
+        selectedPaths.value = [];
+        await updateContent();
 
     }));
 };
@@ -78,10 +80,10 @@ export const downloadFiles = async () => {
         if (result.status !== 200 && result.status !== 201)
             throw new Error('Could not download file');
 
-        console.log(result.data)
+        console.log(result.data);
         fileDownload(result.data, f.fullName);
         //unselecting
-        selectedPaths.value = []
+        selectedPaths.value = [];
 
     }));
 };
@@ -96,9 +98,52 @@ export const goToFolderInCurrentDirectory = (item: PathInfoModel) => {
 export const goToHome = () => {
     currentDirectory.value = rootDirectory;
 };
-export const logSelected = () => {
-    console.log(selectedPaths.value.length)
+export const copyPasteSelected = async () => {
+    //copy
+    if (copiedFiles.value.length === 0) {
+        copiedFiles.value = selectedPaths.value;
+        selectedPaths.value = [];
+        copyStatus.value = `Paste ${copiedFiles.value.length} files`;
+        return;
+    }
+    //paste
+    await Promise.all(copiedFiles.value.map(async f => {
+        const result = await Api.pasteFile(f.directory, currentDirectory.value, f.fullName);
+        if (result.status !== 200 && result.status !== 201)
+            throw new Error('Could not paste file');
+    }));
+    copiedFiles.value = [];
+    selectedPaths.value = [];
+    copyStatus.value = `Copy Selected`;
+    await updateContent();
+
 };
+export const clearClipboard = () => {
+    copyStatus.value = `Copy Selected`;
+    copiedFiles.value = [];
+
+};
+export const renameFile = async (item: PathInfoModel, name: string) => {
+    if (name === ''){
+        return
+    }
+    const oldPath = item.directory;
+    let newPath = ""
+    if (item.extension != ""){
+        newPath = currentDirectory.value + '/' + name + '.' + item.extension;
+    }else{
+        newPath = currentDirectory.value + '/' + name;
+    }
+
+    const result = await Api.renameFile(oldPath, newPath);
+    console.log(result.status);
+    if (result.status !== 201)
+        throw new Error('Could not rename file');
+
+    selectedPaths.value = [];
+    await updateContent();
+};
+
 export const goToAPreviousDirectory = (index: number) => {
     if (currentDirectory.value === rootDirectory) return;
     const parts = currentDirectory.value.split('/');
@@ -116,23 +161,23 @@ export const goBack = () => {
 
 export const selectItem = (item: PathInfoModel) => {
     selectedPaths.value.push(item);
-    console.log("add", selectedPaths.value)
+    console.log('add', selectedPaths.value);
 };
 
 export const deselectItem = (item: PathInfoModel) => {
     selectedPaths.value = selectedPaths.value.filter(x => !(x.fullName === item.fullName && x.isDirectory === item.isDirectory && x.extension === item.extension));
-    console.log("deselect", selectedPaths.value)
+    console.log('deselect', selectedPaths.value);
 };
 
 export const selectAll = () => {
     selectedPaths.value = [...currentDirectoryContent.value];
-    console.log("selectall", selectedPaths.value)
-}
+    console.log('selectall', selectedPaths.value);
+};
 
 export const deselectAll = () => {
     selectedPaths.value = [];
-    console.log("deselectall", selectedPaths.value)
-}
+    console.log('deselectall', selectedPaths.value);
+};
 
 export const itemAction = (item: PathInfoModel) => {
     if (item.isDirectory) {

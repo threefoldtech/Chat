@@ -30,78 +30,140 @@
                 </span>
             </template>
         </div>
-      <div
-          v-if="selectedPaths.length > 0"
-          class='mx-2 hover:bg-green-600 pointer'>
-        <p>{{selectedPaths.length}} File(s) selected </p>
+        <div
+            v-if="selectedPaths.length > 0"
+            class='mx-2'>
+            <p>{{ selectedPaths.length }} File(s) selected </p>
 
-      </div>
-      <div
-          v-if="selectedPaths.length > 0"
-          class='mx-2 hover:bg-green-600 pointer'
-          @click="downloadFiles"
-      >
-        <i class='fas fa-download fa-2x text-accent'></i>
-
-      </div>
-
-      <div
-          v-if="selectedPaths.length > 0"
-          class='mx-2 hover:bg-green-600 pointer'
-          @click='showDeleteDialog = true'
-      >
-
-        <i class='fas fa-trash-alt fa-2x text-accent'></i>
-      </div>
-      <jdialog v-model='showDeleteDialog' noActions class='max-w-10'>
-        <template v-slot:title class='center'>
-          <h1 class='text-center'>Deleting Files</h1>
-        </template>
-        <div>
-          Do you really want to delete {{ selectedPaths.length }} file(s)?
         </div>
-        <div class='grid grid-cols-2 mt-2'>
-          <button @click='deleteFiles();showDeleteDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
-            YES
-          </button>
-          <button @click='showDeleteDialog = false' class='p-2'>
-            NO
-          </button>
+        <div
+            v-if="selectedPaths.length === 1"
+            class='mx-2 hover:bg-green-600 cursor-pointer'
+            @click='showRenameDialog = true'
+        >
+            <span style="color: #9ca3af">
+            <i class='fas fa-pen'></i>
+            </span>
         </div>
-      </jdialog>
+        <div
+            v-if="selectedPaths.length > 0"
+            class='mx-2 hover:bg-green-600 cursor-pointer'
+            @click="downloadFiles"
+        >
+             <span style="color: #9ca3af">
+            <i class='fas fa-download'></i>
+             </span>
+        </div>
+
+        <div
+            v-if="selectedPaths.length > 0"
+            class='mx-2 hover:bg-green-600 cursor-pointer'
+            @click='showDeleteDialog = true'
+        >
+        <span style="color: lightcoral">
+            <i class='fas fa-trash-alt'></i>
+        </span>
+        </div>
+        <div
+            v-if="selectedPaths.length > 0 || copiedFiles.length  > 0"
+            class='mx-2 px-2 py-1 text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer flex fex-row'
+            @click="copyPasteSelected"
+        >
+            <div v-if="copiedFiles.length <= 0"><i class='fas fa-copy mr-1'></i></div>
+            <p>{{ copyStatus }}</p>
+            <div
+                @click.stop="clearClipboard"
+                v-if="copiedFiles.length
+                > 0">
+                <i class='fas fill-current text-red-400 fa-window-close fa-1x ml-1'></i>
+            </div>
+        </div>
+
+        <jdialog v-model='showDeleteDialog' noActions class='max-w-10'>
+            <template v-slot:title class='center'>
+                <h1 class='text-center'>Deleting Files</h1>
+            </template>
+            <div>
+                Do you really want to delete {{ selectedPaths.length }} file(s)?
+            </div>
+            <div class='grid grid-cols-2 mt-2'>
+                <button @click='deleteFiles();showDeleteDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
+                    YES
+                </button>
+                <button @click='showDeleteDialog = false' class='p-2'>
+                    NO
+                </button>
+            </div>
+        </jdialog>
+
+        <jdialog v-model='showRenameDialog' noActions class='max-w-10'>
+            <template v-slot:title class='center'>
+                <h1 class='text-center'>Renaming {{ selectedPaths[0].name }}</h1>
+            </template>
+            <div>
+                <input
+                    v-model="newName"
+                    :placeholder="selectedPaths[0].name"
+                    tabindex="0"
+                    maxlength="50"
+                />
+            </div>
+            <div class='grid grid-cols-2 mt-2'>
+                <button @click='renameFile(selectedPaths[0], newName);newName = "";showRenameDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
+                    RENAME
+                </button>
+                <button @click='showRenameDialog = false;newName = ""' class='p-2'>
+                    CANCEL
+                </button>
+            </div>
+        </jdialog>
     </div>
 
 </template>
 
 <script lang='ts'>
-  import {defineComponent, ref} from 'vue';
-  let showDeleteDialog = ref(false);
+    import { defineComponent, ref } from 'vue';
+
+    let showDeleteDialog = ref(false);
+    let showRenameDialog = ref(false);
+    let newName = ref<string>("");
+
     import {
-      currentDirectory,
-      logSelected,
-      goToHome,
-      goToAPreviousDirectory,
-      goBack,
-      selectedPaths,
+        currentDirectory,
+        goToHome,
+        goToAPreviousDirectory,
+        goBack,
+        selectedPaths,
         deleteFiles,
-      downloadFiles,
+        downloadFiles,
+        copyPasteSelected,
+        copyStatus,
+        copiedFiles,
+        clearClipboard,
+        renameFile
     } from '@/store/fileBrowserStore';
-    import Dialog from "@/components/Dialog.vue";
+    import Dialog from '@/components/Dialog.vue';
 
     export default defineComponent({
         name: 'TopBar',
-        components: {jdialog: Dialog},
+        components: { jdialog: Dialog },
         setup() {
             return {
                 goToHome,
                 goBack,
                 goToAPreviousDirectory,
                 currentDirectory,
-                logSelected,
                 selectedPaths,
                 deleteFiles,
-              showDeleteDialog,
-              downloadFiles
+                showDeleteDialog,
+                showRenameDialog,
+                downloadFiles,
+                copyPasteSelected,
+                copyStatus,
+                copiedFiles,
+                clearClipboard,
+                newName,
+                renameFile
             };
         },
     });
