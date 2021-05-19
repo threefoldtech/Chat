@@ -1,6 +1,7 @@
 <template>
-    <div>
-        <table class='h-full w-full' :key='currentDirectory'>
+    <div class='h-full overflow-y-auto'>
+        <FileDropArea @send-file='uploadFile' class='h-full'>
+        <table class='w-full box-border' :key='currentDirectory'>
             <thead>
             <tr>
                 <th class='text-left p-2'>
@@ -42,13 +43,13 @@
                     <input
                         type='checkbox'
                         @change='(val) => handleSelect(val, item)'
-                        :checked='selectedPaths.some(x => x.fullName === item.fullName && x.extension === item.extension  && x.directory === item.directory)'
+                        :checked='selectedPaths.some(x => x.fullName === item.fullName && x.extension === item.extension  && x.path === item.path)'
                     >
                 </td>
-                <td class='flex flex-row items-center text-md h-full px-2'>
+                <td class='flex flex-row items-center text-md'>
                     <div class='mr-3 w-7'>
-                        <i class='fa-2x text-accent'
-                           :class='getIcon(item)'
+                        <i class='fa-2x'
+                           :class='getIcon(item)+ " " + getIconColor(item)'
                         ></i>
                     </div>
                     <span
@@ -62,24 +63,27 @@
                 <td>{{ sizeCheck(item) }}</td>
                 <td>{{ modifiedCheck(item) }}</td>
 
-            </tr>
-            </tbody>
-        </table>
+                </tr>
+                </tbody>
+            </table>
+        </FileDropArea>
     </div>
 </template>
 
 <script lang='ts'>
-    import { defineComponent, ref } from 'vue';
+    import { defineComponent } from 'vue';
     import moment from 'moment';
     import {
-        currentDirectoryContent,
         currentDirectory,
-        getIcon,
+        currentDirectoryContent,
+        FileType,
         itemAction,
         PathInfoModel, selectItem, deselectAll, selectAll,
         selectedPaths, deselectItem, sortContent, sortAction, currentSort, currentSortDir
+        ,uploadFile,
     } from '@/store/fileBrowserStore';
     import { useRouter } from 'vue-router';
+    import FileDropArea from '@/components/FileDropArea.vue';
 
 
     export default defineComponent({
@@ -89,6 +93,7 @@
                 return this.currentSortDir === 'asc' ? 'arrow asc' : 'arrow desc';
             },
         },
+        components: { FileDropArea },
         setup() {
 
             const router = useRouter();
@@ -140,10 +145,51 @@
                 itemAction(item, router);
             };
 
+            const getIconColor = (item: PathInfoModel) => {
+                if (item.isDirectory) return 'text-yellow-600';
+                switch (item.fileType) {
+                    case FileType.Excel:
+                        return 'text-green-400';
+                    case FileType.Word:
+                        return 'text-blue-400';
+                    case FileType.Powerpoint:
+                        return 'text-red-400';
+                    default:
+                        return 'text-gray-600';
+                }
+            };
+
+            const getIcon = (item: PathInfoModel) => {
+                if (item.isDirectory) return 'far fa-folder';
+                switch (item.fileType) {
+                    case FileType.Video:
+                        return 'far fa-file-video';
+                    case FileType.Word:
+                        return 'far fa-file-word';
+                    case FileType.Image:
+                        return 'far fa-file-image';
+                    case FileType.Pdf:
+                        return 'far fa-file-pdf';
+                    case FileType.Csv:
+                        return 'far fa-file-csv';
+                    case FileType.Audio:
+                        return 'far fa-file-audio';
+                    case FileType.Archive:
+                        return 'far fa-file-archive';
+                    case FileType.Excel:
+                        return 'far fa-file-excel';
+                    case FileType.Powerpoint:
+                        return 'far fa-file-powerpoint';
+                    default:
+                        return 'far fa-file';
+                }
+            };
+
             return {
                 handleSelect,
                 handleAllSelect,
                 getIcon,
+                getIconColor,
                 handleItemClick,
                 currentDirectoryContent,
                 currentDirectory,
@@ -155,7 +201,7 @@
                 sortAction,
                 currentSort,
                 currentSortDir,
-
+                uploadFile,
             };
         },
     });

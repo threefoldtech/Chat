@@ -1,13 +1,13 @@
-import axios, {AxiosResponse} from 'axios';
+import axios, { AxiosResponse, ResponseType } from 'axios';
 import config from '../../public/config/config';
-import {PathInfoModel} from "@/store/fileBrowserStore";
+import { downloadFiles, PathInfoModel } from '@/store/fileBrowserStore';
 
 const endpoint = `${config.baseUrl}api/browse`;
 
 export interface PathInfo {
     isFile: boolean,
     isDirectory: boolean,
-    directory: string,
+    path: string,
     fullName: string,
     name: string,
     size: number;
@@ -65,12 +65,13 @@ export const deleteFile = async (path: string) => {
 };
 
 export const downloadFileEndpoint = `${endpoint}/files`;
-export const downloadFile = async (path: string) => {
-    const params = new URLSearchParams();
-    params.append('path', path);
-    return await axios.get<File>(downloadFileEndpoint, {
-        params: params,
-        responseType: "blob"
+export const getDownloadFileEndpoint = (path: string) => {
+    return `${downloadFileEndpoint}?path=${path}`;
+}
+
+export const downloadFile = async (path: string, responseType: ResponseType = "blob") => {
+    return await axios.get(getDownloadFileEndpoint(path), {
+        responseType: responseType
     });
 };
 export const pasteFile = async (paths: PathInfo[], pathToPaste: string) => {

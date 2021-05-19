@@ -63,7 +63,6 @@
             </div>
         </template>
         <template v-slot:default>
-            <ImagePreview />
             <div class='flex flex-row relative h-full w-full'>
                 <ChatList class='hidden md:inline-block' />
                 <div class='relative h-full flex flex-col flex-1' v-if='chat' :key='chat.id + selectedId'>
@@ -231,7 +230,7 @@
     import MessageBox from '@/components/MessageBox.vue';
     import { scrollMessageBoxToBottom } from '@/services/messageHelperService';
     import Button from '@/components/Button.vue';
-    import ImagePreview from '@/components/ImagePreview.vue';
+
     import { deleteBlockedEntry, isBlocked } from '@/store/blockStore';
     import FileDropArea from '@/components/FileDropArea.vue';
     import TimeContent from '@/components/TimeContent.vue';
@@ -250,7 +249,6 @@
             appLayout,
             GroupManagement,
             ChatList,
-            ImagePreview,
         },
         setup(props) {
             const route = useRoute();
