@@ -10,15 +10,31 @@
                         :checked='currentDirectoryContent.length === selectedPaths.length'
                     >
                 </th>
-                <th class='text-left cursor-pointer' >Name</th>
-                <th class='text-left cursor-pointer' >Extension</th>
-                <th class='text-left cursor-pointer' >Size</th>
-                <th class='text-left cursor-pointer' >Last Modified</th>
+                <th :class="{active: 'name' === currentSort}" class='text-left cursor-pointer select-none'
+                    @click="sortAction('name')">Name
+                    <span :class="orderClass">
+                    </span>
+                </th>
+                <th :class="{active: 'extension' === currentSort}" class='text-left cursor-pointer select-none'
+                    @click="sortAction('extension')">Extension
+                    <span :class="orderClass">
+                    </span>
+                </th>
+                <th :class="{active: 'size' === currentSort}" class='text-left cursor-pointer select-none'
+                    @click="sortAction('size')">Size
+                    <span :class="orderClass">
+                    </span>
+                </th>
+                <th :class="{active: 'lastModified' === currentSort}" class='text-left cursor-pointer select-none'
+                    @click="sortAction('lastModified')">Last Modified
+                    <span :class="orderClass">
+                    </span>
+                </th>
             </tr>
             </thead>
             <tbody>
             <tr
-                v-for='item in currentDirectoryContent'
+                v-for='item in sortContent()'
                 class='hover:bg-gray-200 cursor-pointer h-10 border border-gray-300'
                 :key='item.fullName'
             >
@@ -61,13 +77,20 @@
         getIcon,
         itemAction,
         PathInfoModel, selectItem, deselectAll, selectAll,
-        selectedPaths, deselectItem,
+        selectedPaths, deselectItem, sortContent, sortAction, currentSort, currentSortDir
     } from '@/store/fileBrowserStore';
     import { useRouter } from 'vue-router';
 
+
     export default defineComponent({
         name: 'DirectoryContent',
+        computed: {
+            orderClass() {
+                return this.currentSortDir === 'asc' ? 'arrow asc' : 'arrow desc';
+            },
+        },
         setup() {
+
             const router = useRouter();
             const handleSelect = (val: any, item: PathInfoModel) => {
                 if (val.target.checked)
@@ -115,7 +138,7 @@
 
             const handleItemClick = (item: PathInfoModel) => {
                 itemAction(item, router);
-            }
+            };
 
             return {
                 handleSelect,
@@ -128,17 +151,39 @@
                 sizeCheck,
                 extCheck,
                 modifiedCheck,
+                sortContent,
+                sortAction,
+                currentSort,
+                currentSortDir,
+
             };
         },
     });
 </script>
 
 <style scoped>
-    .asc:after{
-        content: "\25B2"
+    th.active .arrow {
+        opacity: 1;
     }
 
-    .desc:after{
-        content: "\25BC"
+    .arrow {
+        display: inline-block;
+        vertical-align: middle;
+        width: 0;
+        height: 0;
+        margin-left: 5px;
+        opacity: 0;
+    }
+
+    .arrow.asc {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-bottom: 4px solid #42b983;
+    }
+
+    .arrow.desc {
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid #42b983;
     }
 </style>

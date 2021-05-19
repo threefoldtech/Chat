@@ -30,6 +30,8 @@ export const currentDirectoryContent = ref<PathInfoModel[]>([]);
 export const selectedPaths = ref<PathInfoModel[]>([]);
 export const copyStatus = ref<string>('Copy Selected');
 export const copiedFiles = ref<PathInfoModel[]>([]);
+export const currentSort = ref('name');
+export const currentSortDir = ref('asc');
 
 watch([currentDirectory], () => updateContent());
 
@@ -114,11 +116,11 @@ export const copyPasteSelected = async () => {
         return;
     }
     //paste
-    await Promise.all(copiedFiles.value.map(async f => {
-        const result = await Api.pasteFile(f.directory, currentDirectory.value, f.fullName);
-        if (result.status !== 200 && result.status !== 201)
-            throw new Error('Could not paste file');
-    }));
+
+    const result = await Api.pasteFile(copiedFiles.value, currentDirectory.value);
+    if (result.status !== 200 && result.status !== 201)
+        throw new Error('Could not paste file');
+
     copiedFiles.value = [];
     selectedPaths.value = [];
     copyStatus.value = `Copy Selected`;
@@ -131,14 +133,14 @@ export const clearClipboard = () => {
 
 };
 export const renameFile = async (item: PathInfoModel, name: string) => {
-    if (name === ''){
-        return
+    if (name === '') {
+        return;
     }
     const oldPath = item.directory;
-    let newPath = ""
-    if (item.extension != ""){
+    let newPath = '';
+    if (item.extension != '') {
         newPath = currentDirectory.value + '/' + name + '.' + item.extension;
-    }else{
+    } else {
         newPath = currentDirectory.value + '/' + name;
     }
 
@@ -193,6 +195,30 @@ export const itemAction = (item: PathInfoModel, router: Router, path = currentDi
     }
 };
 
+export const sortContent = () =>{
+    return currentDirectoryContent.value.sort((a, b) => {
+        let modifier = 1;
+
+        if (currentSortDir.value === 'desc') modifier = -1;
+        if (currentSort.value === 'name') {
+            if (!a.isDirectory && b.isDirectory)
+                return 1;
+            if (a.isDirectory && !b.isDirectory)
+                return -1;
+        }
+
+        if (a[currentSort.value] < b[currentSort.value]) return -1 * modifier;
+        if (a[currentSort.value] > b[currentSort.value]) return 1 * modifier;
+        return 0;
+    });
+};
+
+export const sortAction = function(s) {
+    if (s === currentSort.value) {
+        currentSortDir.value = currentSortDir.value === 'asc' ? 'desc' : 'asc';
+    }
+    currentSort.value = s;
+};
 
 export const getIcon = (item: PathInfoModel) => {
     if (item.isDirectory) return 'far fa-folder';
@@ -221,7 +247,6 @@ export const getIcon = (item: PathInfoModel) => {
 };
 
 export const createModel = <T extends Api.PathInfo>(pathInfo: T): PathInfoModel => {
-    console.log(pathInfo);
     return {
         ...pathInfo,
         fileType: pathInfo.isDirectory ? FileType.Unknown : getFileType(pathInfo.extension?.toLowerCase()),
