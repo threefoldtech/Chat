@@ -126,9 +126,13 @@ app.use(function (req, res, next) {
     }
 
     if(!found){
+      
       for (var alias in config.info.wikis){
-        if (req.url.startsWith(`/info/${alias}`)){
-          info = config.info.wikis[alias]
+        var u = req.url.replace('/info/', '')
+        var s = u.split("/")
+        console.log(s[0])
+        if (s[0] == alias){
+          info = config.info.wikis[s[0]]
           found = true
           break
         }
