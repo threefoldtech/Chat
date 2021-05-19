@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <jdialog v-model='showDeleteDialog' noActions class='max-w-10'>
+        <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
             <template v-slot:title class='center'>
                 <h1 class='text-center'>Deleting Files</h1>
             </template>
@@ -99,7 +99,7 @@
             </div>
         </jdialog>
 
-        <jdialog v-model='showRenameDialog' noActions class='max-w-10'>
+        <jdialog v-model='showRenameDialog' @update-model-value="showRenameDialog = false" noActions class='max-w-10'>
             <template v-slot:title class='center'>
                 <h1 class='text-center'>Renaming {{ selectedPaths[0].name }}</h1>
             </template>
@@ -147,11 +147,13 @@
         renameFile,
     } from '@/store/fileBrowserStore';
     import Dialog from '@/components/Dialog.vue';
+    import { showUserConfigDialog } from '@/services/dialogService';
 
     export default defineComponent({
         name: 'TopBar',
         components: { jdialog: Dialog },
         setup() {
+
             return {
                 goToHome,
                 goBack,

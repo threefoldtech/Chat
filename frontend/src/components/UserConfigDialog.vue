@@ -1,5 +1,5 @@
 <template>
-    <jdialog v-model="showUserConfigDialog" noActions>
+    <jdialog v-model="showUserConfigDialog" @update-model-value="closeDialog" noActions>
         <template v-slot:title>
             <h1>Profile settings</h1>
         </template>
@@ -154,7 +154,7 @@
     import { setNewAvatar } from '@/store/userStore';
     import { fetchStatus } from '@/store/statusStore';
     import { useRoute, useRouter } from 'vue-router';
-    import { showUserConfigDialog } from '@/services/dialogService';
+    import { showAddUserDialog, showUserConfigDialog } from '@/services/dialogService';
     import { statusList } from '@/store/statusStore';
     import { calcExternalResourceLink } from '../services/urlService';
     import VueCropper from 'vue-cropperjs';
@@ -247,6 +247,10 @@
                 file.value = null;
             };
 
+            const closeDialog = newVal => {
+                showUserConfigDialog.value = newVal;
+            }
+
             const sendNewAvatar = async (data: any) => {
                 await setNewAvatar(data);
                 await fetchStatus(user.id);
@@ -311,6 +315,7 @@
                 isHoveringAvatar,
                 showEditAvatar,
                 cancelNewAvatar,
+                closeDialog,
 
             };
         },
