@@ -4,7 +4,7 @@
             <h1>Profile settings</h1>
         </template>
         <div>
-            <div class="avatar-container">
+            <div class="avatar-container mb-2">
                 <div class="flex">
                     <div
                         class="avatar-container mr-2 flex justify-center items-center cursor-pointer"
@@ -25,30 +25,33 @@
             </div>
 
             <div class="relative w-full h-full">
-                <transition name="fade">
                     <button
                         v-if="!isEditingStatus"
-                        class="absolute top-0 right-0"
+                        class="absolute top-0 mt-2 right-0 flex flex-row text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer items-center"
                         @click="setEditStatus(true)"
                     >
-                        <i class="fas fa-pen"></i>
+                        <i class="fas fa-pen fa-xs mr-1 align-middle"></i>
+                        <p class="text-xs">Edit</p>
                     </button>
-                </transition>
 
-                <transition name="fade">
+
+
                     <button
                         v-if="isEditingStatus"
-                        class="absolute top-1 right-0"
+                        class="absolute top-1 mt-2 right-0 flex flex-row ml-1 text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer items-center"
                         @click="sendNewStatus"
                     >
-                        <i class="fas fa-check"></i>
+                        <i class="fas fa-check fa-xs mr-1 align-middle"></i>
+                        <p class="text-xs">Save</p>
+
                     </button>
-                </transition>
+
 
                 <suspense>
                     <textarea
                         ref="statusInput"
                         v-model="userStatus"
+                        style="resize: none"
                         class="w-full"
                         :disabled="!isEditingStatus"
                         :placeholder="myStatus"
@@ -73,8 +76,8 @@
             />
 
             <div>
-                <h2>Blocked Users</h2>
-                <ul class="max-h-28 overflow-y-auto">
+                <h2>{{ blockedUsers.length > 0 ? "Blocked": "No blocked users" }}</h2>
+                <ul v-if="blockedUsers.length > 0" class="max-h-28 overflow-y-auto">
                     <template
                         v-for="blockedUser in blockedUsers"
                         :key="blockedUser"
