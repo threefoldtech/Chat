@@ -127,6 +127,7 @@
             const contactAdd = () => {
                 try {
                     let userId = usernameAdd.value;
+                    if(!userId) { return; }
                     if (!possibleUsers.value.find(pu => pu.id === userId)) {
                         usernameAddError.value = 'Not able to find DigitalTwin of this user';
                         // return;

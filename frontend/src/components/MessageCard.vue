@@ -26,7 +26,7 @@
                         'rounded-bl-xl': isLastMessage,
                     }"
                 >
-                    <header class="p-4 pb-0 font-bold my-message:text-icon " v-if="isFirstMessage && isGroup">
+                    <header class="p-4 pt-2 pb-0 -mb-1.5 font-bold my-message:text-icon " v-if="isFirstMessage && isGroup">
                         {{ message.from }}
                     </header>
                     <main class="msgcard flex justify-between">
