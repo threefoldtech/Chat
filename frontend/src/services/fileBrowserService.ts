@@ -75,6 +75,8 @@ export const downloadFile = async (path: string, responseType: ResponseType = "b
     });
 };
 export const pasteFile = async (paths: PathInfo[], pathToPaste: string) => {
+    console.log(paths);
+    console.log(pathToPaste);
     return await axios.post<PathInfo[]>(`${endpoint}/files/copy`, { paths: paths, pathToPaste: pathToPaste});
 };
 export const renameFile = async (oldPath: string, newPath: string) => {

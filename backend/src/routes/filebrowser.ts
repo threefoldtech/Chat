@@ -214,8 +214,9 @@ router.post('/files/copy', async (req, res) => {
     let data = req.body.paths;
     const result = await Promise.all(
         data.map(
-            async function(item: { directory: any; fullName: any; }) {
-                const pathObj = new Path(item.directory);
+            async function(item: { path: any; fullName: any; }) {
+                console.log(item);
+                const pathObj = new Path(item.path);
                 const pathToPaste = new Path(req.body.pathToPaste + '/' + item.fullName);
                 if (!await isPathDirectory(pathObj)) {
                     const file = await getFile(pathObj);
