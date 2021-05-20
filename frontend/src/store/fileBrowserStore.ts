@@ -204,7 +204,8 @@ export const itemAction = async (item: PathInfoModel, router: Router, path = cur
     if (item.isDirectory) {
         goToFolderInCurrentDirectory(item);
     } else if ([FileType.Excel, FileType.Word, FileType.Powerpoint].some(x => x === item.fileType)) {
-        router.push({ name: 'editfile', params: { id: btoa(pathJoin([path, item.fullName])) } });
+        const result = router.resolve({ name: 'editfile', params: { id: btoa(pathJoin([path, item.fullName])) } });
+        window.open(result.href, '_blank');
     } else if (item.fileType === FileType.Image) {
         const response = await Api.downloadFile(item.path);
         const result = window.URL.createObjectURL(response.data);
