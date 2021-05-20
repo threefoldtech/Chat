@@ -95,8 +95,6 @@ export const getFormattedDetails = async (
     const stats = await getStats(path);
     const details = PATH.parse(path.securedPath);
     const extension = details.ext.replace('.', '');
-    // console.log('Stats', stats);
-    // console.log('Details', details);
     return {
         isFile: stats.isFile(),
         isDirectory: stats.isDirectory(),
@@ -110,7 +108,6 @@ export const getFormattedDetails = async (
         lastAccessed: stats.atime,
     };
 };
-
 
 /**
  * Create new directory, if it exist it will retry with a number suffix
@@ -138,6 +135,7 @@ export const createDir = async (path: Path): Promise<PathInfo> => {
     await createDirectory(path);
     return await getFormattedDetails(path);
 };
+
 /**
  * Read the requested dir
  * @param path
@@ -174,6 +172,7 @@ export const doesPathExist = async (
         return false;
     }
 };
+
 export const isPathDirectory = async (
     path: Path,
 ): Promise<boolean> => {
@@ -192,6 +191,7 @@ export const saveFileWithRetry = async (path: Path, file: UploadedFile, count = 
 
     return result;
 };
+
 export const copyFileWithRetry = async (path: Path, file: Buffer, count = 0): Promise<PathInfo> => {
     const result = await copyFile(count === 0 ? path : new Path(path.path.insert(path.path.lastIndexOf('.'), ` (${count})`)), file);
     console.log(result);
@@ -201,6 +201,7 @@ export const copyFileWithRetry = async (path: Path, file: Buffer, count = 0): Pr
 
     return result;
 };
+
 export const copyDirectoryWithRetry = async (path: Path, destPath: Path, count = 0): Promise<PathInfo> => {
     const result = await copyDir(count === 0 ? destPath : new Path(destPath.path.insert(destPath.path.length, ` (${count})`)), path);
     if (!result) {
@@ -219,21 +220,31 @@ export const saveUploadedFile = async (
     path: Path,
     file: UploadedFile ,
 ) => {
-    if (!Buffer.isBuffer(file.data)) {
-        throw new FileSystemError(ErrorType.WrongFormat);
-    }
-
     if (await doesPathExist(path)) return;
+
+    if(file.tempFilePath)
+        return await moveUploadedFile(file, path)
+
     return saveFile(path, file.data);
 }
 
+
+export const moveUploadedFile = async (
+    file: UploadedFile,
+    path: Path
+) => {
+    const directory = new Path(path.path.removeAfterLastOccurrence('/'));
+    if (!(await doesPathExist(directory))) {
+        await createDir(directory);
+    }
+    await file.mv(path.securedPath);
+    return await getFormattedDetails(path);
+}
 
 export const saveFile = async (
     path: Path,
     file: Buffer,
 ) => {
-
-
     const directory = new Path(path.path.removeAfterLastOccurrence('/'));
     if (!(await doesPathExist(directory))) {
         await createDir(directory);

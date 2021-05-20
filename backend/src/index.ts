@@ -62,13 +62,12 @@ app.use(bodyParser.json({ limit: '100mb' }));
 app.use(
     fileupload({
         limits: { filesize: 100 * 1024 * 1024 },
-        useTempFiles: process.env.ENVIRONMENT && process.env.ENVIRONMENT !== 'development',
+        useTempFiles: true,
         parseNested: true,
     }),
 );
 
 app.use('/api/', routes);
-
 //Reading data
 initKeys();
 initUserData();
