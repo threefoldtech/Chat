@@ -4,6 +4,9 @@
         class="fixed z-10 left-0 top-0 w-full h-full overflow-auto bg-black bg-opacity-90 flex"
         v-if='src'
         @click="close"
+        tabindex="0"
+        @keydown.esc="close"
+        v-focus
     >
         <div class="absolute w-full top-4 left-0 flex justify-end md:pr-8">
             <a class="cursor-pointer text-gray-100 size hover:text-accent mr-4" :href='src' :download='src.split("/").reverse()[0]'>
@@ -19,7 +22,7 @@
 </template>
 
 <script lang="ts">
-    import { defineComponent } from 'vue';
+    import { defineComponent, onMounted } from 'vue';
     import { clearImageSrc, getImageSrc } from '@/store/imageStore';
 
     export default defineComponent({

@@ -1,10 +1,13 @@
-import { IdInterface, UserInterface } from './../types/index';
+import { IdInterface, UserInterface } from '../types/index';
 import { config } from '../config/config';
 import fs from 'fs';
 import Chat from '../models/chat';
 import { parseFullChat, parsePartialChat } from './chatService';
 import { uniqBy } from 'lodash';
 import im from 'imagemagick';
+import { ITokenFile } from '../store/tokenStore';
+import PATH from 'path';
+import { UploadedFile } from 'express-fileupload';
 
 export const getChatIds = (): IdInterface[] => {
     const location = config.baseDir + 'chats';
@@ -18,8 +21,18 @@ export const getChat = (id: IdInterface, messagesAmount: number | undefined = un
     const chat: Chat = <Chat>JSON.parse(fs.readFileSync(path).toString());
     return messagesAmount === undefined
         ? parseFullChat(chat)
-        : parsePartialChat(chat, messagesAmount)
+        : parsePartialChat(chat, messagesAmount);
 };
+
+export const getTokenFile = (): ITokenFile => {
+    return JSON.parse(fs.readFileSync(PATH.join(config.baseDir, '/user', '/tokens.json')).toString());
+};
+
+export const saveTokenFile = (tokens: ITokenFile) => {
+    fs.writeFileSync(PATH.join(config.baseDir, '/user', '/tokens.json'), JSON.stringify(tokens, null, 4), {
+        flag: 'w',
+    });
+}
 
 export const getUserdata = () => {
     const location = config.baseDir + 'user/userinfo.json';
@@ -32,15 +45,15 @@ export const getUserdata = () => {
 };
 
 export enum Key {
-    Public = "publicKey",
-    Private = "privateKey"
+    Public = 'publicKey',
+    Private = 'privateKey'
 }
 
 export const saveKey = (key: Uint8Array, keyName: Key, force = false) => {
-    if(force || !fs.existsSync(config.baseDir + 'user/' + keyName)) {
+    if (force || !fs.existsSync(config.baseDir + 'user/' + keyName)) {
         fs.writeFileSync(config.baseDir + 'user/' + keyName, Buffer.from(key));
     }
-}
+};
 
 export const getKey = (keyName: string): Uint8Array | undefined => {
     try {
@@ -51,7 +64,7 @@ export const getKey = (keyName: string): Uint8Array | undefined => {
         }
         throw ex;
     }
-}
+};
 
 const sortChat = (chat: Chat) => {
     const messages = uniqBy(chat.messages, m => m.id);
@@ -106,13 +119,16 @@ export const persistUserdata = (userData: UserInterface) => {
 export const saveFile = (
     chatId: IdInterface,
     messageId: string,
-    fileName: string,
-    fileBuffer: Buffer,
+    file: UploadedFile
 ) => {
     let path = `${config.baseDir}chats/${chatId}/files/${messageId}`;
     fs.mkdirSync(path);
-    path = `${path}/${fileName}`;
-    fs.writeFileSync(path, fileBuffer);
+    path = `${path}/${file.name}`;
+    if(file.tempFilePath && file.mv) {
+        file.mv(path)
+    } else if(file.data) {
+        fs.writeFileSync(path, file.data);
+    }
     return path;
 };
 
@@ -120,7 +136,7 @@ export const saveAvatar = async (fileBuffer: Buffer, id: string) => {
     const path = `${config.baseDir}user/avatar-${id}`;
     const tempPath = `${config.baseDir}user/temp-avatar-${id}`;
     fs.writeFileSync(tempPath, fileBuffer);
-    await resizeAvatar(tempPath, path)
+    await resizeAvatar(tempPath, path);
     fs.unlinkSync(tempPath);
 };
 
@@ -135,7 +151,7 @@ export const resizeAvatar = async (from: string, to: string): Promise<unknown> =
             dstPath: to,
             width: 64,
         }, (err: Error, result) => {
-            if(err) {
+            if (err) {
                 reject(err);
             }
             resolve(result);

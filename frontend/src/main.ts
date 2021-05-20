@@ -7,6 +7,7 @@ import socketIo from '@/plugins/SocketIo';
 import config from '../public/config/config';
 import MessageContent from '@/components/MessageContent.vue';
 import { clickOutside } from '@/plugins/ClickOutside';
+import {get} from "scriptjs"
 
 // console.log(Socketio)
 // const a = Socketio.install
@@ -34,5 +35,7 @@ app.directive('focus', {
 });
 
 app.mount('#app');
-
+get(`${config.documentServerUrl}/web-apps/apps/api/documents/api.js`, () => {
+    console.log("DocumentServer API Loaded")
+});
 export default app;

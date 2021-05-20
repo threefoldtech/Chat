@@ -6,8 +6,9 @@
         @drop='handleDrop'
     >
         <div
-            class='hidden md:flex justify-center items-center absolute top-0 left-0 w-full h-full z-50 bg-opacity-75 bg-gray-500 '
-            v-if='showOverlay'
+            class='hidden md:flex justify-center items-center absolute top-0 left-0 w-full h-full z-50'
+            v-if='show || showOverlay'
+            :class='{ "bg-opacity-75 bg-gray-500": showOverlay }'
             @dragleave='handleDragLeave'
         >
             <div
@@ -26,6 +27,9 @@
     import { defineComponent, ref } from 'vue';
 
     export default defineComponent({
+        props: {
+          show: {type: Boolean}
+        },
         name: 'FileDropArea',
         emits: ['send-file'],
         setup(props, {emit}) {

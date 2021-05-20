@@ -1,4 +1,3 @@
-import { IdInterface } from './../types/index';
 import axios from 'axios';
 import Message from '../models/message';
 import { MessageBodyTypeInterface } from '../types';
@@ -10,7 +9,7 @@ export const sendMessageToApi = async (
     message: Message<MessageBodyTypeInterface>,
 ) => {
     console.log('Location: ', location);
-    console.log('newMessage: ', message);
+    if(message.type !== "READ") console.log('newMessage: ', message);
     const url = getFullIPv6ApiLocation(location, '/messages');
     try {
         await axios.put(url, message);

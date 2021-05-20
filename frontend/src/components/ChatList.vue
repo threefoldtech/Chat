@@ -80,7 +80,7 @@
             </button>
         </div>
 
-        <jdialog :modelValue="showAddUserDialog" @update:modelValue="sendUpdate" noActions>
+        <jdialog :modelValue="showAddUserDialog" @update-model-value="sendUpdate" noActions>
             <template v-slot:title>
                 <h1>Create a new chat</h1>
             </template>

@@ -60,7 +60,7 @@
 </template>
 
 <script lang="ts">
-    import { computed, defineComponent, onBeforeMount, ref } from 'vue';
+    import { defineComponent, onBeforeMount, ref } from 'vue';
     import { useAuthState } from '../store/authStore';
     import { useSocketActions } from '../store/socketStore';
     import Dialog from './Dialog.vue';

@@ -2,7 +2,6 @@ import { Request } from 'express';
 import { config } from '../config/config';
 import { ThreefoldLogin } from '@threefoldjimber/threefold_login';
 import { generateRandomString } from '@threefoldjimber/threefold_login/dist';
-import { Key, saveKey } from './dataService';
 import { getKeyPair } from './encryptionService';
 import { updatePrivateKey, updatePublicKey } from '../store/keyStore';
 

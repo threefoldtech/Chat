@@ -1,4 +1,4 @@
-let userid = process.env.USER_ID || 'please set your env var';
+let userid = process.env.USER_ID || 'jensmeire';
 
 let appId = process.env.DIGITALTWIN_APPID || 'digitaltwin.jimbertesting.be';
 let environment = process.env.ENVIRONMENT || 'production';
@@ -11,4 +11,5 @@ export const config = {
         'calm science teach foil burst until next mango hole sponsor fold bottom cousin push focus track truly tornado turtle over tornado teach large fiscal',
     baseDir: process.env.BASEDIR || '/appdata/',
     userid,
+    storage: '/storage/'
 };

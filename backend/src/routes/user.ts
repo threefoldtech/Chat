@@ -5,14 +5,14 @@ import { UploadedFile } from 'express-fileupload';
 import { deleteAvatar, saveAvatar } from '../service/dataService';
 import { uuidv4 } from '../common';
 import { config } from '../config/config';
-import { uint8ToString } from '../service/encryptionService';
+import { uint8ToBase64 } from '../service/encryptionService';
 import { getPublicKey } from '../store/keyStore';
 
 const router = Router();
 
 router.get("/publickey", (req, res) => {
     const key = getPublicKey();
-    const keyString = uint8ToString(key);
+    const keyString = uint8ToBase64(key);
     res.json(keyString);
 })
 
