@@ -7,6 +7,7 @@ import { uniqBy } from 'lodash';
 import im from 'imagemagick';
 import { ITokenFile } from '../store/tokenStore';
 import PATH from 'path';
+import { UploadedFile } from 'express-fileupload';
 
 export const getChatIds = (): IdInterface[] => {
     const location = config.baseDir + 'chats';
@@ -118,13 +119,16 @@ export const persistUserdata = (userData: UserInterface) => {
 export const saveFile = (
     chatId: IdInterface,
     messageId: string,
-    fileName: string,
-    fileBuffer: Buffer,
+    file: UploadedFile
 ) => {
     let path = `${config.baseDir}chats/${chatId}/files/${messageId}`;
     fs.mkdirSync(path);
-    path = `${path}/${fileName}`;
-    fs.writeFileSync(path, fileBuffer);
+    path = `${path}/${file.name}`;
+    if(file.tempFilePath && file.mv) {
+        file.mv(path)
+    } else if(file.data) {
+        fs.writeFileSync(path, file.data);
+    }
     return path;
 };
 

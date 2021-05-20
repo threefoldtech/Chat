@@ -11,7 +11,7 @@ import Message from '../models/message';
 import {getChat, persistChat, saveFile} from './dataService';
 import {sendEventToConnectedSockets} from './socketService';
 import {determineChatId} from '../routes/messages';
-import {logger} from "../logger";
+import { UploadedFile } from 'express-fileupload';
 
 export const parseMessages = (messages: Array<any>) => messages.map(parseMessage);
 
@@ -84,11 +84,14 @@ export const parseMessage = (
                 msg?.updated
             );
         case MessageTypes.FILE_UPLOAD:
+            console.log("File re-upload")
             const url = saveFile(
                 msg.to,
                 msg.id,
-                msg.body.name,
-                msg.body.parsedFile,
+                {
+                    name: msg.body.name,
+                    data: msg.body.parsedFile
+                } as UploadedFile
             );
 
             return new Message<FileMessageType>(
