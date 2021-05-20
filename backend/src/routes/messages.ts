@@ -159,16 +159,15 @@ router.put('/', async (req, res) => {
 
 
     if (chat.isGroup && chat.adminId == config.userid) {
+        appendSignatureToMessage(message)
         chat.contacts
             .filter(c => c.id !== config.userid)
             .forEach(c => {
                 console.log(`group sendMessage to ${c.id}`);
-                appendSignatureToMessage(message)
                 sendMessageToApi(c.location, message);
             });
 
         if (message.type === <string>MessageTypes.SYSTEM) {
-            appendSignatureToMessage(message)
             handleSystemMessage(<any>message, chat);
             res.json({ status: 'success' });
             return;

@@ -8,7 +8,7 @@
                     <input
                         type='checkbox'
                         @change='handleAllSelect'
-                        :checked='currentDirectoryContent.length === selectedPaths.length'
+                        :checked='currentDirectoryContent.length === selectedPaths.length && currentDirectoryContent.length !== 0'
                     >
                 </th>
                 <th :class="{active: 'name' === currentSort}" class='text-left cursor-pointer select-none'
@@ -34,9 +34,12 @@
             </tr>
             </thead>
             <tbody>
+            <tr v-if='currentDirectoryContent.length === 0'>
+                <td colspan='5' class='italic text-gray-500 text-center'>Empty directory</td>
+            </tr>
             <tr
                 v-for='item in sortContent()'
-                class='hover:bg-gray-200 cursor-pointer h-10 border border-gray-300'
+                class='hover:bg-gray-200 cursor-pointer h-10 border-b border-t border-gray-300'
                 :key='item.fullName'
             >
                 <td class='text-left p-2'>
@@ -46,18 +49,20 @@
                         :checked='selectedPaths.some(x => x.fullName === item.fullName && x.extension === item.extension  && x.path === item.path)'
                     >
                 </td>
-                <td class='flex flex-row items-center text-md'>
-                    <div class='mr-3 w-7'>
-                        <i class='fa-2x'
-                           :class='getIcon(item)+ " " + getIconColor(item)'
-                        ></i>
+                <td>
+                    <div class='flex flex-row items-center text-md'>
+                        <div class='mr-3 w-7'>
+                            <i class='fa-2x'
+                               :class='getIcon(item)+ " " + getIconColor(item)'
+                            ></i>
+                        </div>
+                        <span
+                            class='hover:underline'
+                            @click='handleItemClick(item)'
+                        >
+                            {{ item.name }}
+                        </span>
                     </div>
-                    <span
-                        class='hover:underline'
-                        @click='handleItemClick(item)'
-                    >
-                        {{ item.name }}
-                    </span>
                 </td>
                 <td>{{ extCheck(item) }}</td>
                 <td>{{ sizeCheck(item) }}</td>
