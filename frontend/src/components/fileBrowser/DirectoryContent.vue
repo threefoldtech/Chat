@@ -39,7 +39,7 @@
             </tr>
             <tr
                 v-for='item in sortContent()'
-                class='hover:bg-gray-200 cursor-pointer h-10 border border-gray-300'
+                class='hover:bg-gray-200 cursor-pointer h-10 border-b border-t border-gray-300'
                 :key='item.fullName'
             >
                 <td class='text-left p-2'>
