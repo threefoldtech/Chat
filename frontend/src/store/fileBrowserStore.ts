@@ -220,6 +220,9 @@ export const itemAction = async (item: PathInfoModel, router: Router, path = cur
         const file = new Blob([response.data], { type: `video/${item.extension}` });
         const url = URL.createObjectURL(file);
         window.open(url, '_blank');
+    } else {
+        const result = await Api.downloadFile(item.path);
+        fileDownload(result.data, item.fullName);
     }
 };
 
