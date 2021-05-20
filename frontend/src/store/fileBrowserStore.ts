@@ -32,6 +32,8 @@ export const currentDirectoryContent = ref<PathInfoModel[]>([]);
 export const selectedPaths = ref<PathInfoModel[]>([]);
 export const copyStatus = ref<string>('Copy Selected');
 export const copiedFiles = ref<PathInfoModel[]>([]);
+export const currentSort = ref('name');
+export const currentSortDir = ref('asc');
 
 watch([currentDirectory], () => {
     updateContent();
@@ -220,6 +222,56 @@ export const itemAction = async (item: PathInfoModel, router: Router, path = cur
     }
 };
 
+export const sortContent = () =>{
+    return currentDirectoryContent.value.sort((a, b) => {
+        let modifier = 1;
+
+        if (currentSortDir.value === 'desc') modifier = -1;
+        if (currentSort.value === 'name') {
+            if (!a.isDirectory && b.isDirectory)
+                return 1;
+            if (a.isDirectory && !b.isDirectory)
+                return -1;
+        }
+
+        if (a[currentSort.value] < b[currentSort.value]) return -1 * modifier;
+        if (a[currentSort.value] > b[currentSort.value]) return 1 * modifier;
+        return 0;
+    });
+};
+
+export const sortAction = function(s) {
+    if (s === currentSort.value) {
+        currentSortDir.value = currentSortDir.value === 'asc' ? 'desc' : 'asc';
+    }
+    currentSort.value = s;
+};
+
+export const getIcon = (item: PathInfoModel) => {
+    if (item.isDirectory) return 'far fa-folder';
+    switch (item.fileType) {
+        case FileType.Video:
+            return 'far fa-file-video';
+        case FileType.Word:
+            return 'far fa-file-word';
+        case FileType.Image:
+            return 'far fa-file-image';
+        case FileType.Pdf:
+            return 'far fa-file-pdf';
+        case FileType.Csv:
+            return 'far fa-file-csv';
+        case FileType.Audio:
+            return 'far fa-file-audio';
+        case FileType.Archive:
+            return 'far fa-file-archive';
+        case FileType.Excel:
+            return 'far fa-file-excel';
+        case FileType.Powerpoint:
+            return 'far fa-file-powerpoint';
+        default:
+            return 'far fa-file';
+    }
+};
 
 export const createModel = <T extends Api.PathInfo>(pathInfo: T): PathInfoModel => {
     console.log(pathInfo);
