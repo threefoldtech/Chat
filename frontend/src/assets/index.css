@@ -52,7 +52,7 @@
     opacity: 0;
 }
 .bg-gradient {
-    background: linear-gradient(90deg, #45a687 0%, #80e8f9 100.5%);
+    background: #36a688;
 }
 .backdrop {
     @apply fixed h-screen w-screen left-0 top-0 bg-black bg-opacity-20 z-20;
