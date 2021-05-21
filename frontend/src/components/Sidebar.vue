@@ -32,10 +32,10 @@
                 :class="{
                     'text-gray-300': !app?.enabled,
                     'cursor-pointer': app.enabled,
-                    'text-white': !router.currentRoute?.value.path.includes(
+                    'text-white': router.currentRoute?.value.path.includes(
                         app.name
                     ),
-                    selected: router.currentRoute?.value.path.includes(
+                    selected: !router.currentRoute?.value.path.includes(
                         app.name
                     ),
                 }"
