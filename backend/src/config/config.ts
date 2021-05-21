@@ -11,5 +11,5 @@ export const config = {
         'calm science teach foil burst until next mango hole sponsor fold bottom cousin push focus track truly tornado turtle over tornado teach large fiscal',
     baseDir: process.env.BASEDIR || '/appdata/',
     userid,
-    storage: '/storage/'
+    storage: '/storage/',
 };
