@@ -2,7 +2,7 @@ import PATH, { ParsedPath } from 'path';
 
 import { BaseEncodingOptions, Dirent, promises as FS, Stats, lstatSync, rmdirSync, readdirSync, statSync } from 'fs';
 import { FileSystemError, FileSystemErrorType as ErrorType } from '../../types/errors/fileSystemError';
-import { DirectoryContent, DirectoryDto, PathInfo, FileInformation } from '../../types/dtos/fileDto';
+import { PathInfo, FileInformation } from '../../types/dtos/fileDto';
 import { ReadableStreamBuffer } from 'stream-buffers';
 import { config } from '../../config/config';
 import mimeType from 'mime';
@@ -19,7 +19,7 @@ export class Path {
     }
 
     public setSecuredPath() {
-        const baseDir = config.storage;
+        const baseDir = PATH.join(config.baseDir, config.storage);
         const realPath = PATH.join(baseDir, this._path);
         if (realPath.indexOf(baseDir) !== 0)
             throw new FileSystemError(ErrorType.ForbidTraversal, 'Traversal not allowed!');
