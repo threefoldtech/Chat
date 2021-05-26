@@ -12,6 +12,8 @@ import {
     renameFile,
     copyFileWithRetry,
     copyDirectoryWithRetry,
+    getFilesRecursive,
+    filterOnString
 } from '../utils/files';
 import { HttpError } from '../types/errors/httpError';
 import { StatusCodes } from 'http-status-codes';
@@ -235,6 +237,21 @@ router.put('/files/rename', async (req, res) => {
     const result = await renameFile(oldPath, newPath);
 
     res.json(result);
+    res.status(StatusCodes.CREATED);
+});
+
+router.get('/files/search', async (req, res) => {
+    let term = req.query.searchTerm;
+    let dir = req.query.currentDir;
+    if (!dir || typeof dir !== 'string')
+        throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
+
+    const path = new Path(dir);
+    let fileList = await getFilesRecursive(path)
+    let filteredList = await filterOnString(term.toString(), fileList)
+
+   const results = filteredList.length > 0 ? filteredList : "None";
+    res.json(results);
     res.status(StatusCodes.CREATED);
 });
 
