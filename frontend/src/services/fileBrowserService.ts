@@ -1,6 +1,7 @@
-import axios, { AxiosResponse, ResponseType } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse, ResponseType } from 'axios';
 import config from '../../public/config/config';
 import { downloadFiles, PathInfoModel } from '@/store/fileBrowserStore';
+import { createPercentProgressNotification } from '@/store/notificiationStore';
 
 const endpoint = `${config.baseUrl}api/browse`;
 
@@ -49,15 +50,29 @@ export const getFileInfo = async (path: string): Promise<AxiosResponse<FullPathI
     return await axios.get(`${endpoint}/files/info`, { params: params });
 };
 
-export const uploadFile = async (path: string, file: File): Promise<AxiosResponse<PathInfo>> => {
+export const uploadFile = async (path: string, file: File, withNotification = true): Promise<AxiosResponse<PathInfo>> => {
     const formData = new FormData();
     formData.append('newFiles', file);
     formData.append('path', path)
-    return await axios.post<PathInfo>(`${endpoint}/files`, formData, {
+    let config  = {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
-    });
+    } as AxiosRequestConfig;
+
+    if(withNotification) {
+        console.log("tadaaa")
+        const notification = createPercentProgressNotification("Uploading file", file.name, 0)
+        config = {
+            ...config,
+            onUploadProgress: function(progressEvent) {
+                console.log("test", Math.round((progressEvent.loaded * 100) / progressEvent.total))
+                notification.updateProgress(Math.round(progressEvent.loaded / progressEvent.total))
+            }
+        }
+    }
+
+    return await axios.post<PathInfo>(`${endpoint}/files`, formData, config);
 };
 
 export const deleteFile = async (path: string) => {

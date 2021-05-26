@@ -38,7 +38,6 @@
     import { usechatsActions } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
     import Spinner from '@/components/Spinner.vue';
-    import FileDropArea from '@/components/FileDropArea.vue';
 
     export default {
         name: 'MessageBox',

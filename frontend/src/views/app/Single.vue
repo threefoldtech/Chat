@@ -68,7 +68,7 @@
                 <div class='relative h-full flex flex-col flex-1' v-if='chat' :key='chat.id + selectedId'>
                     <FileDropArea
                         class='h-full flex flex-col'
-                        @send-file='(f) => sendFile(chat.chatId, f)'
+                        @send-file='(files) => files.forEach(f => sendFile(chat.chatId, f))'
                     >
                         <div class='topbar h-14 bg-white flex-row border border-t-0 border-gray-100 hidden md:flex'>
                             <div class='py-2 pl-4 flex-1'>

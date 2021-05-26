@@ -7,7 +7,7 @@
                 </div>
                 <div class='flex flex-col flex-1'>
                     <TopBar/>
-                    <DirectoryContent/>
+                    <DirectoryContent/> 
                 </div>
             </div>
 
