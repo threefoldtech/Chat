@@ -74,9 +74,14 @@ export const downloadFile = async (path: string, responseType: ResponseType = "b
         responseType: responseType
     });
 };
+export const searchDir = async (searchTerm: string, currentDir: string) => {
+    const params = new URLSearchParams();
+    params.append('searchTerm', searchTerm);
+    params.append('currentDir', currentDir);
+    return await axios.get<PathInfo[]>(`${endpoint}/files/search`, {params: params});
+};
 export const pasteFile = async (paths: PathInfo[], pathToPaste: string) => {
-    console.log(paths);
-    console.log(pathToPaste);
+
     return await axios.post<PathInfo[]>(`${endpoint}/files/copy`, { paths: paths, pathToPaste: pathToPaste});
 };
 export const renameFile = async (oldPath: string, newPath: string) => {

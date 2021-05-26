@@ -64,9 +64,9 @@
                         </span>
                     </div>
                 </td>
-                <td>{{ extCheck(item) }}</td>
-                <td>{{ sizeCheck(item) }}</td>
-                <td>{{ modifiedCheck(item) }}</td>
+                <td>{{ getFileExtension(item) }}</td>
+                <td>{{ getFileSize(item) }}</td>
+                <td>{{ getFileLastModified(item) }}</td>
 
                 </tr>
                 </tbody>
@@ -84,7 +84,8 @@
         FileType,
         itemAction,
         PathInfoModel, selectItem, deselectAll, selectAll,
-        selectedPaths, deselectItem, sortContent, sortAction, currentSort, currentSortDir
+        selectedPaths, deselectItem, sortContent, sortAction, currentSort, currentSortDir,
+        getFileLastModified, getFileExtension, getFileSize, getIconColor, getIcon
         ,uploadFile,
     } from '@/store/fileBrowserStore';
     import { useRouter } from 'vue-router';
@@ -108,29 +109,7 @@
                 else
                     deselectItem(item);
             };
-            const sizeCheck = (val: any) => {
-                if (val.extension) {
-                    return formatBytes(val.size, 2);
-                }
-                return '-';
-            };
-            const extCheck = (val: any) => {
-                if (val.extension) {
-                    return val.extension;
-                }
-                return '-';
-            };
-            const modifiedCheck = (val: any) => {
-                const dateObj = new Date(val.lastModified);
-                const dd = dateObj.getDate();
-                const mm = dateObj.getMonth() + 1;
-                const yyyy = dateObj.getFullYear();
-                if (moment.duration(moment().startOf('day').diff(dateObj)).asDays() < -7) {
-                    return dd + '-' + mm + '-' + yyyy;
-                }
-                return moment(dateObj).fromNow();
 
-            };
             const handleAllSelect = (val: any) => {
                 if (val.target.checked)
                     selectAll();
@@ -150,63 +129,23 @@
                 itemAction(item, router);
             };
 
-            const getIconColor = (item: PathInfoModel) => {
-                if (item.isDirectory) return 'text-yellow-600';
-                switch (item.fileType) {
-                    case FileType.Excel:
-                        return 'text-green-400';
-                    case FileType.Word:
-                        return 'text-blue-400';
-                    case FileType.Powerpoint:
-                        return 'text-red-400';
-                    default:
-                        return 'text-gray-600';
-                }
-            };
-
-            const getIcon = (item: PathInfoModel) => {
-                if (item.isDirectory) return 'far fa-folder';
-                switch (item.fileType) {
-                    case FileType.Video:
-                        return 'far fa-file-video';
-                    case FileType.Word:
-                        return 'far fa-file-word';
-                    case FileType.Image:
-                        return 'far fa-file-image';
-                    case FileType.Pdf:
-                        return 'far fa-file-pdf';
-                    case FileType.Csv:
-                        return 'far fa-file-csv';
-                    case FileType.Audio:
-                        return 'far fa-file-audio';
-                    case FileType.Archive:
-                        return 'far fa-file-archive';
-                    case FileType.Excel:
-                        return 'far fa-file-excel';
-                    case FileType.Powerpoint:
-                        return 'far fa-file-powerpoint';
-                    default:
-                        return 'far fa-file';
-                }
-            };
-
             return {
                 handleSelect,
                 handleAllSelect,
-                getIcon,
-                getIconColor,
                 handleItemClick,
                 currentDirectoryContent,
                 currentDirectory,
                 selectedPaths,
-                sizeCheck,
-                extCheck,
-                modifiedCheck,
                 sortContent,
                 sortAction,
                 currentSort,
                 currentSortDir,
                 uploadFile,
+                getFileLastModified,
+                getFileExtension,
+                getFileSize,
+                getIconColor,
+                getIcon
             };
         },
     });

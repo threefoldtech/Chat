@@ -1,6 +1,6 @@
 import PATH, { ParsedPath } from 'path';
 
-import { BaseEncodingOptions, promises as FS, Stats, lstatSync, rmdirSync } from 'fs';
+import { BaseEncodingOptions, Dirent, promises as FS, Stats, lstatSync, rmdirSync, readdirSync, statSync } from 'fs';
 import { FileSystemError, FileSystemErrorType as ErrorType } from '../../types/errors/fileSystemError';
 import { PathInfo, FileInformation } from '../../types/dtos/fileDto';
 import { ReadableStreamBuffer } from 'stream-buffers';
@@ -179,7 +179,7 @@ export const isPathDirectory = async (
     try {
         return await lstatSync(path.securedPath).isDirectory();
     } catch (e) {
-        return false
+        return false;
     }
 };
 
@@ -218,20 +218,20 @@ export const copyDirectoryWithRetry = async (path: Path, destPath: Path, count =
  */
 export const saveUploadedFile = async (
     path: Path,
-    file: UploadedFile ,
+    file: UploadedFile,
 ) => {
     if (await doesPathExist(path)) return;
 
-    if(file.tempFilePath)
-        return await moveUploadedFile(file, path)
+    if (file.tempFilePath)
+        return await moveUploadedFile(file, path);
 
     return saveFile(path, file.data);
-}
+};
 
 
 export const moveUploadedFile = async (
     file: UploadedFile,
-    path: Path
+    path: Path,
 ) => {
     const directory = new Path(path.path.removeAfterLastOccurrence('/'));
     if (!(await doesPathExist(directory))) {
@@ -239,7 +239,7 @@ export const moveUploadedFile = async (
     }
     await file.mv(path.securedPath);
     return await getFormattedDetails(path);
-}
+};
 
 export const saveFile = async (
     path: Path,
@@ -273,12 +273,11 @@ export const copyFile = async (path: Path, file: Buffer) => {
     return await getFormattedDetails(path);
 };
 export const copyDir = async (destPath: Path, path: Path) => {
-    if( !await doesPathExist(destPath) || path === destPath)
-    {
+    if (!await doesPathExist(destPath) || path === destPath) {
         await copyDirectory(path, destPath);
         return await getFormattedDetails(destPath);
     }
-    return undefined
+    return undefined;
 
 };
 
@@ -339,6 +338,30 @@ export const getFileData = async (path: Path) => {
         contentType,
     };
 };
+export const getFilesRecursive = async (dir: Path, fileList: PathInfo[] =[]) => {
+    let files = await readDir(dir, { withFileTypes: true });
+    for (const file of files) {
+        if (statSync(PATH.join(dir.securedPath, file.fullName)).isDirectory()) {
+            fileList.push(file);
+            fileList = await getFilesRecursive(new Path(PATH.join(dir.path, file.fullName)), fileList);
+        } else {
+            fileList.push(file);
+        }
+    }
+    return fileList
+};
+
+export const filterOnString = async (term: string, fileList: PathInfo[] =[]) => {
+    let filteredList = []
+    for (const file of fileList) {
+        if (file.fullName.toLowerCase().includes(term.toLowerCase())) {
+            filteredList.push(file)
+        }
+    }
+    return filteredList;
+};
+
+
 
 const readFile = async (path: Path) => {
     return await FS.readFile(path.securedPath);
@@ -367,11 +390,11 @@ const readDirectory = async (
 const writeFile = async (path: Path, file: Buffer) => {
     return await FS.writeFile(path.securedPath, file);
 };
-const copyDirectory = async (srcDir: Path, destDir: Path)=>{
-    return await fse.copySync(srcDir.securedPath, destDir.securedPath)
-}
+const copyDirectory = async (srcDir: Path, destDir: Path) => {
+    return await fse.copySync(srcDir.securedPath, destDir.securedPath);
+};
 export const removeFile = async (path: Path) => {
-    if (await isPathDirectory(path)){
+    if (await isPathDirectory(path)) {
         return rmdirSync(path.securedPath, { recursive: true });
     }
     if (!(await doesPathExist(path))) {
