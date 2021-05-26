@@ -162,7 +162,7 @@
         renameFile,
         searchDir,
         searchDirValue,
-        searchResults
+        searchResults,
     } from '@/store/fileBrowserStore';
     import Dialog from '@/components/Dialog.vue';
     import { showUserConfigDialog } from '@/services/dialogService';
@@ -172,16 +172,18 @@
         name: 'TopBar',
         components: { Button, jdialog: Dialog },
         setup() {
+            let debounce
             function debounceSearch(event) {
-                clearTimeout(this.debounce)
-                this.debounce = setTimeout(() => {
-                    if (searchDirValue.value=== '') {
-                        searchResults.value = []
-                       return
+                clearTimeout(debounce);
+                debounce = setTimeout(() => {
+                    if (searchDirValue.value === '') {
+                        searchResults.value = [];
+                        return;
                     }
-                    searchDir()
-                }, 600)
+                    searchDir();
+                }, 600);
             }
+
             return {
                 goToHome,
                 goBack,
@@ -201,7 +203,7 @@
                 searchDirValue,
                 searchDir,
                 searchResults,
-                debounceSearch
+                debounceSearch,
             };
         },
     });

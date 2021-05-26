@@ -354,7 +354,7 @@ export const getFilesRecursive = async (dir: Path, fileList: PathInfo[] =[]) => 
 export const filterOnString = async (term: string, fileList: PathInfo[] =[]) => {
     let filteredList = []
     for (const file of fileList) {
-        if (file.fullName.includes(term)) {
+        if (file.fullName.toLowerCase().includes(term.toLowerCase())) {
             filteredList.push(file)
         }
     }

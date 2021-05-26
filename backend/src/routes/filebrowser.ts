@@ -240,7 +240,7 @@ router.put('/files/rename', async (req, res) => {
     res.status(StatusCodes.CREATED);
 });
 
-router.get('/files/search', async (req, res) => {
+router.get('/files/search', requiresAuthentication, async (req: express.Request, res: express.Response) => {
     let term = req.query.searchTerm;
     let dir = req.query.currentDir;
     if (!dir || typeof dir !== 'string')
