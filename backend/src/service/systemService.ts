@@ -37,6 +37,10 @@ export const handleSystemMessage = (
             persistMessage(chat.chatId, message)
             return;
         }
+        case SystemMessageType.CONTACT_REQUEST_SEND: {
+            persistMessage(chat.chatId, message)
+            return;
+        }
         default:
             throw Error('not implemented');
     }
