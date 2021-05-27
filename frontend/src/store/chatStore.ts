@@ -22,7 +22,7 @@ import { uniqBy } from 'lodash';
 import { useScrollActions } from './scrollStore';
 import { myYggdrasilAddress } from '@/store/authStore';
 import { blocklist } from '@/store/blockStore';
-
+const { addScrollEvent } = useScrollActions();
 const messageLimit = 50;
 const state = reactive<ChatState>({
     chats: [],
@@ -249,6 +249,7 @@ const getNewMessages = async (chatId: string) => {
 };
 
 const addMessage = (chatId, message) => {
+
     if (message.type === 'READ') {
         const chat: Chat = getChat(chatId);
 
@@ -289,6 +290,7 @@ const addMessage = (chatId, message) => {
         }
 
         setLastMessage(chatId, message);
+        addScrollEvent();
         return;
     }
 
@@ -311,8 +313,6 @@ const addMessage = (chatId, message) => {
 
     sortChats();
     setLastMessage(chatId, message);
-
-    const { addScrollEvent } = useScrollActions();
     addScrollEvent();
 };
 
@@ -407,6 +407,7 @@ const setLastMessage = (chatId: string, message: Message<String>) => {
     if (!chat) return;
 
     sortChats();
+    addScrollEvent();
 };
 
 const sortChats = () => {
