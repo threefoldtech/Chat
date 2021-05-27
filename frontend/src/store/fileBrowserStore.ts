@@ -1,9 +1,8 @@
 import { ref, watch } from 'vue';
 import fileDownload from 'js-file-download';
 import * as Api from '@/services/fileBrowserService';
-import { Router, useRouter } from 'vue-router';
+import { Router } from 'vue-router';
 import { setImageSrc } from '@/store/imageStore';
-import { getDownloadFileEndpoint } from '@/services/fileBrowserService';
 import moment from 'moment';
 
 export enum FileType {
@@ -79,7 +78,7 @@ export const createDirectory = async (name: string, path = currentDirectory.valu
 export const uploadFiles = async (files: File[], path = currentDirectory.value) => {
     await Promise.all(files.map(async f => {
         const result = await Api.uploadFile(path, f);
-        if ((result.status !== 200 && result.status !== 201) || !result.data)
+        if (!result || (result.status !== 200 && result.status !== 201) || !result.data)
             throw new Error('Could not create new folder');
 
         currentDirectoryContent.value.push(createModel(result.data));

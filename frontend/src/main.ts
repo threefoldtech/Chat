@@ -8,6 +8,7 @@ import config from '../public/config/config';
 import MessageContent from '@/components/MessageContent.vue';
 import { clickOutside } from '@/plugins/ClickOutside';
 import {get} from "scriptjs"
+import axios from 'axios';
 
 // console.log(Socketio)
 // const a = Socketio.install
@@ -32,6 +33,17 @@ app.directive('focus', {
         // Focus the element
         el.focus();
     },
+});
+
+axios.interceptors.response.use(function (response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Do something with response data
+
+    return response;
+}, function (error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Do something with response error
+    return Promise.reject(error);
 });
 
 app.mount('#app');

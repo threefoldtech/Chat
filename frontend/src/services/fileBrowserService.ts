@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, ResponseType } from 'axios';
 import config from '../../public/config/config';
-import { downloadFiles, PathInfoModel } from '@/store/fileBrowserStore';
-import { createPercentProgressNotification } from '@/store/notificiationStore';
+import { createPercentProgressNotification, fail, success } from '@/store/notificiationStore';
+import { ProgressNotification } from '@/types/notifications';
 
 const endpoint = `${config.baseUrl}api/browse`;
 
@@ -60,19 +60,36 @@ export const uploadFile = async (path: string, file: File, withNotification = tr
         },
     } as AxiosRequestConfig;
 
+    let notification: ProgressNotification | undefined = undefined
     if(withNotification) {
-        console.log("tadaaa")
-        const notification = createPercentProgressNotification("Uploading file", file.name, 0)
+        notification = createPercentProgressNotification("Uploading file", file.name, 0)
         config = {
             ...config,
             onUploadProgress: function(progressEvent) {
                 console.log("test", Math.round((progressEvent.loaded * 100) / progressEvent.total))
-                notification.updateProgress(Math.round(progressEvent.loaded / progressEvent.total))
-            }
+                notification.progress = Math.round(progressEvent.loaded / progressEvent.total)
+            },
         }
     }
+    try {
+        const response = await axios.post<PathInfo>(`${endpoint}/files`, formData, config);
+        if(withNotification && response.status >= 300) {
+            notification.title = "Upload failed"
+            fail(notification);
+        }
+        else {
+            notification.title = "Upload Success"
+            success(notification);
+        }
 
-    return await axios.post<PathInfo>(`${endpoint}/files`, formData, config);
+        return response;
+    } catch (ex) {
+        console.log("fwailed");
+        if(!withNotification) return;
+        notification.title = "Upload failed"
+        fail(notification)
+    }
+
 };
 
 export const deleteFile = async (path: string) => {
@@ -96,14 +113,9 @@ export const searchDir = async (searchTerm: string, currentDir: string) => {
     return await axios.get<PathInfo[]>(`${endpoint}/files/search`, {params: params});
 };
 export const pasteFile = async (paths: PathInfo[], pathToPaste: string) => {
-
     return await axios.post<PathInfo[]>(`${endpoint}/files/copy`, { paths: paths, pathToPaste: pathToPaste});
 };
 export const renameFile = async (oldPath: string, newPath: string) => {
     return await axios.put<PathInfo>(`${endpoint}/files/rename`, { oldPath: oldPath, newPath: newPath });
 };
-
-
-
-
 
