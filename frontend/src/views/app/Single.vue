@@ -137,7 +137,7 @@
                                 </button>
                             </div>
                         </jdialog>
-                        <jdialog v-model='showDeleteDialog' noActions class='max-w-10'>
+                        <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
                             <template v-slot:title class='center'>
                                 <h1 class='text-center'>Deleting Conversation</h1>
                             </template>
