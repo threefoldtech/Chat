@@ -8,7 +8,6 @@ import im from 'imagemagick';
 import { ITokenFile } from '../store/tokenStore';
 import PATH from 'path';
 import { UploadedFile } from 'express-fileupload';
-import { log } from 'winston';
 
 export const getChatIds = (): IdInterface[] => {
     const location = config.baseDir + 'chats';
@@ -146,9 +145,6 @@ export const deleteAvatar = (id: string) => {
 };
 
 export const resizeAvatar = async (from: string, to: string): Promise<unknown> => {
-
-    console.log(from);
-    console.log(to);
     return new Promise((resolve, reject) => {
         im.resize({
             srcPath: from,
