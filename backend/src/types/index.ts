@@ -39,7 +39,8 @@ export enum MessageTypes {
 export enum SystemMessageType {
     ADDUSER = 'ADDUSER',
     REMOVEUSER = 'REMOVEUSER',
-    JOINED_VIDEOROOM = 'JOINED_VIDEOROOM'
+    JOINED_VIDEOROOM = 'JOINED_VIDEOROOM',
+    CONTACT_REQUEST_SEND = 'CONTACT_REQUEST_SEND'
 }
 
 export enum FileTypes {

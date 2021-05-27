@@ -4,6 +4,7 @@ import * as Api from '@/services/fileBrowserService';
 import { Router, useRouter } from 'vue-router';
 import { setImageSrc } from '@/store/imageStore';
 import { getDownloadFileEndpoint } from '@/services/fileBrowserService';
+import moment from 'moment';
 
 export enum FileType {
     Unknown,
@@ -34,10 +35,14 @@ export const copyStatus = ref<string>('Copy Selected');
 export const copiedFiles = ref<PathInfoModel[]>([]);
 export const currentSort = ref('name');
 export const currentSortDir = ref('asc');
+export const searchDirValue = ref<string>('');
+export const searchResults = ref<PathInfoModel[] | string>([]);
 
 watch([currentDirectory], () => {
     updateContent();
     selectedPaths.value = [];
+    searchResults.value = [];
+    searchDirValue.value = '';
 });
 
 function pathJoin(parts, separator = '/'): string {
@@ -59,6 +64,7 @@ export const updateContent = async (path = currentDirectory.value) => {
         throw new Error('Could not get content');
 
     currentDirectoryContent.value = result.data.map(createModel);
+
 };
 
 export const createDirectory = async (name: string, path = currentDirectory.value) => {
@@ -151,6 +157,17 @@ export const clearClipboard = () => {
     copiedFiles.value = [];
 
 };
+export const searchDir = async () => {
+    const result = await Api.searchDir(searchDirValue.value, currentDirectory.value);
+    if (result.status !== 200 || !result.data)
+        throw new Error('Could not get search results');
+    if (result.data.toString() === 'None') {
+        searchResults.value = 'None';
+        return;
+    }
+    searchResults.value = result.data.map(createModel);
+
+};
 export const renameFile = async (item: PathInfoModel, name: string) => {
     if (name === '') {
         return;
@@ -175,6 +192,20 @@ export const goToAPreviousDirectory = (index: number) => {
     if (index < 1 || index === parts.length - 1) return;
     parts.splice(index + 1);
     currentDirectory.value = pathJoin(parts);
+};
+
+export const goToFileDirectory = (item: PathInfoModel) => {
+    const itemDir = item.path.substr(0, item.path.lastIndexOf('\/'));
+    if (item.isDirectory) {
+        currentDirectory.value = item.path;
+        return;
+    }
+    if (currentDirectory.value === itemDir) {
+        searchResults.value = [];
+        searchDirValue.value = '';
+        return;
+    }
+    currentDirectory.value = itemDir;
 };
 
 export const goBack = () => {
@@ -226,7 +257,7 @@ export const itemAction = async (item: PathInfoModel, router: Router, path = cur
     }
 };
 
-export const sortContent = () =>{
+export const sortContent = () => {
     return currentDirectoryContent.value.sort((a, b) => {
         let modifier = 1;
 
@@ -360,3 +391,51 @@ export const getFileType = (extension: string): FileType => {
             return FileType.Unknown;
     }
 };
+
+export const getFileSize = (val: any) => {
+    if (val.extension) {
+        return formatBytes(val.size, 2);
+    }
+    return '-';
+};
+const formatBytes = function(bytes, decimals) {
+    if (bytes == 0) return '0 Bytes';
+    let k = 1024,
+        dm = decimals || 2,
+        sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+        i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+export const getFileExtension = (val: any) => {
+    if (val.extension) {
+        return val.extension;
+    }
+    return '-';
+};
+export const getFileLastModified = (val: any) => {
+    const dateObj = new Date(val.lastModified);
+    const dd = dateObj.getDate();
+    const mm = dateObj.getMonth() + 1;
+    const yyyy = dateObj.getFullYear();
+    if (moment.duration(moment().startOf('day').diff(dateObj)).asDays() < -7) {
+        return dd + '-' + mm + '-' + yyyy;
+    }
+    return moment(dateObj).fromNow();
+
+};
+
+export const getIconColor = (item: PathInfoModel) => {
+    if (item.isDirectory) return 'text-yellow-600';
+    switch (item.fileType) {
+        case FileType.Excel:
+            return 'text-green-400';
+        case FileType.Word:
+            return 'text-blue-400';
+        case FileType.Powerpoint:
+            return 'text-red-400';
+        default:
+            return 'text-gray-600';
+    }
+};
+
+

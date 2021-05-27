@@ -65,15 +65,15 @@ export const determineChatId = (message: Message<MessageBodyTypeInterface>): DtI
     return message.to;
 };
 
-export const verifySignedMessage = async (chat: Chat, signedMessage: Message<MessageBodyTypeInterface>): Promise<boolean> => {
-    let signatureIndex = 0;
-    if(chat.isGroup && chat.adminId === config.userid) {
-        const adminContact = chat.contacts.find(x => x.id === chat.adminId);
-        if (!adminContact) {
-            console.log(`Admin ${chat.adminId} is not found in the contact list`)
-            return false;
-        }
+export const verifySignedMessageByChat = async(chat: Chat, signedMessage: Message<MessageBodyTypeInterface>) => {
+    const adminContact = chat.contacts.find(x => x.id === chat.adminId);
+    const fromContact = chat.contacts.find(x => x.id === signedMessage.from);
+    return verifySignedMessage(chat.isGroup, adminContact, fromContact, signedMessage);
+}
 
+export const verifySignedMessage = async (isGroup: boolean, adminContact: Contact, fromContact: Contact, signedMessage: Message<MessageBodyTypeInterface>): Promise<boolean> => {
+    let signatureIndex = 0;
+    if(isGroup && adminContact?.id !== config.userid) {
         const adminIsVerified = await verifyMessageSignature(adminContact, signedMessage, signedMessage.signatures[signatureIndex])
         if(!adminIsVerified) {
             console.log(`Admin signature is not correct`);
@@ -81,7 +81,7 @@ export const verifySignedMessage = async (chat: Chat, signedMessage: Message<Mes
         }
         signatureIndex++;
     }
-    const fromContact = chat.contacts.find(x => x.id === signedMessage.from);
+
     if (!fromContact) {
         console.log(`Sender ${signedMessage.from} is not found in the contact list`)
         return false;
@@ -104,6 +104,21 @@ router.put('/', async (req, res) => {
     }
 
     const blockList = getBlocklist();
+    if (message.type === MessageTypes.CONTACT_REQUEST) {
+        if (blockList.includes(<string>message.from)) {
+            //@todo what should i return whenblocked
+            res.json({ status: 'blocked' });
+            return;
+        }
+
+        const msg = message as Message<ContactRequest>;
+        await verifySignedMessage(false, undefined, msg.body as Contact, message)
+        await handleContactRequest(msg);
+
+        res.json({ status: 'success' });
+        return;
+    }
+
     const chatId = determineChatId(message);
     let chat: Chat;
     try {
@@ -114,7 +129,7 @@ router.put('/', async (req, res) => {
         return;
     }
 
-    const messageIsCorrectlySigned = verifySignedMessage(chat, message);
+    const messageIsCorrectlySigned = verifySignedMessageByChat(chat, message);
     if(!messageIsCorrectlySigned) {
         res.sendStatus(500);
         return;
@@ -126,18 +141,6 @@ router.put('/', async (req, res) => {
         return;
     }
 
-    if (message.type === MessageTypes.CONTACT_REQUEST) {
-        if (blockList.includes(<string>message.from)) {
-            //@todo what should i return whenblocked
-            res.json({ status: 'blocked' });
-            return;
-        }
-
-        await handleContactRequest(message as Message<ContactRequest>);
-
-        res.json({ status: 'success' });
-        return;
-    }
 
     if (message.type === MessageTypes.SYSTEM) {
         console.log('received a groupUpdate');

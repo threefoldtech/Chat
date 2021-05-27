@@ -81,7 +81,22 @@
                 <i class='fas fill-current text-red-400 fa-window-close fa-1x ml-1'></i>
             </div>
         </div>
-
+        <div class='collapsed-bar:hidden px-2 relative'>
+            <input
+                type='text'
+                placeholder='Search'
+                class='px2-2 border-gray-200 border-2 focus:border-accent border-r rounded-lg'
+                v-model='searchDirValue'
+                @input="debounceSearch"
+            />
+            <span
+                v-if="searchDirValue"
+                @click.prevent="searchDirValue = ''; searchResults = []"
+                class="absolute inset-y-0 right-1 pr-3 flex items-center cursor-pointer"
+            >
+            x
+        </span>
+        </div>
         <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
             <template v-slot:title class='center'>
                 <h1 class='text-center'>Deleting Files</h1>
@@ -145,14 +160,29 @@
         copiedFiles,
         clearClipboard,
         renameFile,
+        searchDir,
+        searchDirValue,
+        searchResults,
     } from '@/store/fileBrowserStore';
     import Dialog from '@/components/Dialog.vue';
     import { showUserConfigDialog } from '@/services/dialogService';
+    import Button from '@/components/Button.vue';
 
     export default defineComponent({
         name: 'TopBar',
-        components: { jdialog: Dialog },
+        components: { Button, jdialog: Dialog },
         setup() {
+            let debounce
+            function debounceSearch(event) {
+                clearTimeout(debounce);
+                debounce = setTimeout(() => {
+                    if (searchDirValue.value === '') {
+                        searchResults.value = [];
+                        return;
+                    }
+                    searchDir();
+                }, 600);
+            }
 
             return {
                 goToHome,
@@ -170,6 +200,10 @@
                 clearClipboard,
                 newName,
                 renameFile,
+                searchDirValue,
+                searchDir,
+                searchResults,
+                debounceSearch,
             };
         },
     });
