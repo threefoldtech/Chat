@@ -8,6 +8,7 @@ import im from 'imagemagick';
 import { ITokenFile } from '../store/tokenStore';
 import PATH from 'path';
 import { UploadedFile } from 'express-fileupload';
+import { log } from 'winston';
 
 export const getChatIds = (): IdInterface[] => {
     const location = config.baseDir + 'chats';
@@ -132,10 +133,10 @@ export const saveFile = (
     return path;
 };
 
-export const saveAvatar = async (fileBuffer: Buffer, id: string) => {
+export const saveAvatar = async (file: UploadedFile, id: string) => {
     const path = `${config.baseDir}user/avatar-${id}`;
     const tempPath = `${config.baseDir}user/temp-avatar-${id}`;
-    fs.writeFileSync(tempPath, fileBuffer);
+    await file.mv(tempPath)
     await resizeAvatar(tempPath, path);
     fs.unlinkSync(tempPath);
 };
@@ -145,6 +146,9 @@ export const deleteAvatar = (id: string) => {
 };
 
 export const resizeAvatar = async (from: string, to: string): Promise<unknown> => {
+
+    console.log(from);
+    console.log(to);
     return new Promise((resolve, reject) => {
         im.resize({
             srcPath: from,
@@ -157,6 +161,7 @@ export const resizeAvatar = async (from: string, to: string): Promise<unknown> =
             resolve(result);
         });
     });
+
 };
 
 export const persistBlocklist = (blockList: string[]) => {

@@ -104,13 +104,14 @@
                 </ul>
             </div>
         </div>
-        <jdialog v-model="showEditAvatar" noActions>
+        <jdialog v-model="showEditAvatar"   noActions>
             <template v-slot:title>
-                <h1>Avatar</h1>
+                <h1 @click="logKAK">Avatar</h1>
             </template>
-            <div class="flex w-full flex-col">
-                <div class="w-full">
+            <div class="flex w-full flex-col" >
+                <div class="w-full" >
                     <vue-cropper
+                        @keyup.space="logKAK" tabindex="0"
                         ref="cropper"
                         :aspect-ratio="1"
                         :src="src"
@@ -210,6 +211,9 @@
                     return;
                 }
                 showUserConfigDialog.value = true;
+            };
+            const logKAK = () => {
+                console.log("kak");
             };
 
             const selectFile = () => {
@@ -319,6 +323,7 @@
                 showEditAvatar,
                 cancelNewAvatar,
                 closeDialog,
+                logKAK
 
             };
         },
