@@ -4,9 +4,10 @@
         <table class='w-full box-border' :key='currentDirectory'>
             <thead>
             <tr>
-                <th class='text-left p-2'>
+                <th class='text-center p-1'>
                     <input
                         type='checkbox'
+                        class="h-5 w-5"
                         @change='handleAllSelect'
                         :checked='currentDirectoryContent.length === selectedPaths.length && currentDirectoryContent.length !== 0'
                     >
@@ -42,9 +43,10 @@
                 class='hover:bg-gray-200 cursor-pointer h-10 border-b border-t border-gray-300'
                 :key='item.fullName'
             >
-                <td class='text-left p-2'>
+                <td class='text-center p-1'>
                     <input
                         type='checkbox'
+                        class="h-5 w-5"
                         @change='(val) => handleSelect(val, item)'
                         :checked='selectedPaths.some(x => x.fullName === item.fullName && x.extension === item.extension  && x.path === item.path)'
                     >
