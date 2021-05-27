@@ -1,6 +1,6 @@
 <template>
     <div class='h-full overflow-y-auto'>
-        <FileDropArea @send-file='uploadFile' class='h-full'>
+        <FileDropArea @send-file='uploadFiles' class='h-full'>
         <table class='w-full box-border' :key='currentDirectory'>
             <thead>
             <tr>
@@ -88,7 +88,7 @@
         PathInfoModel, selectItem, deselectAll, selectAll,
         selectedPaths, deselectItem, sortContent, sortAction, currentSort, currentSortDir,
         getFileLastModified, getFileExtension, getFileSize, getIconColor, getIcon
-        ,uploadFile,
+        ,uploadFiles,
     } from '@/store/fileBrowserStore';
     import { useRouter } from 'vue-router';
     import FileDropArea from '@/components/FileDropArea.vue';
@@ -142,7 +142,7 @@
                 sortAction,
                 currentSort,
                 currentSortDir,
-                uploadFile,
+                uploadFiles,
                 getFileLastModified,
                 getFileExtension,
                 getFileSize,

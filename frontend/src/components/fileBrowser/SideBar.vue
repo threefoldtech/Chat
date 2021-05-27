@@ -107,8 +107,8 @@
                 showCreateFileDialog.value = false;
             };
 
-            const handleDragAndDrop = (file: File) => {
-                selectedFiles.value.push(file);
+            const handleDragAndDrop = (files: File[]) => {
+                selectedFiles.value = files;
             };
 
             const clearFiles = () => {
