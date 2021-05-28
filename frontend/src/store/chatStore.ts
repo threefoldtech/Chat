@@ -249,6 +249,7 @@ const getNewMessages = async (chatId: string) => {
 };
 
 const addMessage = (chatId, message) => {
+    const { addScrollEvent } = useScrollActions();
     if (message.type === 'READ') {
         const chat: Chat = getChat(chatId);
 
@@ -289,6 +290,7 @@ const addMessage = (chatId, message) => {
         }
 
         setLastMessage(chatId, message);
+        addScrollEvent()
         return;
     }
 
@@ -311,8 +313,6 @@ const addMessage = (chatId, message) => {
 
     sortChats();
     setLastMessage(chatId, message);
-
-    const { addScrollEvent } = useScrollActions();
     addScrollEvent();
 };
 
