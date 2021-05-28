@@ -320,7 +320,6 @@
                 showEditAvatar,
                 cancelNewAvatar,
                 closeDialog,
-                logKAK
 
             };
         },

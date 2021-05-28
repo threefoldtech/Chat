@@ -3,7 +3,6 @@ import config from '../../public/config/config';
 
 export const setNewAvatar = async selectedFile => {
     var formData = new FormData();
-    console.log(selectedFile);
     formData.append('file', selectedFile);
     const url = `${config.baseUrl}api/user/avatar`;
     try {
