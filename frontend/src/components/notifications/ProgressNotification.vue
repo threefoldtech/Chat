@@ -12,7 +12,7 @@
         </div>
         <div class='ml-2 mr-6 w-full overflow-hidden overflow-ellipsis'>
             <span class='font-semibold w-full'>{{ notification.title }}</span>
-            <span class='text-gray-500 w-full'>{{ notification.text }}</span>
+            <span class='text-gray-500 w-full block'>{{ notification.text }}</span>
             <div class='pt-1 w-full flex items-center'>
                 <div class='flex items-center justify-between mr-2'>
             <span
