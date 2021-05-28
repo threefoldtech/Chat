@@ -132,10 +132,10 @@ export const saveFile = (
     return path;
 };
 
-export const saveAvatar = async (fileBuffer: Buffer, id: string) => {
+export const saveAvatar = async (file: UploadedFile, id: string) => {
     const path = `${config.baseDir}user/avatar-${id}`;
     const tempPath = `${config.baseDir}user/temp-avatar-${id}`;
-    fs.writeFileSync(tempPath, fileBuffer);
+    await file.mv(tempPath)
     await resizeAvatar(tempPath, path);
     fs.unlinkSync(tempPath);
 };
@@ -157,6 +157,7 @@ export const resizeAvatar = async (from: string, to: string): Promise<unknown> =
             resolve(result);
         });
     });
+
 };
 
 export const persistBlocklist = (blockList: string[]) => {

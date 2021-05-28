@@ -104,13 +104,14 @@
                 </ul>
             </div>
         </div>
-        <jdialog v-model="showEditAvatar" noActions>
+        <jdialog v-model="showEditAvatar"   noActions>
             <template v-slot:title>
                 <h1>Avatar</h1>
             </template>
-            <div class="flex w-full flex-col">
-                <div class="w-full">
+            <div class="flex w-full flex-col" >
+                <div class="w-full" >
                     <vue-cropper
+
                         ref="cropper"
                         :aspect-ratio="1"
                         :src="src"
