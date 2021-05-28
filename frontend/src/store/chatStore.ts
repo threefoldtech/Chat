@@ -317,7 +317,6 @@ const addMessage = (chatId, message) => {
 };
 
 const sendMessage = (chatId, message, type: string = 'STRING') => {
-    const { sendSocketMessage, notify } = useSocketActions();
     const { user } = useAuthState();
 
     const msg: Message<String> = {
