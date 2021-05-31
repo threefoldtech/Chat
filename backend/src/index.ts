@@ -13,7 +13,7 @@ import { initUserData } from './store/user';
 import errorMiddleware from './middlewares/errorHandlingMiddleware';
 import './utils/extensions';
 import { initTokens } from './store/tokenStore';
-import { yggdrasilInit } from './service/yggdrasilService';
+import { initYggdrasil } from './service/yggdrasilService';
 
 const corsOptions: CorsOptions = {
     origin: '*',
@@ -72,7 +72,7 @@ app.use('/api/', routes);
 initKeys();
 initUserData();
 initTokens();
-yggdrasilInit("");
+initYggdrasil();
 
 httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
     logger.info( 'go to http://localhost:' + (process.env.PORT || 3000));

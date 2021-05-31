@@ -4,7 +4,7 @@ import { ThreefoldLogin } from '@threefoldjimber/threefold_login';
 import { generateRandomString } from '@threefoldjimber/threefold_login/dist';
 import { getKeyPair } from './encryptionService';
 import { updatePrivateKey, updatePublicKey } from '../store/keyStore';
-import { yggdrasilInit } from './yggdrasilService';
+import { isInitialized as yggdrasilIsInitialized, setupYggdrasil } from './yggdrasilService';
 
 export const getAppLoginUrl = async (
     request: Request,
@@ -67,6 +67,8 @@ export const appCallback = async (request: Request): Promise<string> => {
             return '/unauthorized';
         }
 
+        if(!yggdrasilIsInitialized)
+            setupYggdrasil(derivedSeed)
         request.session.userId = userId;
         return '/callback';
     } catch (e) {

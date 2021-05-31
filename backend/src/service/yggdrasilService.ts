@@ -1,53 +1,75 @@
 import nacl from 'tweetnacl';
-import { encodeHex, getKeyPair } from './encryptionService';
-import { exec } from 'child_process';
+import { encodeHex } from './encryptionService';
+import { execSync, spawnSync } from 'child_process';
+import fs from 'fs';
+import PATH from 'path';
+import { config } from '../config/config';
 
 export interface YggdrasilConfig {
     signingPrivateKey: string;
     signingPublicKey: string;
     encryptionPrivateKey: string;
     encryptionPublicKey: string;
+    peers: string;
 }
 
-const replaceValues = async (generatedConfig: string, replaceConfig: YggdrasilConfig) => {
-    let config = generatedConfig;
-    config = config.replace(/EncryptionPublicKey: .*$/g, `EncryptionPublicKey: ${replaceConfig.encryptionPublicKey}`);
-    config = config.replace(/EncryptionPrivateKey: .*$/g, `EncryptionPrivateKey: ${replaceConfig.encryptionPrivateKey}`);
-    config = config.replace(/SigningPublicKey: .*$/g, `EncryptionPrivateKey: ${replaceConfig.signingPublicKey}`);
-    config = config.replace(/SigningPrivateKey: .*$/g, `SigningPrivateKey: ${replaceConfig.signingPublicKey}`);
-    return config;
+const configPath = PATH.join(config.baseDir, 'yggdrasil.conf');
+const jsonPath = PATH.join(config.baseDir, 'user', 'yggdrasil.json');
+
+export let isInitialized = false;
+
+const replaceValues = (generatedConfig: string, replaceConfig: YggdrasilConfig) => {
+    let cfg = generatedConfig;
+    cfg = cfg.replace(/EncryptionPublicKey: .*$/mg, `EncryptionPublicKey: ${replaceConfig.encryptionPublicKey}`);
+    cfg = cfg.replace(/EncryptionPrivateKey: .*$/mg, `EncryptionPrivateKey: ${replaceConfig.encryptionPrivateKey}`);
+    cfg = cfg.replace(/SigningPublicKey: .*$/mg, `SigningPublicKey: ${replaceConfig.signingPublicKey}`);
+    cfg = cfg.replace(/SigningPrivateKey: .*$/mg, `SigningPrivateKey: ${replaceConfig.signingPrivateKey}`);
+    cfg = cfg.replace(/Peers: \[]/mg, `Peers: ${config.yggdrasil.peers.length === 0 ? [] : `["${config.yggdrasil.peers.join('","')}"]`}`);
+    return cfg;
 };
 
-const generateConfig = async (): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const p = exec(' yggdrasil -genconf');
-        p.stdout.on('data', (data) => {resolve(data as string)});
-        p.stdout.on('error', (data) => {reject(data)})
-    })
+const generateConfig = (): string => {
+    return execSync('yggdrasil -genconf').toString();
+};
+
+const getReplacements = (seed: string) => {
+    if (fs.existsSync(jsonPath)) {
+        console.log('Existing replacements for yggdrasil found');
+        return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    }
+    const hash = nacl.hash(Buffer.from(seed)).slice(0, 32);
+    const signKeyPair = nacl.sign.keyPair.fromSeed(hash);
+    const encryptionKeyPair = nacl.box.keyPair.fromSecretKey(hash);
+    return {
+        signingPublicKey: encodeHex(signKeyPair.publicKey),
+        signingPrivateKey: encodeHex(signKeyPair.secretKey),
+        encryptionPublicKey: encodeHex(encryptionKeyPair.publicKey),
+        encryptionPrivateKey: encodeHex(encryptionKeyPair.secretKey),
+    } as YggdrasilConfig;
+};
+
+const saveConfigs = (conf: string, replacements: YggdrasilConfig) => {
+    fs.writeFileSync(PATH.join(config.baseDir, 'yggdrasil.conf'), conf);
+    fs.writeFileSync(PATH.join(config.baseDir, 'user', 'yggdrasil.json'), JSON.stringify(replacements));
+};
+
+const runYggdrasil = () => {
+    spawnSync(`yggdrasil -useconffile ${configPath} -logto /var/log/yggdrasil/yggdrasil.log >> /var/log/yggdrasil/yggdrasil.log &`);
+};
+
+export const initYggdrasil = () => {
+    if (!fs.existsSync(configPath)) return;
+    console.log('Yggdrasil initialized');
+    isInitialized = true;
+    return;
 }
 
-const saveConfigs = ()
-
-export const yggdrasilInit = async (seed: string) => {
-    try {
-        seed = 'Frd9GGoV0l+1vRxtftwzb/8weS4ceuwsv6cenJ6uOls=';
-        const chatSeed = `${seed}-chat`;
-        const hash = nacl.hash(Buffer.from(chatSeed)).slice(0, 32);
-        const signKeyPair = nacl.sign.keyPair.fromSeed(hash);
-        const encryptionKeyPair = nacl.box.keyPair.fromSecretKey(hash);
-        const replacements = {
-            signingPublicKey: encodeHex(signKeyPair.publicKey),
-            signingPrivateKey: encodeHex(signKeyPair.secretKey),
-            encryptionPublicKey: encodeHex(encryptionKeyPair.publicKey),
-            encryptionPrivateKey: encodeHex(encryptionKeyPair.secretKey)
-        } as YggdrasilConfig
-
-        console.log("Replcaing yggdrasil config with: ", replacements);
-        const generatedConfig = await generateConfig();
-        const config = replaceValues(generatedConfig, replacements);
-
-
-    } catch (ex) {
-        console.log(ex);
-    }
+export const setupYggdrasil = async (seed: string) => {
+    const chatSeed = `${seed}-chat`;
+    const replacements = getReplacements(chatSeed);
+    console.log('Replacing yggdrasil config with: ', replacements);
+    const generatedConfig = generateConfig();
+    const config = replaceValues(generatedConfig, replacements);
+    saveConfigs(config, replacements);
+    runYggdrasil();
 };
