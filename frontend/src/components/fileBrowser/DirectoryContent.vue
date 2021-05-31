@@ -60,7 +60,7 @@
                             </div>
                             <span
                                 class='hover:underline'
-                                @click='handleItemClick(item)'
+                                @click.stop='handleItemClick(item)'
                             >
                             {{ item.name }}
                         </span>
