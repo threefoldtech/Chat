@@ -120,7 +120,7 @@
                             </template>
                         </MessageBox>
                         <ChatInput v-if='!blocked' :selectedid='chat.chatId' @messageSend='scrollToBottom(true)'/>
-                        <jdialog v-model='showDialog' noActions class='max-w-10'>
+                        <jdialog v-model='showDialog' @update-model-value="showDialog = false" noActions class='max-w-10'>
                             <template v-slot:title class='center'>
                                 <h1 class='text-center'>Blocking</h1>
                             </template>
