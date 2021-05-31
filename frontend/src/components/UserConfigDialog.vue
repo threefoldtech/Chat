@@ -143,7 +143,7 @@
         defineComponent,
         onBeforeMount,
         onMounted,
-        ref,
+        ref, watch,
         watchEffect,
     } from 'vue';
     import { useAuthState, getMyStatus } from '../store/authStore';
@@ -189,7 +189,13 @@
             const showEditAvatar = ref(false);
 
 
-
+            watch(showEditAvatar, () => {
+                if (showEditAvatar.value){
+                    window.addEventListener("keypress", enterPressed)
+                    return
+                }
+                window.removeEventListener("keypress", enterPressed)
+            });
             watchEffect(() => {
                 if(!cropper.value) {
                     return;
@@ -204,7 +210,11 @@
                 };
                 reader.readAsDataURL(file.value);
             });
-
+            const enterPressed = (e) => {
+                if (e.key === "Enter"){
+                    saveNewAvatar()
+                }
+            }
             const backOrMenu = () => {
                 if (route.meta && route.meta.back) {
                     router.push({ name: <any>route.meta.back });
