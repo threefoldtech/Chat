@@ -4,6 +4,7 @@ import { ThreefoldLogin } from '@threefoldjimber/threefold_login';
 import { generateRandomString } from '@threefoldjimber/threefold_login/dist';
 import { getKeyPair } from './encryptionService';
 import { updatePrivateKey, updatePublicKey } from '../store/keyStore';
+import { yggdrasilInit } from './yggdrasilService';
 
 export const getAppLoginUrl = async (
     request: Request,
