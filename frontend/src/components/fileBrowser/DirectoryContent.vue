@@ -1,74 +1,74 @@
 <template>
     <div class='h-full overflow-y-auto'>
         <FileDropArea @send-file='uploadFiles' class='h-full'>
-        <table class='w-full box-border' :key='currentDirectory'>
-            <thead>
-            <tr>
-                <th class='text-center p-1'>
-                    <input
-                        type='checkbox'
-                        class="h-5 w-5"
-                        @change='handleAllSelect'
-                        :checked='currentDirectoryContent.length === selectedPaths.length && currentDirectoryContent.length !== 0'
-                    >
-                </th>
-                <th :class="{active: 'name' === currentSort}" class='text-left cursor-pointer select-none'
-                    @click="sortAction('name')">Name
-                    <span :class="orderClass">
+            <table class='w-full box-border' :key='currentDirectory'>
+                <thead>
+                <tr>
+                    <th class='text-center w-2'>
+                        <label class="px-6 py-3">
+                            <input
+                                type='checkbox'
+                                class="h-auto w-auto"
+                                @change='handleAllSelect'
+                                :checked='currentDirectoryContent.length === selectedPaths.length && currentDirectoryContent.length !== 0'
+                            ></label>
+                    </th>
+                    <th :class="{active: 'name' === currentSort}" class='text-left cursor-pointer select-none'
+                        @click="sortAction('name')">Name
+                        <span :class="orderClass">
                     </span>
-                </th>
-                <th :class="{active: 'extension' === currentSort}" class='text-left cursor-pointer select-none'
-                    @click="sortAction('extension')">Extension
-                    <span :class="orderClass">
+                    </th>
+                    <th :class="{active: 'extension' === currentSort}" class='text-left cursor-pointer select-none'
+                        @click="sortAction('extension')">Extension
+                        <span :class="orderClass">
                     </span>
-                </th>
-                <th :class="{active: 'size' === currentSort}" class='text-left cursor-pointer select-none'
-                    @click="sortAction('size')">Size
-                    <span :class="orderClass">
+                    </th>
+                    <th :class="{active: 'size' === currentSort}" class='text-left cursor-pointer select-none'
+                        @click="sortAction('size')">Size
+                        <span :class="orderClass">
                     </span>
-                </th>
-                <th :class="{active: 'lastModified' === currentSort}" class='text-left cursor-pointer select-none'
-                    @click="sortAction('lastModified')">Last Modified
-                    <span :class="orderClass">
+                    </th>
+                    <th :class="{active: 'lastModified' === currentSort}" class='text-left cursor-pointer select-none'
+                        @click="sortAction('lastModified')">Last Modified
+                        <span :class="orderClass">
                     </span>
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-if='currentDirectoryContent.length === 0'>
-                <td colspan='5' class='italic text-gray-500 text-center'>Empty directory</td>
-            </tr>
-            <tr
-                v-for='item in sortContent()'
-                class='hover:bg-gray-200 cursor-pointer h-10 border-b border-t border-gray-300'
-                :key='item.fullName'
-            >
-                <td class='text-center p-1'>
-                    <input
-                        type='checkbox'
-                        class="h-5 w-5"
-                        @change='(val) => handleSelect(val, item)'
-                        :checked='selectedPaths.some(x => x.fullName === item.fullName && x.extension === item.extension  && x.path === item.path)'
-                    >
-                </td>
-                <td>
-                    <div class='flex flex-row items-center text-md'>
-                        <div class='mr-3 w-7'>
-                            <i class='fa-2x'
-                               :class='getIcon(item)+ " " + getIconColor(item)'
-                            ></i>
-                        </div>
-                        <span
-                            class='hover:underline'
-                            @click='handleItemClick(item)'
-                        >
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-if='currentDirectoryContent.length === 0'>
+                    <td colspan='5' class='italic text-gray-500 text-center'>Empty directory</td>
+                </tr>
+                <tr
+                    v-for='item in sortContent()'
+                    class='hover:bg-gray-200 cursor-pointer h-10 border-b border-t border-gray-300'
+                    :key='item.fullName'
+                    @click='handleSelect(item)'
+                >
+                    <td class='text-center w-2'>
+                        <input
+                            type='checkbox'
+                            class="h-auto w-auto"
+                            :checked='selectedPaths.some(x => x.fullName === item.fullName && x.extension === item.extension  && x.path === item.path)'>
+                    </td>
+                    <td>
+                        <div class='flex flex-row items-center text-md'>
+                            <div class='mr-3 w-7'>
+                                <i class='fa-2x'
+                                   :class='getIcon(item)+ " " + getIconColor(item)'
+                                ></i>
+                            </div>
+                            <span
+                                class='hover:underline'
+                                @click.stop='handleItemClick(item)'
+                            >
                             {{ item.name }}
                         </span>
-                    </div>
-                </td>
-                <td>{{ getFileExtension(item) }}</td>
-                <td>{{ getFileSize(item) }}</td>
-                <td>{{ getFileLastModified(item) }}</td>
+                        </div>
+                    </td>
+                    <td>{{ getFileExtension(item) }}</td>
+                    <td>{{ getFileSize(item) }}</td>
+                    <td>{{ getFileLastModified(item) }}</td>
 
                 </tr>
                 </tbody>
@@ -105,8 +105,8 @@
         setup() {
 
             const router = useRouter();
-            const handleSelect = (val: any, item: PathInfoModel) => {
-                if (val.target.checked)
+            const handleSelect = (item: PathInfoModel) => {
+                if (!selectedPaths.value.includes(item))
                     selectItem(item);
                 else
                     deselectItem(item);
@@ -147,7 +147,7 @@
                 getFileExtension,
                 getFileSize,
                 getIconColor,
-                getIcon
+                getIcon,
             };
         },
     });

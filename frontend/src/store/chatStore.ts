@@ -319,6 +319,7 @@ const addMessage = (chatId, message) => {
 const sendMessage = (chatId, message, type: string = 'STRING') => {
     const { sendSocketMessage } = useSocketActions();
     const { user } = useAuthState();
+
     const msg: Message<String> = {
         id: uuidv4(),
         body: message,
