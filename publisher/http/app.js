@@ -7,6 +7,7 @@ const config = require('../config')
 const cors = require('cors');
 const sites = require('./web/sites')
 const threebot = require('./web/threebot')
+const admin = require('./api/admin')
 
 var morgan = require('morgan')
 
@@ -252,6 +253,7 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(threebot)
+app.use("/admin", admin)
 app.use(sites);
 app.use(cors());
 
