@@ -143,7 +143,7 @@
         defineComponent,
         onBeforeMount,
         onMounted,
-        ref,
+        ref, watch,
         watchEffect,
     } from 'vue';
     import { useAuthState, getMyStatus } from '../store/authStore';
@@ -189,7 +189,15 @@
             const showEditAvatar = ref(false);
 
 
-
+            watch(showEditAvatar, () => {
+                if (showEditAvatar.value){
+                    window.addEventListener("keypress", e => {
+                        if (e.key === "Enter" && showEditAvatar.value){
+                            saveNewAvatar()
+                        }
+                    });
+                }
+            });
             watchEffect(() => {
                 if(!cropper.value) {
                     return;
