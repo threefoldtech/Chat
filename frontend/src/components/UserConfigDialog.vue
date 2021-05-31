@@ -191,12 +191,10 @@
 
             watch(showEditAvatar, () => {
                 if (showEditAvatar.value){
-                    window.addEventListener("keypress", e => {
-                        if (e.key === "Enter" && showEditAvatar.value){
-                            saveNewAvatar()
-                        }
-                    });
+                    window.addEventListener("keypress", enterPressed)
+                    return
                 }
+                window.removeEventListener("keypress", enterPressed)
             });
             watchEffect(() => {
                 if(!cropper.value) {
@@ -212,7 +210,11 @@
                 };
                 reader.readAsDataURL(file.value);
             });
-
+            const enterPressed = (e) => {
+                if (e.key === "Enter"){
+                    saveNewAvatar()
+                }
+            }
             const backOrMenu = () => {
                 if (route.meta && route.meta.back) {
                     router.push({ name: <any>route.meta.back });
