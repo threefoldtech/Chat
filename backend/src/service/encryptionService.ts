@@ -11,17 +11,17 @@ export const getKeyPair = (userSeed: string): SignKeyPair => {
     return nacl.sign.keyPair.fromSeed(seed);
 };
 
-export const createSignature = (data: any, secretKey: Uint8Array) => {
+export const createSignature = (data: any, secretKey: string) => {
     if(!secretKey || !data) return;
-    return nacl.sign.detached(objectToUint8Array(data), secretKey);
+    return nacl.sign.detached(objectToUint8Array(data), decodeBase64(secretKey));
 }
 
-export const createBase64Signature = (data: any, secretKey: Uint8Array) => {
+export const createBase64Signature = (data: any, secretKey: string) => {
     const signature = createSignature(data, secretKey);
     if(!signature) return;
     return uint8ToBase64(signature);
 }
 
-export const verifySignature = (data: any, signature: string, publicKey: Uint8Array) => {
-    return nacl.sign.detached.verify(objectToUint8Array(data), base64ToUint8Array(signature), publicKey);
+export const verifySignature = (data: any, signature: string, publicKey: string) => {
+    return nacl.sign.detached.verify(objectToUint8Array(data), base64ToUint8Array(signature), decodeBase64(publicKey));
 }
