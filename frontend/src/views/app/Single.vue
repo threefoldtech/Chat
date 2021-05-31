@@ -68,7 +68,7 @@
                 <div class='relative h-full flex flex-col flex-1' v-if='chat' :key='chat.id + selectedId'>
                     <FileDropArea
                         class='h-full flex flex-col'
-                        @send-file='(f) => sendFile(chat.chatId, f)'
+                        @send-file='(files) => files.forEach(f => sendFile(chat.chatId, f))'
                     >
                         <div class='topbar h-14 bg-white flex-row border border-t-0 border-gray-100 hidden md:flex'>
                             <div class='py-2 pl-4 flex-1'>
@@ -137,7 +137,7 @@
                                 </button>
                             </div>
                         </jdialog>
-                        <jdialog v-model='showDeleteDialog' noActions class='max-w-10'>
+                        <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
                             <template v-slot:title class='center'>
                                 <h1 class='text-center'>Deleting Conversation</h1>
                             </template>

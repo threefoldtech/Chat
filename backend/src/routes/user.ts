@@ -42,7 +42,7 @@ router.get('/avatar/:avatarId', async (req, res) => {
 router.post('/avatar', async (req, resp) => {
     const file = <UploadedFile>req.files.file;
     const avatarId = uuidv4();
-    await saveAvatar(file.data, avatarId);
+    await saveAvatar(file, avatarId);
     await deleteAvatar(getImage())
 
     updateAvatar(avatarId);

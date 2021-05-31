@@ -3,6 +3,7 @@
         <UserConfigDialog></UserConfigDialog>
     </suspense>
     <div class="bg-gray-100 h-full overflow-hidden relative text-sm">
+        <NotificationSection/>
         <div class="pl-0 relative h-full w-full maingrid md:bigmaingrid">
             <div class="top h-20 md:hidden">
                 <Topbar>
@@ -40,10 +41,11 @@
     import Topbar from '@/components/Topbar.vue';
     import { useSocketState } from '../store/socketStore';
     import ImagePreview from '@/components/ImagePreview.vue';
+    import NotificationSection from '@/components/notifications/NotificationSection.vue';
 
     export default defineComponent({
         name: 'AppLayout',
-        components: { Sidebar, Topbar, UserConfigDialog, ImagePreview },
+        components: { NotificationSection, Sidebar, Topbar, UserConfigDialog, ImagePreview },
         setup({}, ctx) {
             const { notification } = useSocketState();
 

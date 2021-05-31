@@ -68,9 +68,7 @@
                 unHighLight();
                 const files = e?.dataTransfer?.files;
                 if(!files) return;
-                files.forEach(f => {
-                    emit("send-file", f);
-                })
+                emit("send-file", Array.from(files));
             };
 
             return {
