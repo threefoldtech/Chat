@@ -84,8 +84,12 @@ export const uploadFile = async (path: string, file: File, withNotification = tr
 
         return response;
     } catch (ex) {
-        console.log("fwailed");
         if(!withNotification) return;
+        if(ex.message=== "Request failed with status code 413"){
+            notification.title = "File is too big!"
+            fail(notification)
+            return
+        }
         notification.title = "Upload failed"
         fail(notification)
     }
