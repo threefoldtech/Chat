@@ -129,7 +129,7 @@ router.put('/', async (req, res) => {
         return;
     }
 
-    const messageIsCorrectlySigned = verifySignedMessageByChat(chat, message);
+    const messageIsCorrectlySigned = await verifySignedMessageByChat(chat, message);
     if(!messageIsCorrectlySigned) {
         res.sendStatus(500);
         return;
@@ -162,6 +162,12 @@ router.put('/', async (req, res) => {
 
 
     if (chat.isGroup && chat.adminId == config.userid) {
+        const messageIsVerified = await verifySignedMessage(false, undefined, chat.contacts.find(x => x.id === message.from), message);
+        if(!messageIsVerified) {
+            res.sendStatus(500);
+            return;
+        }
+
         appendSignatureToMessage(message)
         chat.contacts
             .filter(c => c.id !== config.userid)

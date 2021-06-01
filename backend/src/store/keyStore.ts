@@ -1,18 +1,19 @@
 import { getKey, Key, saveKey } from '../service/dataService';
+import { uint8ToBase64 } from '../service/encryptionService';
 
 interface KeyCache {
-    [userId: string]: Uint8Array;
+    [userId: string]: string;
 }
 
 let cache: KeyCache = {};
-let privateKey: Uint8Array;
-let publicKey: Uint8Array;
+let privateKey: string;
+let publicKey: string;
 
-export const getPublicKeyFromCache = (userId: string): Uint8Array | undefined => {
+export const getPublicKeyFromCache = (userId: string): string | undefined => {
     return cache[userId];
 };
 
-export const setPublicKeyInCache = (userId: string, key: Uint8Array) => {
+export const setPublicKeyInCache = (userId: string, key: string) => {
     cache = {
         ...cache,
         [userId]: key,
@@ -38,8 +39,9 @@ export const getPrivateKey = () => {
 };
 
 export const updatePrivateKey = (pk: Uint8Array) => {
-    saveKey(pk, Key.Private);
-    privateKey = pk;
+    const pkString = uint8ToBase64(pk)
+    saveKey(pkString, Key.Private);
+    privateKey = pkString;
 };
 
 export const getPublicKey = () => {
@@ -47,6 +49,7 @@ export const getPublicKey = () => {
 };
 
 export const updatePublicKey = (pk: Uint8Array) => {
-    saveKey(pk, Key.Public);
-    publicKey = pk;
+    const pkString = uint8ToBase64(pk)
+    saveKey(pkString, Key.Public);
+    publicKey = pkString;
 };

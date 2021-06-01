@@ -22,7 +22,7 @@ export const verifyMessageSignature = async <T>(contact: Contact, message: Messa
         const base64Key = await getPublicKey(contact.location);
         if (!base64Key) return false;
 
-        publicKey = base64ToUint8Array(base64Key);
+        publicKey = base64Key;
         setPublicKeyInCache(contact.id, publicKey);
     }
     const messageWithoutSignature = {

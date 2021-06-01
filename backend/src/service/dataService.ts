@@ -49,15 +49,15 @@ export enum Key {
     Private = 'privateKey'
 }
 
-export const saveKey = (key: Uint8Array, keyName: Key, force = false) => {
+export const saveKey = (key: string, keyName: Key, force = false) => {
     if (force || !fs.existsSync(config.baseDir + 'user/' + keyName)) {
-        fs.writeFileSync(config.baseDir + 'user/' + keyName, Buffer.from(key));
+        fs.writeFileSync(config.baseDir + 'user/' + keyName, key);
     }
 };
 
-export const getKey = (keyName: string): Uint8Array | undefined => {
+export const getKey = (keyName: string): string => {
     try {
-        return fs.readFileSync(config.baseDir + 'user/' + keyName);
+        return fs.readFileSync(config.baseDir + 'user/' + keyName, 'utf8');
     } catch (ex) {
         if (ex.code === 'ENOENT') {
             console.log(keyName + ' not found!');

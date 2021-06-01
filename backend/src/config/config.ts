@@ -12,4 +12,14 @@ export const config = {
     baseDir: process.env.BASEDIR || '/appdata/',
     userid,
     storage: '/storage/',
+    yggdrasil: {
+        peers: environment === "development" ? [] : [
+            "tls://[2a02:1802:5e:0:18d2:e2ff:fe44:17d2]:9944",
+            "tcp://212.129.52.193:39565",
+            "tcp://94.130.203.208:5999",
+            "tcp://85.17.15.221:35239",
+            "tcp://104.248.15.125:31337",
+            "tcp://[2604:a880:800:c1::2c2:a001]:31337"
+        ]
+    }
 };
