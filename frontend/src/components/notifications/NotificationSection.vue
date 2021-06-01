@@ -1,5 +1,5 @@
 <template>
-    <div v-if="notifications.length > 0" class='absolute w-80 h-full right-0 top-0 z-40 flex flex-col items-end justify-end'>
+    <div class='absolute w-80 right-0 bottom-0 z-40 flex flex-col items-end justify-end'>
         <NotificationCard
             v-for='notification in notifications'
             :key='getKey(notification)'
