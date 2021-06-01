@@ -1,6 +1,6 @@
 import nacl from 'tweetnacl';
 import { encodeHex } from './encryptionService';
-import { execSync, spawnSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import PATH from 'path';
 import { config } from '../config/config';
@@ -24,7 +24,7 @@ const replaceValues = (generatedConfig: string, replaceConfig: YggdrasilConfig) 
     cfg = cfg.replace(/EncryptionPrivateKey: .*$/mg, `EncryptionPrivateKey: ${replaceConfig.encryptionPrivateKey}`);
     cfg = cfg.replace(/SigningPublicKey: .*$/mg, `SigningPublicKey: ${replaceConfig.signingPublicKey}`);
     cfg = cfg.replace(/SigningPrivateKey: .*$/mg, `SigningPrivateKey: ${replaceConfig.signingPrivateKey}`);
-    cfg = cfg.replace(/Peers: \[]/mg, `Peers: ${config.yggdrasil.peers.length === 0 ? [] : `["${config.yggdrasil.peers.join('","')}"]`}`);
+    cfg = cfg.replace(/Peers: \[]/mg, `Peers: ${config.yggdrasil.peers.length === 0 ? "[]" : `["${config.yggdrasil.peers.join('","')}"]`}`);
     return cfg;
 };
 
@@ -49,12 +49,18 @@ const getReplacements = (seed: string) => {
 };
 
 const saveConfigs = (conf: string, replacements: YggdrasilConfig) => {
-    fs.writeFileSync(PATH.join(config.baseDir, 'yggdrasil.conf'), conf);
-    fs.writeFileSync(PATH.join(config.baseDir, 'user', 'yggdrasil.json'), JSON.stringify(replacements));
+    fs.writeFileSync(configPath, conf);
+    fs.writeFileSync(jsonPath, JSON.stringify(replacements));
 };
 
 const runYggdrasil = () => {
-    spawnSync(`yggdrasil -useconffile ${configPath} -logto /var/log/yggdrasil/yggdrasil.log >> /var/log/yggdrasil/yggdrasil.log &`);
+    const out = fs.openSync('/var/log/yggdrasil/out.log', 'a');
+    const err = fs.openSync('/var/log/yggdrasil/err.log', 'a');
+    const p = spawn('yggdrasil', ["-useconffile", configPath, "-logto", "/var/log/yggdrasil/yggdrasil.log"], {
+        detached: true,
+        stdio: [ 'ignore', out, err ]
+    });
+    p.unref();
 };
 
 export const initYggdrasil = () => {
