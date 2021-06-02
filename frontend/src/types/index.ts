@@ -32,6 +32,7 @@ export interface Message<T> {
     type: String;
     subject: Id | null;
     replies: Message<MessageBodyType>[];
+    updated?: Date;
 }
 
 export interface MessageBodyType {}
@@ -42,7 +43,6 @@ export interface QuoteBodyType extends MessageBodyType {
     message: string;
     quotedMessage: Message<MessageBodyType>;
 }
-
 export interface GroupUpdate extends MessageBodyType {
     type: string;
     contact: Contact;
@@ -77,10 +77,39 @@ export interface AnonymousContact {
 export interface DtId extends Id {}
 
 export interface Id extends String {}
-const test: Id = '';
 
 export interface Workspace extends GroupChat {
     subGroups: GroupChat[];
+}
+
+export enum SystemMessageTypes {
+    REMOVE_USER = 'REMOVEUSER',
+    ADD_USER = 'ADDUSER',
+    JOINED_VIDEOROOM = 'JOINED_VIDEOROOM',
+    CONTACT_REQUEST_SEND = 'CONTACT_REQUEST_SEND'
+}
+
+export enum FileTypes {
+    RECORDING = 'RECORDING',
+    OTHER = 'OTHER',
+}
+
+export interface GroupManagementBody extends SystemBody {
+    adminLocation: any;
+    contact: Contact;
+}
+export interface JoinedVideoRoomBody extends SystemBody {
+    id: string;
+}
+
+export interface SystemBody {
+    type?: SystemMessageTypes;
+    message: string;
+}
+
+export interface GetMessagesResponse {
+    hasMore: boolean;
+    messages: Array<Message<MessageBodyType>>
 }
 
 export enum MessageTypes {
@@ -94,6 +123,5 @@ export enum MessageTypes {
     READ = 'READ',
     CONTACT_REQUEST = 'CONTACT_REQUEST',
     DELETE = 'DELETE',
-    GROUP_UPDATE = 'GROUP_UPDATE',
     QUOTE = 'QUOTE',
 }

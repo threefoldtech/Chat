@@ -16,8 +16,8 @@ RUN set -ex \
  && chmod 0755 /tmp/dumb-init
 
 FROM ubuntu:20.04
-RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get install -y nginx curl musl-tools nano iputils-ping procps iproute2
+RUN apt -y update && apt -y upgrade
+RUN apt install -y nginx curl musl-tools nano iputils-ping procps iproute2 imagemagick
 
 COPY --from=builder /src/yggdrasil    /usr/bin/
 COPY --from=builder /src/yggdrasilctl /usr/bin/
@@ -29,7 +29,7 @@ RUN rm -f /etc/nginx/sites-enabled/default
 
 
 RUN curl -sL https://deb.nodesource.com/setup_15.x | bash -
-RUN apt-get install -y nodejs
+RUN apt install -y nodejs
 RUN npm install --global yarn
 
 COPY ./dev/startup.sh /startup.sh

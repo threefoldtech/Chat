@@ -60,17 +60,16 @@
 </template>
 
 <script lang="ts">
-    import { computed, defineComponent, onBeforeMount, ref } from 'vue';
+    import { defineComponent, onBeforeMount, ref } from 'vue';
     import { useAuthState } from '../store/authStore';
     import { useSocketActions } from '../store/socketStore';
     import Dialog from './Dialog.vue';
     import AvatarImg from '@/components/AvatarImg.vue';
     import {
         deleteBlockedEntry,
-        getBlockList,
         initBlocklist,
     } from '@/store/blockStore';
-    import { setNewavater } from '@/store/userStore';
+    import { setNewAvatar } from '@/store/userStore';
     import { fetchStatus } from '@/store/statusStore';
     import { useRoute, useRouter } from 'vue-router';
     import { showUserConfigDialog } from '@/services/dialogService';
@@ -110,7 +109,7 @@
             };
 
             const sendNewAvatar = async () => {
-                const newUrl = await setNewavater(file.value);
+                const newUrl = await setNewAvatar(file.value);
                 await fetchStatus(user.id);
                 showUserConfigDialog.value = false;
             };
@@ -126,9 +125,6 @@
                 isEditingStatus.value = false;
             };
 
-            const blockedUsers = computed(() => {
-                return getBlockList();
-            });
             // @todo: config
 
             onBeforeMount(() => {
@@ -160,7 +156,6 @@
                 userStatus,
                 setEditStatus,
                 isEditingStatus,
-                blockedUsers,
                 unblockUser,
                 route,
             };

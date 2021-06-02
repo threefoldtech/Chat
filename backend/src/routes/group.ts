@@ -1,25 +1,23 @@
-import { Router } from 'express';
-import { parseChat } from '../service/chatService';
+import express, { Router } from 'express';
+import { parseFullChat } from '../service/chatService';
 import { persistChat } from '../service/dataService';
 import axios from 'axios';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import { getFullIPv6ApiLocation } from '../service/urlService';
+import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
 
 const router = Router();
 
 router.put('/invite', async (req, res) => {
-    console.log('received group invite');
-    const chat = parseChat(req.body);
-    console.log(chat);
+    const chat = parseFullChat(req.body);
     persistChat(chat);
     sendEventToConnectedSockets('connectionRequest', chat);
     res.sendStatus(200);
 });
 
-router.put('/', async (req, res) => {
+router.put('/', async (req: express.Request, res: express.Response) => {
     let preParsedChat = { ...req.body, acceptedChat: true, isGroup: true };
-    const chat = parseChat(preParsedChat);
-    console.log(chat);
+    const chat = parseFullChat(preParsedChat);
     persistChat(chat);
 
     chat.contacts.forEach(async c => {

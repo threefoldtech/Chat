@@ -4,9 +4,21 @@ const state = reactive<State>({
     scrollEvents: [],
 });
 
-const addScrollEvent = () => {
-    state.scrollEvents.push(<string>'scrollEvent');
+const addScrollEvent = (force = false) => {
+    state.scrollEvents.push(force);
 };
+
+const popScrollEvent = () => {
+    state.scrollEvents.pop();
+}
+
+const shiftScrollEvent = () => {
+    state.scrollEvents.shift();
+}
+
+const clearScrollEvents = () => {
+    state.scrollEvents = [];
+}
 
 export const useScrollState = () => {
     return {
@@ -17,9 +29,12 @@ export const useScrollState = () => {
 export const useScrollActions = () => {
     return {
         addScrollEvent,
+        popScrollEvent,
+        clearScrollEvents,
+        shiftScrollEvent
     };
 };
 
 interface State {
-    scrollEvents: string[];
+    scrollEvents: boolean[];
 }

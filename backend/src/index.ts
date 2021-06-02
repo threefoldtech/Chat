@@ -8,6 +8,12 @@ import { startSocketIo } from './service/socketService';
 import routes from './routes';
 import morgan from 'morgan';
 import { logger, httpLogger } from './logger';
+import { initKeys } from './store/keyStore';
+import { initUserData } from './store/user';
+import errorMiddleware from './middlewares/errorHandlingMiddleware';
+import './utils/extensions';
+import { initTokens } from './store/tokenStore';
+import { initYggdrasil } from './service/yggdrasilService';
 
 const corsOptions: CorsOptions = {
     origin: '*',
@@ -26,8 +32,9 @@ app.use(
                 httpLogger.http(text);
             },
         },
-    })
+    }),
 );
+app.use(errorMiddleware);
 
 app.use(cors(corsOptions));
 
@@ -46,20 +53,27 @@ app.use(
             httpOnly: false,
             secure: false,
         },
-    })
+    }),
 );
 
 app.use(bodyParser.raw());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ limit: '100mb', extended: false }));
+app.use(bodyParser.json({ limit: '100mb' }));
+
 app.use(
     fileupload({
-        limits: { filesize: 50 * 1024 * 1024 },
-    })
+        useTempFiles: true,
+        parseNested: true,
+    }),
 );
 
 app.use('/api/', routes);
+//Reading data
+initKeys();
+initUserData();
+initTokens();
+initYggdrasil();
 
-httpServer.listen(3000, 'localhost', () => {
-    logger.info('go to http://localhost:3000');
+httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
+    logger.info( 'go to http://localhost:' + (process.env.PORT || 3000));
 });

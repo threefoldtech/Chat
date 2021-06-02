@@ -1,24 +1,33 @@
-import { IdInterface } from './../types/index';
 import axios from 'axios';
 import Message from '../models/message';
 import { MessageBodyTypeInterface } from '../types';
-import Chat from '../models/chat';
-import { parseChat } from './chatService';
+import { parseFullChat } from './chatService';
 import { getFullIPv6ApiLocation } from './urlService';
 
 export const sendMessageToApi = async (
     location: string,
-    newMessage: Message<MessageBodyTypeInterface>
+    message: Message<MessageBodyTypeInterface>,
 ) => {
     console.log('Location: ', location);
-    console.log('newMessage: ', newMessage);
+    if(message.type !== "READ") console.log('newMessage: ', message);
     const url = getFullIPv6ApiLocation(location, '/messages');
     try {
-        await axios.put(url, newMessage);
+        await axios.put(url, message);
     } catch (e) {
         console.error(`couldn't send message ${url}`);
     }
 };
+
+export const getPublicKey = async(location: string): Promise<string | undefined> => {
+    const url = getFullIPv6ApiLocation(location, '/user/publickey');
+    try {
+        const response = await axios.get(url);
+        return response.data as string;
+    } catch (e) {
+        console.log(`couldn't get publickey ${url}`);
+        return;
+    }
+}
 
 export const getChatfromAdmin = async (
     adminLocation: string,
@@ -29,7 +38,7 @@ export const getChatfromAdmin = async (
     try {
         console.log('getting chat from ', url);
         const chat = await axios.get(url);
-        const parsedChat = parseChat(chat.data);
+        const parsedChat = parseFullChat(chat.data,);
         console.log(parsedChat);
         return parsedChat;
     } catch {

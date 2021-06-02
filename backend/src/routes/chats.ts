@@ -1,23 +1,20 @@
-import { IdInterface } from './../types/index';
-import { Router } from 'express';
-import { appCallback, getAppLoginUrl } from '../service/authService';
+import { IdInterface } from '../types/index';
+import express, { Router } from 'express';
 import {
-    getAcceptedChats,
+    getAcceptedChatsWithPartialMessages,
     getChatRequests,
     getChatById,
 } from '../service/chatService';
-import { persistChat } from '../service/dataService';
+import { getChat, persistChat } from '../service/dataService';
 import { sendEventToConnectedSockets } from '../service/socketService';
+import { config } from '../config/config';
+import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
+import { HttpError } from '../types/errors/httpError';
+import { StatusCodes } from 'http-status-codes';
 
 const router = Router();
 
-router.post('/', (req, res) => {
-    if (!req.session.userId) {
-        res.send(401);
-        return;
-    }
-
-    console.log(req.query.id);
+router.post('/', requiresAuthentication, (req: express.Request, res: express.Response) => {
     if (req.query.id) {
         console.log('accepting', req.query.id);
         //Flow to add contact request to contacts
@@ -32,25 +29,26 @@ router.post('/', (req, res) => {
     }
 });
 
-router.get('/', (req, res) => {
-    if (!req.session.userId) {
-        res.send(401);
-        return;
-    }
+router.get('/', requiresAuthentication, (req: express.Request, res: express.Response) => {
+    let limit = parseInt(<string | undefined>req.query.limit);
+    limit = limit > 100 ? 100 : limit;
 
-    const returnChats = getAcceptedChats();
-    res.json(returnChats);
+    const chats = getAcceptedChatsWithPartialMessages(limit);
+    res.json(chats);
 });
 
 //@TODO will need to use this later
-router.get('/chatRequests', (req, res) => {
-    if (!req.session.userId) {
-        res.send(401);
-        return;
-    }
-
+router.get('/chatRequests', requiresAuthentication, (req: express.Request, res: express.Response) => {
     const returnChats = getChatRequests();
     res.json(returnChats);
+});
+
+router.get('/:chatId', requiresAuthentication, (req: express.Request, res: express.Response) => {
+    const chat = getChat(req.params.chatId);
+    if (!chat.contacts.some(x => x.id !== config.userid)) {
+        throw new HttpError(StatusCodes.FORBIDDEN);
+    }
+    res.json(chat);
 });
 
 export default router;

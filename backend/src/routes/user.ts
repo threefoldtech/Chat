@@ -1,19 +1,23 @@
-import { logger } from './../logger';
 import { Router } from 'express';
-import { user } from '../store/user';
+import { getStatus, getAvatar, getLastSeen, updateAvatar, getImage } from '../store/user';
 import { connections } from '../store/connections';
 import { UploadedFile } from 'express-fileupload';
-import { saveAvatar } from '../service/dataService';
+import { deleteAvatar, saveAvatar } from '../service/dataService';
 import { uuidv4 } from '../common';
 import { config } from '../config/config';
+import { getPublicKey } from '../store/keyStore';
 
 const router = Router();
 
+router.get("/publickey", (req, res) => {
+    res.json(getPublicKey());
+})
+
 router.get('/getStatus', async (req, res) => {
     const isOnline = connections.getConnections().length ? true : false;
-    const status = user.getStatus();
-    const avatar = await user.getAvatar();
-    const lastSeen = user.getLastSeen();
+    const status = getStatus();
+    const avatar = await getAvatar();
+    const lastSeen = getLastSeen();
     const data = {
         status,
         avatar,
@@ -33,12 +37,13 @@ router.get('/avatar/:avatarId', async (req, res) => {
 });
 
 router.post('/avatar', async (req, resp) => {
-    const fileToSave = <UploadedFile>req.files.file;
+    const file = <UploadedFile>req.files.file;
     const avatarId = uuidv4();
-    saveAvatar(fileToSave.data, avatarId);
+    await saveAvatar(file, avatarId);
+    await deleteAvatar(getImage())
 
-    user.updateAvatar(avatarId);
-    const newUrl = user.getAvatar();
+    updateAvatar(avatarId);
+    const newUrl = await getAvatar();
     resp.status(200).json(newUrl);
 });
 

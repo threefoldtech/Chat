@@ -1,76 +1,83 @@
 <template>
-    <jdialog v-model="showUserConfigDialog" noActions>
+    <jdialog v-model="showUserConfigDialog" @update-model-value="closeDialog" noActions>
         <template v-slot:title>
             <h1>Profile settings</h1>
         </template>
         <div>
-            <div
-                class="relative flex justify-center h-52"
-                @mouseover="showEditPic = true"
-                @mouseleave="showEditPic = false"
-            >
-                <transition name="fade">
+            <div class="avatar-container mb-2">
+                <div class="flex">
                     <div
-                        @click.stop="selectFile"
-                        v-if="showEditPic"
-                        class="grid cursor-pointer place-items-center bg-black bg-opacity-75 absolute w-full h-full top-0 left-0"
+                        class="avatar-container mr-2 flex justify-center items-center cursor-pointer"
+                        @mouseover="isHoveringAvatar = true"
+                        @mouseleave="isHoveringAvatar = false"
                     >
-                        <button class="text-white">
-                            <i class="fas fa-pen"></i>
-                        </button>
+                        <div
+                            class="overlay flex justify-center items-center"
+                            :class="isHoveringAvatar ? 'block' : 'hidden'"
+                            @click="selectFile"
+                        >
+                            <i class="fas fa-pen text-white"></i>
+                        </div>
+                        <AvatarImg :id="user.id" large/>
                     </div>
-                </transition>
-                <img class="h-full w-52 bg-black" :src="src" />
-                <!-- {{user}} -->
+                    <h1 class="text-center my-4">{{ user.id }}</h1>
+                </div>
             </div>
-            <h1 class="text-center my-4">{{ user.id }}</h1>
-            <div
-                class="relative w-full h-full"
-                @mouseover="showEdit = true"
-                @mouseleave="showEdit = false"
-            >
-                <transition name="fade">
+
+            <div class="relative w-full h-full">
                     <button
                         v-if="!isEditingStatus"
-                        :class="showEdit ? 'block' : 'hidden'"
-                        class="absolute top-0 right-0"
+                        class="absolute top-0 mt-2 right-0 flex flex-row text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer items-center"
                         @click="setEditStatus(true)"
                     >
-                        <i class="fas fa-pen"></i>
+                        <i class="fas fa-pen fa-xs mr-1 align-middle"></i>
+                        <p class="text-xs">Edit</p>
                     </button>
-                </transition>
 
-                <transition name="fade">
+
+
                     <button
                         v-if="isEditingStatus"
-                        class="absolute top-1 right-0"
+                        class="absolute top-1 mt-2 right-0 flex flex-row ml-1 text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer items-center"
                         @click="sendNewStatus"
                     >
-                        <i class="fas fa-check"></i>
+                        <i class="fas fa-check fa-xs mr-1 align-middle"></i>
+                        <p class="text-xs">Save</p>
+
                     </button>
-                </transition>
+
 
                 <suspense>
                     <textarea
+                        ref="statusInput"
                         v-model="userStatus"
+                        style="resize: none"
                         class="w-full"
                         :disabled="!isEditingStatus"
                         :placeholder="myStatus"
-                    ></textarea>
+                        maxlength="150"
+                    >
+
+                    </textarea>
                 </suspense>
+              <div v-if="isEditingStatus" class="flex justify-end">
+                <span id="current">{{ userStatus.length }}</span>
+                <span id="maximum">&nbsp;/&nbsp;150</span>
+
+              </div>
             </div>
             <input
                 class="hidden"
                 type="file"
-                id="fileinput"
-                ref="fileinput"
+                id="fileInput"
+                ref="fileInput"
                 accept="image/*"
                 @change="changeFile"
             />
 
             <div>
-                <h2>Blocked Users</h2>
-                <ul class="max-h-28 overflow-y-auto">
+                <h2>{{ blockedUsers.length > 0 ? "Blocked": "No blocked users" }}</h2>
+                <ul v-if="blockedUsers.length > 0" class="max-h-28 overflow-y-auto">
                     <template
                         v-for="blockedUser in blockedUsers"
                         :key="blockedUser"
@@ -97,6 +104,36 @@
                 </ul>
             </div>
         </div>
+        <jdialog v-model="showEditAvatar"   noActions>
+            <template v-slot:title>
+                <h1>Avatar</h1>
+            </template>
+            <div class="flex w-full flex-col" >
+                <div class="w-full" >
+                    <vue-cropper
+
+                        ref="cropper"
+                        :aspect-ratio="1"
+                        :src="src"
+                        :viewMode="2"
+                        :zoomable="false"
+                        :guides="false"
+                        :minCanvasWidth="64"
+                        :minCropBoxWidth="64"
+                        :containerStyle='{"max-height": "400px"}'
+                        :background='false'
+                    />
+                </div>
+                <div class="flex flex-row justify-end">
+                    <Button @click="saveNewAvatar">
+                        SAVE
+                    </Button>
+                    <Button @click="cancelNewAvatar">
+                        CANCEL
+                    </Button>
+                </div>
+            </div>
+        </jdialog>
     </jdialog>
 </template>
 
@@ -106,43 +143,78 @@
         defineComponent,
         onBeforeMount,
         onMounted,
-        ref,
+        ref, watch,
+        watchEffect,
     } from 'vue';
     import { useAuthState, getMyStatus } from '../store/authStore';
     import { useSocketActions } from '../store/socketStore';
     import Dialog from '@/components/Dialog.vue';
     import AvatarImg from '@/components/AvatarImg.vue';
     import {
+        blocklist,
         deleteBlockedEntry,
-        getBlockList,
         initBlocklist,
     } from '@/store/blockStore';
-    import { setNewavater } from '@/store/userStore';
+    import { setNewAvatar } from '@/store/userStore';
     import { fetchStatus } from '@/store/statusStore';
     import { useRoute, useRouter } from 'vue-router';
-    import { showUserConfigDialog } from '@/services/dialogService';
+    import { showAddUserDialog, showUserConfigDialog } from '@/services/dialogService';
     import { statusList } from '@/store/statusStore';
     import { calcExternalResourceLink } from '../services/urlService';
+    import VueCropper from 'vue-cropperjs';
+    import 'cropperjs/dist/cropper.css';
+    import Button from '@/components/Button.vue';
 
     export default defineComponent({
         name: 'UserConfigDialog',
-        components: { AvatarImg, jdialog: Dialog },
+        components: { AvatarImg, jdialog: Dialog, VueCropper, Button },
         emits: ['addUser'],
         created: () => {
             initBlocklist();
+
+
         },
         async setup({}, ctx) {
             const { user } = useAuthState();
-            const showEdit = ref(false);
             const showEditPic = ref(false);
-            const fileinput = ref();
+            const fileInput = ref();
             const file = ref();
             const userStatus = ref('');
             const isEditingStatus = ref(false);
             const router = useRouter();
             const route = useRoute();
             const myStatus = await getMyStatus();
+            const cropper = ref(null);
+            const isHoveringAvatar = ref(false);
+            const showEditAvatar = ref(false);
 
+
+            watch(showEditAvatar, () => {
+                if (showEditAvatar.value){
+                    window.addEventListener("keypress", enterPressed)
+                    return
+                }
+                window.removeEventListener("keypress", enterPressed)
+            });
+            watchEffect(() => {
+                if(!cropper.value) {
+                    return;
+                }
+                if(!file.value) {
+                    cropper.value.destroy();
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = event => {
+                    cropper.value.replace(event.target.result);
+                };
+                reader.readAsDataURL(file.value);
+            });
+            const enterPressed = (e) => {
+                if (e.key === "Enter"){
+                    saveNewAvatar()
+                }
+            }
             const backOrMenu = () => {
                 if (route.meta && route.meta.back) {
                     router.push({ name: <any>route.meta.back });
@@ -152,24 +224,53 @@
             };
 
             const selectFile = () => {
-                fileinput.value.click();
+                fileInput.value.click();
             };
+
             const changeFile = () => {
-                file.value = fileinput.value?.files[0];
-                sendNewAvatar();
+                const newFile = fileInput.value?.files[0];
+                if (!newFile || newFile.type.indexOf('image/') === -1) {
+                    return;
+                }
+
+                file.value = fileInput.value?.files[0];
+                showEditAvatar.value = true;
+                fileInput.value.value = null;
             };
+
+            const saveNewAvatar = async () => {
+                const blob = await (
+                    await fetch(
+                        cropper.value
+                            .getCroppedCanvas()
+                            .toDataURL(file.value.type)
+                    )
+                ).blob();
+                const tempFile = new File([blob], 'avatar', {
+                    type: file.value.type,
+                });
+                await sendNewAvatar(tempFile);
+                showEditAvatar.value = false;
+            };
+
+            const cancelNewAvatar = () => {
+                showEditAvatar.value = false;
+            };
+
             const removeFile = () => {
                 file.value = null;
             };
 
-            const sendNewAvatar = async () => {
-                const newUrl = await setNewavater(file.value);
+            const closeDialog = newVal => {
+                showUserConfigDialog.value = newVal;
+            }
+
+            const sendNewAvatar = async (data: any) => {
+                await setNewAvatar(data);
                 await fetchStatus(user.id);
-                showUserConfigDialog.value = false;
             };
 
             const setEditStatus = (edit: boolean) => {
-                console.log(edit);
                 isEditingStatus.value = edit;
                 userStatus.value = user.status;
             };
@@ -180,11 +281,6 @@
                 isEditingStatus.value = false;
             };
 
-            const blockedUsers = computed(() => {
-                return getBlockList();
-            });
-            // @todo: config
-
             const unblockUser = async user => {
                 await deleteBlockedEntry(user);
                 showUserConfigDialog.value = false;
@@ -193,7 +289,6 @@
             const addUser = () => {
                 ctx.emit('addUser');
             };
-
             const status = computed(() => {
                 return statusList[<string>user.id];
             });
@@ -204,6 +299,7 @@
                         <string>user.id
                     )}.svg?m=14&b=%23ffffff`;
                 }
+
                 return calcExternalResourceLink(status.value.avatar);
             });
 
@@ -212,8 +308,7 @@
                 backOrMenu,
                 user,
                 showEditPic,
-                showEdit,
-                fileinput,
+                fileInput,
                 file,
                 selectFile,
                 changeFile,
@@ -223,12 +318,19 @@
                 userStatus,
                 setEditStatus,
                 isEditingStatus,
-                blockedUsers,
+                blockedUsers: blocklist,
                 unblockUser,
                 route,
                 showUserConfigDialog,
                 src,
                 myStatus,
+                cropper,
+                saveNewAvatar,
+                isHoveringAvatar,
+                showEditAvatar,
+                cancelNewAvatar,
+                closeDialog,
+
             };
         },
     });
@@ -247,5 +349,17 @@
         z-index: 10;
         background-color: aquamarine;
         border: 2px solid black;
+    }
+    .avatar-container {
+        position: relative;
+    }
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 20;
+        text-align: center;
     }
 </style>

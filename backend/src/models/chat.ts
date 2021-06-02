@@ -5,7 +5,6 @@ import {
     DtIdInterface,
     MessageBodyTypeInterface,
 } from '../types';
-import { user } from '../store/user';
 
 export default class Chat implements ChatInterface {
     chatId: String;

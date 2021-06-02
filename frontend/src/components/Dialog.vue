@@ -1,7 +1,7 @@
 <template>
     <transition name="fade">
         <div
-            @keydown.esc="$emit('update:modelValue', false)"
+            @keydown.esc="$emit('update-model-value', false)"
             v-if="modelValue"
             class="fixed z-50 top-0 left-0 bg-black bg-opacity-50 w-screen h-screen grid place-items-center"
         >
@@ -10,7 +10,7 @@
             >
                 <div class="flex justify-between">
                     <slot name="title" />
-                    <button @click="$emit('update:modelValue', false)">
+                    <button @click="$emit('update-model-value', false)">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -18,10 +18,10 @@
                     <slot />
                 </div>
                 <div class="flex justify-end" v-if="!noActions">
-                    <button @click="$emit('update:modelValue', false)">
+                    <button @click="$emit('update-model-value', false)">
                         {{ cancelButtonText }}
                     </button>
-                    <button @click="$emit('update:modelValue', true)">
+                    <button @click="$emit('update-model-value', true)">
                         {{ okButtonText }}
                     </button>
                 </div>
@@ -50,6 +50,6 @@
                 default: 'Cancel',
             },
         },
-        emits: ['update:modelValue'],
+        emits: ['update-model-value'],
     });
 </script>

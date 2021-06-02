@@ -2,6 +2,7 @@
     <div
         class="grid relative"
         :class="{
+            'h-16 w-16': large,
             'h-12 w-12': !small && !xsmall,
             'h-8 w-8': small,
             'h-6 w-6': xsmall,
@@ -11,7 +12,8 @@
             class="bg-icon rounded-full"
             :style="`background:url(${src}) no-repeat center/cover`"
             :class="{
-                'h-12 w-12': !small && !xsmall,
+                'h-16 w-16': large,
+                'h-12 w-12': !small && !xsmall && !large,
                 'h-8 w-8': small,
                 'h-6 w-6': xsmall,
             }"
@@ -24,6 +26,13 @@
                 'bg-green-500': status && status.isOnline,
             }"
         ></div>
+
+        <div
+            v-if="unreadMessagesAmount > 0"
+            class="absolute -top-1 -right-1 bg-accent h-4 w-4 rounded-full text-xs z-10 align-middle text-center text-white"
+        >
+            {{ unreadMessagesAmount }}
+        </div>
     </div>
 </template>
 
@@ -41,6 +50,8 @@
                 default: true,
                 type: Boolean,
             },
+            unreadMessagesAmount: Number,
+            large: { required: false, default: false, type: Boolean },
             small: { required: false, default: false, type: Boolean },
             xsmall: { required: false, default: false, type: Boolean },
         },

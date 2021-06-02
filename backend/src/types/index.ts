@@ -36,13 +36,25 @@ export enum MessageTypes {
     QUOTE = 'QUOTE',
 }
 
+export enum SystemMessageType {
+    ADDUSER = 'ADDUSER',
+    REMOVEUSER = 'REMOVEUSER',
+    JOINED_VIDEOROOM = 'JOINED_VIDEOROOM',
+    CONTACT_REQUEST_SEND = 'CONTACT_REQUEST_SEND'
+}
+
+export enum FileTypes {
+    RECORDING = 'RECORDING',
+    OTHER = 'OTHER',
+}
+
 export enum MessageOperations {
     NEW = 'NEW',
     UPDATE = 'UPDATE',
     DELETE = 'DELETE',
 }
 
-export interface MessageInterface<T> {
+export interface MessageInterface<T> extends MessageBodyTypeInterface {
     id: IdInterface;
     from: DtIdInterface;
     to: IdInterface | DtIdInterface;
@@ -51,6 +63,8 @@ export interface MessageInterface<T> {
     timeStamp: Date;
     subject: IdInterface | null;
     replies: MessageInterface<MessageBodyTypeInterface>[];
+    signatures: string[],
+    updated?: Date | undefined;
 }
 
 export interface MessageBodyTypeInterface {}
@@ -61,12 +75,16 @@ export interface ContactRequest
     extends MessageBodyTypeInterface,
         ContactInterface {}
 export interface FileMessageType extends MessageBodyTypeInterface {
+    type: FileTypes;
     filename: string;
     url: string;
 }
 
-export interface GroupUpdateType extends MessageBodyTypeInterface {
-    type: string;
+export interface SystemMessageInterface extends MessageBodyTypeInterface {
+    type: SystemMessageType;
+}
+
+export interface GroupUpdateType extends SystemMessageInterface {
     contact: AnonymousContactInterface | ContactInterface;
     adminLocation: string;
 }
@@ -98,9 +116,12 @@ export interface AnonymousContactInterface {
     id: DtIdInterface;
 }
 
-export interface DtIdInterface extends IdInterface {}
+export interface DtIdInterface extends IdInterface {
+}
 
-export interface IdInterface extends String {}
+export interface IdInterface extends String {
+}
+
 const test: IdInterface = '';
 
 export interface WorkspaceInterface extends GroupChatInterface {

@@ -1,11 +1,12 @@
 <template>
     <div
         class="bg-white p-2 w-full relative rounded-lg mb-4 mt-0 md:grid place-items-center grid-cols-1"
+        v-if="chat.isGroup"
     >
         <h2>Members</h2>
         <div
-            v-for="contact in groupChat.contacts"
-            :key="contact.id + groupChat.contacts.length"
+            v-for="contact in chat.contacts"
+            :key="contact.id + chat.contacts.length"
             class="w-full"
         >
             <div
@@ -86,10 +87,19 @@
             <div
                 class="block bg-gray-100 flex items-center rounded-xl w-full m-2"
                 @click="$emit('app-block')"
-                v-if="!groupChat.isGroup"
+                v-if="!chat.isGroup && !blocked"
             >
                 <i class="fas fa-minus-circle m-3"></i>
                 <p class="m-3">Block user</p>
+            </div>
+
+            <div
+                class="block bg-gray-100 flex items-center rounded-xl w-full m-2"
+                @click="$emit('app-unblock')"
+                v-if="!chat.isGroup && blocked"
+            >
+                <i class="fas fa-plus-circle m-3"></i>
+                <p class="m-3">Unblock user</p>
             </div>
 
             <div
@@ -109,36 +119,42 @@
     import { usechatsActions } from '../store/chatStore';
     import { useContactsState } from '../store/contactStore';
     import { useAuthState } from '../store/authStore';
+    import { isBlocked } from '@/store/blockStore';
     export default {
         name: 'GroupManagementBlock',
         props: {
-            groupChat: { required: true },
+            chat: { required: true },
         },
-        emits: ['app-call', 'app-block', 'app-delete'],
+        emits: ['app-call', 'app-block', 'app-delete', 'app-unblock'],
         components: { AvatarImg },
         setup(props) {
             const { contacts } = useContactsState();
             const removeFromGroup = contact => {
                 const { updateContactsInGroup } = usechatsActions();
                 //@ts-ignore
-                updateContactsInGroup(props.groupChat.chatId, contact, true);
+                updateContactsInGroup(props.chat.chatId, contact, true);
             };
             const addToGroup = contact => {
                 const { updateContactsInGroup } = usechatsActions();
                 //@ts-ignore
-                updateContactsInGroup(props.groupChat.chatId, contact, false);
+                updateContactsInGroup(props.chat.chatId, contact, false);
             };
             const filteredContacts = computed(() => {
                 return contacts.filter(
                     //@ts-ignore
-                    c => !props.groupChat.contacts.map(x => x.id).includes(c.id)
+                    c => !props.chat.contacts.map(x => x.id).includes(c.id)
                 );
             });
 
             const iAmAdmin = computed(() => {
                 const { user } = useAuthState();
                 //@ts-ignore
-                return props.groupChat.adminId == user.id;
+                return props.chat.adminId == user.id;
+            });
+
+            const blocked = computed(() => {
+                if(!props.chat || props.chat.isGroup) return false;
+                return isBlocked(props.chat.chatId)
             });
 
             return {
@@ -147,6 +163,7 @@
                 contacts: filteredContacts,
                 addToGroup,
                 iAmAdmin,
+                blocked
             };
         },
     };

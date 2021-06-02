@@ -2,7 +2,7 @@ import { reactive } from '@vue/reactivity';
 import { toRefs } from 'vue';
 import axios from 'axios';
 import moment from 'moment';
-import { Contact } from '../types';
+import { Contact, MessageTypes, SystemBody, SystemMessageTypes } from '../types';
 import config from '../../public/config/config';
 import { uuidv4 } from '../../src/common/index';
 import { Chat } from '../types';
@@ -37,13 +37,16 @@ import { Message, PersonChat, DtId } from '../types/index';
 
 const addContact = (username: DtId, location, dontCheck = false) => {
     const { user } = useAuthState();
-    const addMessage: Message<String> = {
+    const addMessage: Message<SystemBody> = {
         id: uuidv4(),
-        body: `Request has been sent to ${username}`,
+        body: {
+            type: SystemMessageTypes.CONTACT_REQUEST_SEND,
+            message: `Request has been sent to ${username}`,
+        },
         from: user.id,
         to: username,
         timeStamp: new Date(),
-        type: 'SYSTEM',
+        type: MessageTypes.SYSTEM,
         replies: [],
         subject: null,
     };

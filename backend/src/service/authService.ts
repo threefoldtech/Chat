@@ -2,6 +2,9 @@ import { Request } from 'express';
 import { config } from '../config/config';
 import { ThreefoldLogin } from '@threefoldjimber/threefold_login';
 import { generateRandomString } from '@threefoldjimber/threefold_login/dist';
+import { getKeyPair } from './encryptionService';
+import { updatePrivateKey, updatePublicKey } from '../store/keyStore';
+import { isInitialized as yggdrasilIsInitialized, setupYggdrasil } from './yggdrasilService';
 
 export const getAppLoginUrl = async (
     request: Request,
@@ -17,7 +20,7 @@ export const getAppLoginUrl = async (
     await login.init();
     const loginState = generateRandomString();
     request.session.state = loginState;
-    return login.generateLoginUrl(loginState);
+    return login.generateLoginUrl(loginState, { scope: '{"email":true,"derivedSeed":true}' });
 };
 export const appCallback = async (request: Request): Promise<string> => {
     console.log('Going to login now ...');
@@ -47,15 +50,26 @@ export const appCallback = async (request: Request): Promise<string> => {
         delete request.session.state;
 
         const doubleName: string = <string>profileData.doubleName;
+        const derivedSeed: string =  <string>profileData.derivedSeed;
         let userId = doubleName.replace('.3bot', '');
 
-        if (userId !== config.userid) {
+        if (userId !== config.userid || !derivedSeed)
+            return '/unauthorized';
+
+        const keyPair = getKeyPair(derivedSeed);
+        if(!keyPair) return '/unauthorized';
+        console.log(keyPair.secretKey)
+        try {
+            updatePublicKey(keyPair.publicKey);
+            updatePrivateKey(keyPair.secretKey);
+        } catch (ex) {
+            console.error(ex);
             return '/unauthorized';
         }
 
+        if(!yggdrasilIsInitialized)
+            setupYggdrasil(derivedSeed)
         request.session.userId = userId;
-        request.session.profileData = profileData;
-
         return '/callback';
     } catch (e) {
         throw new Error(e.message);

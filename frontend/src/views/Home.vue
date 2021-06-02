@@ -4,6 +4,7 @@
             Welcome <b>{{ name }}</b
             >, to your digitalTwin.
         </h1>
+        <p>Automaticly redirecting you in 3 seconds ...</p>
         <button class="fancyButton" @click="loginAndPush">
             Verify my identity
         </button>
@@ -11,21 +12,22 @@
 </template>
 
 <script lang="ts">
-    import { defineComponent, ref } from 'vue';
-    import { useRouter } from 'vue-router';
+    import { defineComponent } from 'vue';
     import { login } from '@/services/authService';
+
+    const loginAndPush = async () => {
+        console.log('Attempting to login ...');
+        await login();
+    };
 
     export default defineComponent({
         name: 'Home',
+        mounted() {
+            setTimeout(() => {
+                loginAndPush();
+            }, 3200);
+        },
         setup() {
-            const router = useRouter();
-
-            const loginAndPush = async () => {
-                console.log('Attempting to login ...');
-                await login();
-                await router.push('/chat');
-            };
-
             return {
                 name: window.location.host.split('.')[0],
                 loginAndPush,

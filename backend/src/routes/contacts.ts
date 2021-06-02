@@ -3,9 +3,9 @@ import {
     DtIdInterface,
     MessageInterface,
     MessageTypes,
-} from './../types/index';
+} from '../types/index';
 import { parseMessage } from './../service/messageService';
-import { Router } from 'express';
+import express, { Router } from 'express';
 import Contact from '../models/contact';
 import Message from '../models/message';
 import { config } from '../config/config';
@@ -16,14 +16,16 @@ import { addChat } from '../service/chatService';
 import { uuidv4 } from '../common';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import { getMyLocation } from '../service/locationService';
+import { appendSignatureToMessage } from '../service/keyService';
+import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
 
 const router = Router();
 
-router.get('/', (req, res) => {
+router.get('/', requiresAuthentication, (req: express.Request, res: express.Response) => {
     res.json(contacts);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requiresAuthentication, async (req: express.Request, res: express.Response) => {
     const con = req.body;
     const contact = new Contact(con.id, con.location);
 
@@ -63,11 +65,13 @@ router.post('/', async (req, res) => {
         type: MessageTypes.CONTACT_REQUEST,
         timeStamp: new Date(),
         replies: [],
+        signatures: [],
         subject: null,
     };
     console.log('sending to ', url);
     console.log(data);
-    sendMessageToApi(contact.location, data);
+    appendSignatureToMessage(data);
+    await sendMessageToApi(contact.location, data);
     sendEventToConnectedSockets('connectionRequest', chat);
     res.sendStatus(200);
 });

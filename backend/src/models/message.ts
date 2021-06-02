@@ -15,6 +15,8 @@ export default class Message<T> implements MessageInterface<T> {
     public type: MessageTypes;
     public replies: MessageInterface<MessageBodyTypeInterface>[];
     public subject: IdInterface | null;
+    public signatures: string[];
+    public updated?: Date;
 
     constructor(
         from: DtIdInterface,
@@ -24,7 +26,9 @@ export default class Message<T> implements MessageInterface<T> {
         id: IdInterface,
         type: MessageTypes,
         replies: MessageInterface<MessageBodyTypeInterface>[],
-        subject: IdInterface | null
+        subject: IdInterface | null,
+        signatures: string[] | undefined,
+        updated: Date = undefined
     ) {
         this.from = from;
         this.to = to;
@@ -34,5 +38,7 @@ export default class Message<T> implements MessageInterface<T> {
         this.type = type;
         this.replies = replies;
         this.subject = subject;
+        this.signatures = signatures ?? [];
+        this.updated = updated;
     }
 }

@@ -1,8 +1,6 @@
 import { persistChat } from './../service/dataService';
 import { UploadedFile } from 'express-fileupload';
 import { Router } from 'express';
-import { user } from '../store/user';
-import { connections } from '../store/connections';
 import { getChat, saveFile } from '../service/dataService';
 import { FileMessageType, MessageTypes } from '../types';
 import Message from '../models/message';
@@ -11,6 +9,7 @@ import { sendEventToConnectedSockets } from '../service/socketService';
 import { sendMessageToApi } from '../service/apiService';
 import { getFullIPv6ApiLocation } from '../service/urlService';
 import { getMyLocation } from '../service/locationService';
+import { appendSignatureToMessage } from '../service/keyService';
 
 const router = Router();
 
@@ -27,15 +26,16 @@ router.post('/:chatid/:messageid', async (req, resp) => {
     const chatId = req.params.chatid;
     const messageId = req.params.messageid;
     const fileToSave = <UploadedFile>req.files.file;
-    saveFile(chatId, messageId,fileToSave.name, fileToSave.data);
+    saveFile(chatId, messageId, fileToSave);
     let myLocation = await getMyLocation();
     const message: Message<FileMessageType> = {
         from: config.userid,
         body: <FileMessageType>{
+            type: req.body.type,
             filename: fileToSave.name,
             url: getFullIPv6ApiLocation(
                 myLocation,
-                `/files/${chatId}/${messageId}/${fileToSave.name}`
+                `/files/${chatId}/${messageId}/${fileToSave.name}`,
             ),
         },
         id: messageId,
@@ -43,14 +43,16 @@ router.post('/:chatid/:messageid', async (req, resp) => {
         to: chatId,
         type: MessageTypes.FILE,
         replies: [],
+        signatures: [],
         subject: null,
     };
     sendEventToConnectedSockets('message', message);
     const chat = getChat(chatId);
     console.log('Sending TO: ', chat);
-    sendMessageToApi(
+    appendSignatureToMessage(message);
+    await sendMessageToApi(
         chat.contacts.find(contact => contact.id === chat.adminId).location,
-        message
+        message,
     );
     chat.addMessage(message);
     persistChat(chat);

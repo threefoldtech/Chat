@@ -7,6 +7,7 @@ import { calcExternalResourceLink } from '../services/urlService';
 import { Contact } from '@/types';
 
 export const statusList = reactive<Object>({});
+export const fetching: string[] = [];
 export const watchingUsers = [];
 
 export const fetchStatus = async (digitalTwinId: DtId) => {
@@ -29,7 +30,7 @@ export const fetchStatus = async (digitalTwinId: DtId) => {
     return status;
 };
 
-export const startFetchStatusLoop = (contact: Contact) => {
+export const startFetchStatusLoop = async (contact: Contact) => {
     if (watchingUsers.find(wu => wu === contact.id)) {
         return;
     }
@@ -37,11 +38,24 @@ export const startFetchStatusLoop = (contact: Contact) => {
     watchingUsers[<string>contact.id] = {
         location: contact.location,
     };
-    fetchStatus(contact.id);
+    fetching.push(<string>contact.id);
 
-    setInterval(() => {
+    await fetchStatus(contact.id);
+    fetching.slice(fetching.indexOf(<string>contact.id), 1);
+    setInterval(async () => {
         try {
-            fetchStatus(contact.id);
-        } catch (e) {}
+            if (fetching.indexOf(<string>contact.id) !== -1) {
+                return;
+            }
+            fetching.push(<string>contact.id);
+
+            await fetchStatus(contact.id);
+
+            fetching.slice(fetching.indexOf(<string>contact.id), 1);
+        } catch (e) {
+            setTimeout(() => {
+                fetching.slice(fetching.indexOf(<string>contact.id), 1);
+            }, 10000);
+        }
     }, 5000);
 };
