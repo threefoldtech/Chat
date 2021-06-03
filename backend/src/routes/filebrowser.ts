@@ -1,19 +1,18 @@
 import express, { Router } from 'express';
 import {
-    copyFile,
-    createDirectoryWithRetry, doesPathExist, getFile, getFileStream,
+    copyWithRetry,
+    createDirectoryWithRetry,
+    filterOnString,
+    getFilesRecursive,
     getFormattedDetails,
     getStats,
-    isPathDirectory,
+    isPathDirectory, moveWithRetry,
     Path,
     readDir,
-    removeFile, saveFile,
-    saveFileWithRetry,
+    removeFile,
     renameFile,
-    copyFileWithRetry,
-    copyDirectoryWithRetry,
-    getFilesRecursive,
-    filterOnString
+    saveFile,
+    saveFileWithRetry,
 } from '../utils/files';
 import { HttpError } from '../types/errors/httpError';
 import { StatusCodes } from 'http-status-codes';
@@ -26,8 +25,7 @@ import syncRequest from 'sync-request';
 import { config } from '../config/config';
 import { uuidv4 } from '../common';
 import * as fs from 'fs';
-
-const AdmZip = require('adm-zip');
+import AdmZip from "adm-zip"
 
 const router = Router();
 
@@ -40,7 +38,6 @@ router.get('/directories/content', requiresAuthentication, async (req: express.R
     if (!p || typeof p !== 'string') p = '/';
     const path = new Path(p);
     const stats = await getStats(path);
-    console.log(stats);
     if (!stats.isDirectory() || stats.isBlockDevice() || stats.isCharacterDevice() || stats.isSymbolicLink() || stats.isSocket())
         throw new HttpError(StatusCodes.BAD_REQUEST, 'Path is not a directory');
     res.json(await readDir(path, { withFileTypes: true }));
@@ -64,7 +61,6 @@ router.post('/directories', requiresAuthentication, async (req: express.Request,
     const path = new Path(dto.path);
     path.appendPath(dto.name);
     const result = await createDirectoryWithRetry(path);
-    console.log(result);
     res.status(StatusCodes.CREATED);
     res.json({
         name: result.name,
@@ -143,7 +139,7 @@ router.get('/files', requiresAuthentication, async (req: express.Request, res: e
         // code to download zip file
         res.set('Content-Type', 'application/octet-stream');
         res.set('Content-Disposition', `attachment`);
-        res.set('Content-Length', data.length);
+        res.set('Content-Length', data.length.toString());
         res.send(data);
     } else {
         res.download(path.securedPath);
@@ -212,26 +208,38 @@ router.post('/internal/files', async (req: express.Request, res: express.Respons
     res.status(StatusCodes.OK);
 });
 
-router.post('/files/copy', async (req, res) => {
-    let data = req.body.paths;
-    const result = await Promise.all(
-        data.map(
-            async function(item: { path: any; fullName: any; }) {
-                console.log(item);
-                const pathObj = new Path(item.path);
-                const pathToPaste = new Path(req.body.pathToPaste + '/' + item.fullName);
-                if (!await isPathDirectory(pathObj)) {
-                    const file = await getFile(pathObj);
-                    await copyFileWithRetry(pathToPaste, file);
-                } else {
-                    await copyDirectoryWithRetry(pathObj, pathToPaste);
-                }
-            }));
+router.post('/files/copy', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+    const data = req.body.paths;
+    if (!data || data.length === 0)
+        throw new HttpError(StatusCodes.BAD_REQUEST, 'No items to copy specified');
+
+    const destinationPath = req.body.destinationPath;
+    if (!destinationPath)
+        throw  new HttpError(StatusCodes.BAD_REQUEST, 'No destinationpath specified');
+
+    console.log(data);
+    console.log(destinationPath)
+
+    const result = await Promise.all(data.map(async (source: string) => copyWithRetry(new Path(source), new Path(destinationPath))));
     res.json(result);
     res.status(StatusCodes.CREATED);
-
 });
-router.put('/files/rename', async (req, res) => {
+
+router.post('/files/move', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+    const data = req.body.paths;
+    if (!data || data.length === 0)
+        throw new HttpError(StatusCodes.BAD_REQUEST, 'No items to copy specified');
+
+    const destinationPath = req.body.destinationPath;
+    if (!destinationPath)
+        throw  new HttpError(StatusCodes.BAD_REQUEST, 'No destinationpath specified');
+
+    const result = await Promise.all(data.map(async (source: string) => moveWithRetry(new Path(source), new Path(destinationPath))));
+    res.json(result);
+    res.status(StatusCodes.CREATED);
+});
+
+router.put('/files/rename', requiresAuthentication, async (req: express.Request, res: express.Response) => {
     const oldPath = new Path(req.body.oldPath);
     const newPath = new Path(req.body.newPath);
     const result = await renameFile(oldPath, newPath);
@@ -247,10 +255,10 @@ router.get('/files/search', requiresAuthentication, async (req: express.Request,
         throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
 
     const path = new Path(dir);
-    let fileList = await getFilesRecursive(path)
-    let filteredList = await filterOnString(term.toString(), fileList)
+    let fileList = await getFilesRecursive(path);
+    let filteredList = await filterOnString(term.toString(), fileList);
 
-   const results = filteredList.length > 0 ? filteredList : "None";
+    const results = filteredList.length > 0 ? filteredList : 'None';
     res.json(results);
     res.status(StatusCodes.CREATED);
 });

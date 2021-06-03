@@ -4,6 +4,8 @@ import * as Api from '@/services/fileBrowserService';
 import { Router } from 'vue-router';
 import { setImageSrc } from '@/store/imageStore';
 import moment from 'moment';
+import { createErrorNotification, createNotification } from '@/store/notificiationStore';
+import { Status } from '@/types/notifications';
 
 export enum FileType {
     Unknown,
@@ -22,7 +24,7 @@ export interface PathInfoModel extends Api.PathInfo {
     fileType: FileType;
 }
 
-export interface FullPathInfoModel extends Api.FullPathInfo {
+export interface FullPathInfoModel extends Api.EditPathInfo {
     fileType: FileType;
 }
 
@@ -36,6 +38,7 @@ export const currentSort = ref('name');
 export const currentSortDir = ref('asc');
 export const searchDirValue = ref<string>('');
 export const searchResults = ref<PathInfoModel[] | string>([]);
+export const isDraggingFiles = ref<boolean>(false);
 
 watch([currentDirectory], () => {
     updateContent();
@@ -132,6 +135,23 @@ export const goToFolderInCurrentDirectory = (item: PathInfoModel) => {
 export const goToHome = () => {
     currentDirectory.value = rootDirectory;
 };
+
+export const moveFiles = async (destination: string, items = selectedPaths.value.map(x => x.path)) => {
+    if(items.includes(destination)) {
+        createErrorNotification('Error while moving', 'Unable to move into itself');
+        return;
+    }
+
+    const result = await Api.moveFiles(items, destination);
+    if (result.status !== 200 && result.status !== 201) {
+        createErrorNotification('Error while moving', 'Something went wrong');
+        return;
+    }
+
+    createNotification("Move Successful", `Moved ${items.length} item(s) into ${destination}`, Status.Success);
+    await updateContent();
+}
+
 export const copyPasteSelected = async () => {
     //copy
     if (copiedFiles.value.length === 0) {
@@ -141,21 +161,21 @@ export const copyPasteSelected = async () => {
         return;
     }
     //paste
-    const result = await Api.pasteFile(copiedFiles.value, currentDirectory.value);
+    const result = await Api.copyFiles(copiedFiles.value.map(x => x.path), currentDirectory.value);
     if (result.status !== 200 && result.status !== 201)
-        throw new Error('Could not paste file');
+        throw new Error('Could not copy files');
 
     copiedFiles.value = [];
     selectedPaths.value = [];
     copyStatus.value = `Copy Selected`;
     await updateContent();
-
 };
+
 export const clearClipboard = () => {
     copyStatus.value = `Copy Selected`;
     copiedFiles.value = [];
-
 };
+
 export const searchDir = async () => {
     const result = await Api.searchDir(searchDirValue.value, currentDirectory.value);
     if (result.status !== 200 || !result.data)
@@ -165,19 +185,16 @@ export const searchDir = async () => {
         return;
     }
     searchResults.value = result.data.map(createModel);
-
 };
+
 export const renameFile = async (item: PathInfoModel, name: string) => {
-    if (name === '') {
-        return;
-    }
+    if (!name) return;
     const oldPath = item.path;
     let newPath = pathJoin([currentDirectory.value, name]);
-    if (item.extension != '')
+    if (item.extension)
         newPath = pathJoin([currentDirectory.value, `${name}.${item.extension}`]);
 
     const result = await Api.renameFile(oldPath, newPath);
-    console.log(result.status);
     if (result.status !== 201)
         throw new Error('Could not rename file');
 
@@ -219,7 +236,15 @@ export const selectItem = (item: PathInfoModel) => {
 };
 
 export const deselectItem = (item: PathInfoModel) => {
-    selectedPaths.value = selectedPaths.value.filter(x => !(x.fullName === item.fullName && x.isDirectory === item.isDirectory && x.extension === item.extension));
+    selectedPaths.value = selectedPaths.value.filter(x => !equals(x, item));
+};
+
+export const equals = (item1: PathInfoModel, item2: PathInfoModel): boolean => {
+    if(!item1 || !item2) return false;
+    return item1.fullName === item2.fullName &&
+        item1.isDirectory === item2.isDirectory &&
+        item1.extension === item2.extension &&
+        item1.path === item2.path
 };
 
 export const selectAll = () => {
@@ -308,7 +333,6 @@ export const getIcon = (item: PathInfoModel) => {
 };
 
 export const createModel = <T extends Api.PathInfo>(pathInfo: T): PathInfoModel => {
-    console.log(pathInfo);
     return {
         ...pathInfo,
         fileType: pathInfo.isDirectory ? FileType.Unknown : getFileType(pathInfo.extension?.toLowerCase()),
@@ -370,7 +394,6 @@ export const getFileType = (extension: string): FileType => {
         case 'xltm':
         case 'xls':
         case 'xlt':
-        case 'xlam':
         case 'xla':
         case 'xlw':
         case 'xlr':
