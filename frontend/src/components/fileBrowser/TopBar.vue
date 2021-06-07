@@ -45,7 +45,7 @@
         <div
             v-if='selectedPaths.length === 1'
             class='mx-2 cursor-pointer'
-            @click='showRenameDialog = true'
+            @click='showRenameDialog = true; newName = selectedPaths[0].name'
         >
             <span class='text-gray-400 hover:text-gray-500'>
                 <i class='fas fa-pen'></i>
@@ -105,7 +105,7 @@
                 <h1 class='text-center'>Deleting Files</h1>
             </template>
             <div>
-                Do you really want to delete {{ selectedPaths.length }} file(s)?
+                Do you really want to delete {{ selectedPaths.length }} item(s)?
             </div>
             <div class='grid grid-cols-2 mt-2'>
                 <button @click='deleteFiles();showDeleteDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
@@ -126,7 +126,7 @@
                     v-model='newName'
                     :placeholder='selectedPaths[0].name'
                     tabindex='0'
-                    maxlength='50'
+                    maxlength='260'
                 />
             </div>
             <div class='grid grid-cols-2 mt-2'>
