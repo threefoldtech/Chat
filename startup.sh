@@ -8,7 +8,8 @@ fi
 
 nginx
 
-cd /backend 
+cd /backend
+pm2 start dist/migrator/migrator.js &
 pm2 start dist/src/index.js &
 
 
