@@ -14,11 +14,6 @@ async function resolvePath(filepath){
 async function addRewriteRuleForDomains(domain, alias, isWebsite){
 
   
-    const config = require('./config')
-    if (alias == `/${config.homeAlias.alias}` && config.homeAlias.isWebsite == isWebsite){
-        alias = '/'
-    }
-    
     rewrite[`https://${domain}`] = alias    
     
     rewrite[`http://${domain}`] = alias    

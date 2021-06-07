@@ -23,7 +23,7 @@ async function load(){
         drive.name = item.name
         // config.drives[item.key] = drive
         console.log(chalk.blue(`✓ (HyperSpace Drive) loaded ${item.name} (${item.key})`))
-        res.push(... await utils.loadAliases(drive))
+        res.push(... await utils.loadInfo(drive))
     })
     return res
 }

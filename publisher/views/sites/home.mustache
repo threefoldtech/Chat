@@ -1,29 +1,49 @@
 <!DOCTYPE html>
 <html>
-   <head>
-      <title>Threefold Publisher</title>
-   </head>
-   
-   <body>
-     <div>
-     <b>Domains</b> <br/>
 
-      {{#domains}}
-            {{#websites.length}}
-            &nbsp;&nbsp;&nbsp;&nbsp; <b>{{domain}}</b><br/>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>websites</b><br/>
-            {{#websites}}
-               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="//{{url}}"> {{name}}</a><br>
-            {{/websites}}
-            <br/>
-            {{/websites.length}}
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>wikis</b><br/>
-            {{#wikis}}
-               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="//{{url}}"> {{name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="//{{url}}/errors"> errors</a><br> 
-            {{/wikis}}
-   
-         {{/domains}}
-      </div>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+    <title>Threefold Publisher</title>
+</head>
 
-   </body>
+<style>
+    * {
+        font-family: "Roboto", sans-serif;
+    }
+    
+    ul {
+        list-style: none;
+        margin: 10px 0;
+    }
+    
+    li {
+        text-transform: capitalize;
+        margin-bottom: 5px;
+    }
+</style>
+
+<body>
+   
+    {{#domains}} {{#websites.length}}
+     <h2>ThreeFold's Related projects </h2>
+    <ul>
+        {{#websites}}
+        <li>
+            <a href="//{{ url }}"> {{ name }}</a>
+        </li>
+        {{/websites}}
+    </ul>
+    {{/websites.length}}
+    
+     <h2>ThreeFold's Knowledge Base</h2>
+    <ul>
+        {{#wikis}}
+        <li>
+            <a href="//{{ url }}"> {{ name }}</a>
+        </li>
+        {{/wikis}}
+    </ul>
+    {{/domains}}
+</body>
+
 </html>

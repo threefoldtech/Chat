@@ -1,10 +1,10 @@
-var express = require("express");
+var express = require('express');
 var router = express.Router();
 const asyncHandler = require('express-async-handler')
 const config = require('../../config')
 
-const rewrite = require('../../rewrite')
 const logger = require('../../logger')
+const path = require('path')
 
 async function rewriteRoles(content, info){
     
@@ -15,16 +15,41 @@ async function rewriteRoles(content, info){
         host = `${scheme}://${info.host}:${info.port}`
     }
 
-    for(var item in rewrite){
-        if (item == 'load'){
-            continue
+    var mainDomains = info.domains
+    var mainRepo  = info.repo
+       
+    if (info.host == 'localhost' || info.host == '127.0.0.1'){
+        for(var item in config.info.domains){
+            var site = config.info.domains[item]
+            var isWebsite = site.isWebSite
+    
+            var prefix = ""
+    
+            if(mainDomains.includes(item) || site.repo == mainRepo){
+                prefix = "/"
+            }else if(isWebsite){
+                prefix = `/${site.alias}`
+            }else{
+                prefix = `/info/${site.alias}`
+            }  
+            content = content.replace(new RegExp(`https://${item}/`, "g"), `${host}${prefix}`)
+            content = content.replace(new RegExp(`https://${item}`, "g"), `${host}${prefix}`)
+            content = content.replace(new RegExp(`http://${item}/`, "g"), `${host}${prefix}`)
+            content = content.replace(new RegExp(`http://${item}`, "g"), `${host}${prefix}`)
         }
-        var suff = rewrite[item]
-        if(suff == "/"){
-            suff = ""
-        }
-        content = content.replace(new RegExp(item, "g"), `${host}${suff}`)
+    }else{
+        var site = config.info.domains[info.host]
+        var isWebsite = site.isWebSite
+        content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
     }
+
+    // fix pdf & zip files in wikis
+    var splitted = info.url.split("/")
+    splitted.pop()
+    var prefix = splitted.join("/")
+    content = content.replace(/href="([^\"]+\.pdf)"/g, `href="${prefix}/$1"`)
+    content = content.replace(/href="([^\"]+\.zip)"/g, `href="${prefix}/$1"`)
+
     return content
 }
 
@@ -70,8 +95,10 @@ async function update(req) {
 
 async function handleWebsiteFile(req, res, info){
     driveObj = info.drive
-    var url = req.url.replace(`/${info.alias}/`, "")
+    var url = req.url.replace(`/${info.alias}/`, "").toLowerCase()
     var filepath = `${info.dir}/${url}`
+    
+    
     var encoding = 'utf-8'
     if(filepath.endsWith('png')){
         res.type("image/png")
@@ -86,7 +113,7 @@ async function handleWebsiteFile(req, res, info){
         encoding = 'binary'
         res.type('image/svg+xml')
     }else if (filepath.endsWith("js")){
-        res.type("text/javascript");
+        res.type("application/javascript");
     }else if (filepath.endsWith("css")){
             res.type("text/css");
     }else if (filepath.endsWith("json")){
@@ -94,6 +121,9 @@ async function handleWebsiteFile(req, res, info){
     }else if(filepath.endsWith('pdf')){
         encoding = 'binary'
         res.type('application/pdf')
+    }else if(filepath.endsWith('zip')){
+        encoding = 'binary'
+        res.type('application/zip')
     }
 
     var entry = null
@@ -110,13 +140,18 @@ async function handleWebsiteFile(req, res, info){
         return res.send(content)
     } catch (e) {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
-        return res.status(404).send(`File not found : ${filepath}`);
+        // return res.status(404).send(`File not found : ${filepath}`);
+        return res.status(404).render('sites/404.mustache')
     }
 }
 
 async function handleWikiFile(req, res, info){
-    var filename = req.url.replace(`/info`, "").replace(`/${info.alias}/`, "")
+    var filename = req.url.replace(`/info`, "").replace(`/${info.alias}/`, "").toLowerCase()
     var wikiname = info.dir.substring(1)
+
+    if (filename.startsWith('/')){
+        filename = filename.substring(1)
+    }
 
     if(filename.includes("__")){
         var splitted = filename.split("__")
@@ -137,8 +172,10 @@ async function handleWikiFile(req, res, info){
     if (filename == "README.md"){
         filename = "readme.md"
     }
-    if (filename.startsWith("file__")) {
-      encoding = "binary";
+    
+    var splitted = filename.split("/")
+    if (splitted.length > 1){
+        filename = splitted[splitted.length - 1]
     }
 
     if(filename.endsWith('png')){
@@ -156,21 +193,30 @@ async function handleWikiFile(req, res, info){
     }else if(filename.endsWith('pdf')){
             encoding = 'binary'
             res.type('application/pdf')
+    }else if(filename.endsWith('ico')){
+        encoding = 'binary'
+        res.type('image/x-icon')
     }else if(filename.endsWith("md") ){
         encoding = 'utf-8'  
+    }else if (path.extname(filename) == ''){
+        filename = `${filename}.md`
+    }else if(filename.endsWith('zip')){
+        encoding = 'binary'
+        res.type('application/zip')
     }
 
     filepath = `/${wikiname}/${filename}`
     driveObj = null
-    for(var alias in config.aliases.wikis){
-        var item = config.aliases.wikis[alias]
+    for(var alias in config.info.wikis){
+        var item = config.info.wikis[alias]
         if(item.dir == `/${wikiname}`){
             driveObj =  item.drive
         }
     }
 
     if(!driveObj){
-        return res.status(404).send(`Wiki not found`);;
+        // return res.status(404).send(`Wiki not found`)
+        return res.status(404).render('sites/404.mustache')
     }
 
     // `/${req.params.wikiname}/${req.params.filename}`
@@ -183,17 +229,16 @@ async function handleWikiFile(req, res, info){
         return res.send(content)
        
     } catch (e) {
-        
         newfilename = filename.replace(".md", "")
-        var def = config.aliases.defs[newfilename]
+        var def = config.info.defs[newfilename]
        
         if (def){
             wikiname = `wiki_${def.wikiname}`
             filename = `${def.pagename}.md`
             filepath = `/${wikiname}/${filename}`
 
-            for(var alias in config.aliases.wikis){
-                var item = config.aliases.wikis[alias]
+            for(var alias in config.info.wikis){
+                var item = config.info.wikis[alias]
                 if(item.dir == `/${wikiname}`){
                     driveObj =  item.drive
                 }
@@ -205,14 +250,44 @@ async function handleWikiFile(req, res, info){
                 content = await(rewriteRoles(content, info))
                 return res.send(content)
             }catch(e){
-                return res.status(404).send(`File not found : ${filepath}`);
+                // return res.status(404).send(`File not found : ${filepath}`);
+                return res.status(404).render('sites/404.mustache')
             }            
         }
-        return res.status(404).send(`File not found : ${filepath}`);
+        // return res.status(404).send(`File not found : ${filepath}`);
+        return res.status(404).render('sites/404.mustache')
     }
-    return res.status(404).json("");
-  }
 }
+
+router.get('/login', asyncHandler(async (req, res) =>  {
+    
+    return res.render('sites/login.mustache', {
+        'requirePassword': req.session.requirePassword,
+        'require3botConnect': req.session.threebotConnect,
+        'next': req.query.next
+    })
+}))
+
+router.post('/login', asyncHandler(async (req, res) =>  {
+    var info = req.info
+    var body = req.body
+    if (body && body.psw){
+        if (body.psw in info.acls.secrets){
+            req.session.authorized = true
+            req.session.authorization_mechanism = 'password'
+            req.session.used_pass = body.psw
+            req.session.save()
+            return res.redirect(req.query.next)
+        }
+    }
+    return res.redirect(`/login?next=${req.query.next}`)
+}))
+
+router.get('/logout', asyncHandler(async (req, res) =>  {
+    req.session.destroy();
+    return res.redirect(req.query.next)
+}))
+
 
 // Home (list of wikis and sites)
 router.get('/publishtools/list', asyncHandler(async (req, res) =>  {
@@ -222,8 +297,8 @@ router.get('/publishtools/list', asyncHandler(async (req, res) =>  {
         var wikis = new Set()
         var sites = new Set()
 
-        for(var w in config.aliases.websites){
-            var item = config.aliases.websites[w]
+        for(var w in config.info.websites){
+            var item = config.info.websites[w]
             var d = `${info.host}`
             if(info.port != 80 && info.port != 443){
                 d = `${d}:${info.port}`
@@ -235,8 +310,8 @@ router.get('/publishtools/list', asyncHandler(async (req, res) =>  {
             sites.add({"name": item.alias, "url": `${d}/${w}`})
         }
 
-        for(var w in config.aliases.wikis){
-            var item = config.aliases.wikis[w]
+        for(var w in config.info.wikis){
+            var item = config.info.wikis[w]
             var d = `${info.host}`
             if(info.port != 80 && info.port != 443){
                 d = `${d}:${info.port}`
@@ -262,15 +337,17 @@ router.get('/', asyncHandler(async (req, res) =>  {
      var driveObj = info.drive
      var dir = info.dir
      var filepath = `${dir}/index.html`
-     var entry = null
+    
      try {
          entry = await driveObj.promises.stat(filepath)
+         
          var content = await  driveObj.promises.readFile(filepath, 'utf8');
          content = await(rewriteRoles(content, info))
          return res.send(content)
      } catch (e) {
             logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
-            return res.status(404).send(`Site not found : ${info.alias}`);
+            // return res.status(404).send(`Site not found : ${info.alias}`);
+            return res.status(404).render('sites/404.mustache')
      }    
 }))
 
@@ -280,8 +357,8 @@ router.get('/info', asyncHandler(async (req, res) =>  {
 
         var wikis = new Set()
 
-        for(var w in config.aliases.wikis){
-            var item = config.aliases.wikis[w]
+        for(var w in config.info.wikis){
+            var item = config.info.wikis[w]
             var d = `${info.host}`
             if(info.port != 80 && info.port != 443){
                 d = `${d}:${info.port}`
@@ -302,33 +379,88 @@ router.get('/info', asyncHandler(async (req, res) =>  {
     
 }))
 
-router.get('/:website', asyncHandler(async (req, res) =>  {
-     if(req.params.website == 'update'){
+router.get('/:path', asyncHandler(async (req, res) =>  {
+     if(req.params.path == 'update'){
         await update(req)
         return res.redirect('/')
      }
 
      var info = req.info
-     var driveObj = info.drive
-     var dir = info.dir
-     var filepath = `${dir}/index.html`
-     var entry = null
-     try {
-         entry = await driveObj.promises.stat(filepath)
-         var content = await  driveObj.promises.readFile(filepath, 'utf8');
-         content = await(rewriteRoles(content, info))
-         return res.send(content)
-     } catch (e) {
-         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
-         return res.status(404).send(`File not found : ${filepath}`);
-     }
+
+    if (info.isWebSite){
+        var driveObj = info.drive
+        var dir = info.dir
+        var filepath = ""
+
+        // /blog, /team
+        if(info.subPath){
+            filepath = `${dir}${req.url}/index.html`
+        }else{
+            // /cloud (pathprefixed site)
+            filepath = `${dir}/index.html`
+        }
+
+        filepath = filepath.toLowerCase()
+        
+        var entry = null
+        try {
+            entry = await driveObj.promises.stat(filepath)
+            var content = await  driveObj.promises.readFile(filepath, 'utf8');
+            content = await rewriteRoles(content, info)
+            return res.send(content)
+        } catch (e) {
+            logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+            // return res.status(404).send(`File not found : ${filepath}`);
+            return res.status(404).render('sites/404.mustache')
+        }
+    // static file for wikis or wiki file
+    }else{
+
+        var name = req.params.path
+        var driveObj = req.info.drive
+        var filepath = ""
+        contenttype = 'utf8'
+
+        if (name.endsWith("js") || name.endsWith("css")){   
+            filepath = path.join('..', 'static', name)
+            if (name.endsWith('js'))
+                res.type("text/javascript")
+            else if  (name.endsWith('css'))
+                res.type("text/css")
+
+            var entry = null
+            try {
+                entry = await driveObj.promises.stat(filepath)
+                var content = await  driveObj.promises.readFile(filepath, 'utf8');
+                return res.send(content)
+            } catch (e) {
+                logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
+                // return res.status(404).send(`File not found : ${filepath}`);
+                return res.status(404).render('sites/404.mustache')
+            }
+        }else{
+            return handleWikiFile(req, res, info)
+        }
+    }
 }))
 
 router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
-    var info = req.info
-    var driveObj = info.drive
-    var dir = info.dir
-    var filepath = `${dir}/index.html`
+    var name = req.params.wiki.toLowerCase()
+    var driveObj = req.info.drive
+    var filepath = ""
+    contenttype = 'utf8'
+
+    if (name.endsWith("js") || name.endsWith("css")){   
+        filepath = path.join('..', 'static', name)
+        if (name.endsWith('js'))
+            res.type("text/javascript")
+        else if  (name.endsWith('css'))
+            res.type("text/css")
+    }else{
+        var dir = req.info.dir
+        filepath = `${dir}/index.html`
+    }
+
     var entry = null
     try {
         entry = await driveObj.promises.stat(filepath)
@@ -336,10 +468,11 @@ router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
         return res.send(content)
     } catch (e) {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
-        return res.status(404).send(`File not found : ${filepath}`);
+        // return res.status(404).send(`File not found : ${filepath}`);
+        return res.status(404).render('sites/404.mustache')
     }
-  })
-);
+}))
+
 
 
 router.get('/:website/flexsearch', asyncHandler(async (req, res) => {
@@ -349,65 +482,55 @@ router.get('/:website/flexsearch', asyncHandler(async (req, res) => {
         return res.status(info.status).send(info.err);
     }
 
-    var driveObj = info.drive;
-    var filepath = `${info.dir}/flexsearch.json`;
-    var entry = null;
+    var driveObj = info.drive
+    var filepath = `${info.dir}/flexsearch.json`
+    var entry = null
     try {
-      entry = await driveObj.promises.stat(filepath);
-      var content = await driveObj.promises.readFile(filepath, "utf8");
-      res.type("application/json");
-      return res.send(content);
+        entry = await driveObj.promises.stat(filepath)
+        var content = await  driveObj.promises.readFile(filepath, 'utf8');
+        res.type("application/json");
+        return res.send(content)
     } catch (e) {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
-        return res.status(404).send(`File not found : ${filepath}`);
+        // return res.status(404).send(`File not found : ${filepath}`);
+        return res.status(404).render('sites/404.mustache')
     }
-  })
-);
+}))
 
 // Wiki errors
-router.get(
-  "/errors",
-  asyncHandler(async (req, res) => {
-    var info = await getRequestInfo(req);
+router.get('/info/:wiki/errors', asyncHandler(async (req, res) => {
+    var info = await req.info
 
-    if (info.status != 200) {
-      return res.status(info.status).json({ err: info.err });
-    }
-
-    var driveObj = info.drive;
-    var wikiname = info.dir.substring(1);
-
-    filepath = `${info.dir}/errors.json`;
-    var entry = null;
+    var driveObj = info.drive
+    var wikiname = info.dir.substring(1)
+    
+    filepath = `${info.dir}/errors.json`
     try {
-      entry = await driveObj.promises.stat(filepath);
+        entry = await driveObj.promises.stat(filepath)
 
-      var content = await driveObj.promises.readFile(filepath, "utf-8");
-
-      var data = JSON.parse(content);
-      var errors = {
-        page_errors: [],
-      };
-      errors.site_errors = data.site_errors;
-
-      for (var key in data.page_errors) {
-        var e = {
-          page: key,
-          errors: data.page_errors[key],
-        };
-        errors.page_errors.push(e);
-      }
-      res.render("sites/errors.mustache", {
-        site_name: wikiname,
-        site_errors: errors.site_errors,
-        page_errors: errors.page_errors,
-      });
+        var content = await  driveObj.promises.readFile(filepath, 'utf-8');
+        
+        var data = JSON.parse(content)
+        var errors = {
+            page_errors : []
+        }
+        errors.site_errors = data.site_errors
+        
+        for (var key in data.page_errors){
+            var e = {
+                page : key,
+                errors : data.page_errors[key]
+            }
+            errors.page_errors.push(e)
+        }
+        res.render('sites/errors.mustache', {site_name: wikiname, site_errors : errors.site_errors, page_errors: errors.page_errors});
+       
     } catch (e) {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
-        return res.status(404).send(`File not found : ${filepath}`);
+        // return res.status(404).send(`File not found : ${filepath}`);
+        return res.status(404).render('sites/404.mustache')
     }
-  })
-);
+}))
 
 
 router.get('/info/:wiki/update', asyncHandler(async (req, res) => {
@@ -429,7 +552,12 @@ router.get('/info/:wiki/*', asyncHandler(async (req, res) => {
 // website files
 router.get('/:website/*', asyncHandler(async (req, res) => {
     var info = req.info
-    return handleWebsiteFile(req, res, info)
+
+    if (info.isWebSite){
+        return handleWebsiteFile(req, res, info)
+    }else{
+        return handleWikiFile(req, res, info)
+    }
 }))
 
 module.exports = router
