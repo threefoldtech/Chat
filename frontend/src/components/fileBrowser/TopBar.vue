@@ -63,7 +63,7 @@
         <div
             v-if='selectedPaths.length > 0'
             class='mx-2 cursor-pointer'
-            @click='cutPasteFiles(); cut = !cut'
+            @click='cutPasteFiles()'
         >
              <span class='text-gray-400 hover:text-gray-500'>
                 <i class='fas fa-cut'></i>
