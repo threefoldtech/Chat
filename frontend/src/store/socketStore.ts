@@ -74,9 +74,7 @@ const initializeSocket = (username: string) => {
     });
 
 };
-export const disconnect = async ()=>{
-    state.socket.disconnect()
-}
+
 const sendSocketMessage = async (
     chatId: string,
     message: Message<any>,

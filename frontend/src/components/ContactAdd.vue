@@ -21,7 +21,7 @@
 
         <form @submit.prevent="contactAdd" class="w-full" v-if="isActive('user')">
             <div class="flex place-items-center">
-                <label class="mr-2" for="username" @click="disconnect">Username:</label>
+                <label class="mr-2" for="username">Username:</label>
                 <auto-complete
                     :data="possibleUsers"
                     v-model="usernameAdd"
@@ -106,7 +106,6 @@
     import autoComplete from './AutoComplete.vue';
     import { uuidv4 } from '@/common';
     import AvatarImg from '@/components/AvatarImg.vue';
-    import {disconnect} from '@/store/socketStore';
 
     export default defineComponent({
         name: 'ContactAdd',
@@ -240,7 +239,6 @@
                 removeUserFromGroup,
                 possibleUsers,
                 handleClicked,
-                disconnect
             };
         },
     });
