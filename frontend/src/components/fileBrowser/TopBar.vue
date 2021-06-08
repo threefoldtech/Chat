@@ -1,5 +1,5 @@
 <template>
-    <div class='flex flex-row h-20 bg-grey-100 border items-center'>
+    <div class='flex flex-row h-25 bg-grey-100 border items-center relative pb-6 pt-2'>
         <div
             class='mx-2 hover:text-black cursor-pointer'
             @click='goToHome'
@@ -97,10 +97,36 @@
             x
         </span>
         </div>
-            <button>
-                + New
-            </button>
-        <div>
+        <div class="red-btn">
+        <div class='relative'>
+        <button v-if="show" key="on" @click="show = false" class='bg-red-500 py-2 px-4 text-white rounded-full'>
+            x Close
+        </button>
+        <button v-else key="off" @click="show = true" class='bg-red-500 py-2 px-4 text-white rounded-full'>
+            + New
+        </button>
+        <!-- dropdown -->
+        <div class='dropdownmenu' v-bind:class="{active: show}" v-if="show">
+            <div
+                @click='showCreateFolderDialog = true'
+                class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
+            >
+                <div class='mr-3 w-7'>
+                    <i class="fas fa-folder-plus fa-2x text-accent"></i>
+                </div>
+                <span class='text-md text-gray-600'>New Folder</span>
+            </div>
+            <div
+                @click='showCreateFileDialog = true'
+                class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
+            >
+                <div class='mr-3 w-7'>
+                    <i class="fas fa-file-upload fa-2x text-accent"></i>
+                </div>
+                <span class='text-md text-gray-600'>Upload Files</span>
+            </div>
+        </div>
+        </div>
         </div>
         <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
             <template v-slot:title class='center'>
@@ -175,6 +201,11 @@
 
     export default defineComponent({
         name: 'TopBar',
+        data: function(){ 
+            return {
+                show: false
+            }
+        },
         components: { Button, jdialog: Dialog },
         setup() {
             let debounce
@@ -215,5 +246,21 @@
 </script>
 
 <style scoped>
+    .dropdownmenu{
+        top: 100%;
+        position: absolute;
+        z-index: 10;
+        min-width: 165px;
+        margin-top: 0.5rem;
+        overflow-y: auto;
+        border-radius: 8px;
+        background-color: white;
+        border: 1px solid grey;
+    }
 
+    .red-btn{
+        position: absolute;
+        bottom: -13px;
+        left: 0;
+    }
 </style>
