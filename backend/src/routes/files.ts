@@ -10,6 +10,7 @@ import { sendMessageToApi } from '../service/apiService';
 import { getFullIPv6ApiLocation } from '../service/urlService';
 import { getMyLocation } from '../service/locationService';
 import { appendSignatureToMessage } from '../service/keyService';
+import { parseMessage } from '../service/messageService';
 
 const router = Router();
 
@@ -48,13 +49,13 @@ router.post('/:chatid/:messageid', async (req, resp) => {
     };
     sendEventToConnectedSockets('message', message);
     const chat = getChat(chatId);
-    console.log('Sending TO: ', chat);
-    appendSignatureToMessage(message);
+    const messageToSend = parseMessage(message)
+    appendSignatureToMessage(messageToSend);
     await sendMessageToApi(
         chat.contacts.find(contact => contact.id === chat.adminId).location,
-        message,
+        messageToSend,
     );
-    chat.addMessage(message);
+    chat.addMessage(messageToSend);
     persistChat(chat);
     resp.sendStatus(200);
 });
