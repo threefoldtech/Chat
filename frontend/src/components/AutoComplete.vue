@@ -4,7 +4,7 @@
             v-model="searchTerm"
             @focus="handleInput"
             :placeholder="placeholder"
-            ref="input"
+            v-focus
             tabindex="0"
             maxlength="50"
         />
@@ -84,11 +84,6 @@
             const showOptions = ref(false);
             const chosenOption = ref('');
             const searchTerm = ref('');
-            const input = ref(null);
-
-            onMounted(() => {
-                input.value.focus()
-            })
 
             const reset = () => {
                 emit('update:modelValue', '');
@@ -134,7 +129,6 @@
                 chosenOption,
                 searchTerm,
                 searchResults,
-                input
             };
         },
     });
