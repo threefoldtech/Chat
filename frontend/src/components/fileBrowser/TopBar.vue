@@ -1,22 +1,22 @@
 <template>
-    <div class='flex flex-row h-12 bg-white border border-gray-200 items-center'>
+    <div class='flex flex-row h-20 bg-grey-100 border items-center'>
         <div
-            class='mx-2 hover:text-green-500 cursor-pointer'
+            class='mx-2 hover:text-black cursor-pointer'
             @click='goToHome'
         >
-            <i class='fas fa-home fa-2x text-accent'></i>
+            <i class='fas fa-home fa-lg text-black'></i>
         </div>
         <div
-            class='rounded-full w-6 h-6 flex justify-center items-center'
+            class='w-6 h-6 flex justify-center items-center'
             @click='goBack'
             :class='{
-                "bg-accent hover:text-green-500 cursor-pointer": currentDirectory !== "/",
-                "bg-gray-500": currentDirectory === "/"
+                "hover:text-accent cursor-pointer": currentDirectory !== "/",
+                "text-gray-500": currentDirectory === "/"
             }'
         >
-            <i class='fas fa-arrow-up text-white'></i>
+            <i class='fas fa-angle-left fa-2x text-black'></i>
         </div>
-        <div class='flex-1 mx-2'>
+        <div class='flex flex-1 mx-2 bg-gray-200 h-9 rounded-full px-6 items-center'>
             <template v-for='(item,i) in currentDirectory.split("/")'>
                 <span
                     class='mx-2'
@@ -25,7 +25,7 @@
                     &#62;
                 </span>
                 <span
-                    class='underline cursor-pointer'
+                    class='cursor-pointer'
                     v-if='item || i === 0'
                     @click='i === 0 ? goToHome() : goToAPreviousDirectory(i)'
                 >
@@ -84,8 +84,8 @@
         <div class='collapsed-bar:hidden px-2 relative'>
             <input
                 type='text'
-                placeholder='Search'
-                class='px2-2 border-gray-200 border-2 focus:border-accent border-r rounded-lg'
+                placeholder='Search...'
+                class='h-9 px-4 rounded-full transition-none'
                 v-model='searchDirValue'
                 @input="debounceSearch"
             />
@@ -96,6 +96,11 @@
             >
             x
         </span>
+        </div>
+            <button>
+                + New
+            </button>
+        <div>
         </div>
         <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
             <template v-slot:title class='center'>

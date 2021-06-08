@@ -29,7 +29,7 @@
         name: 'Apps',
         components: {
             TopBar,
-            appLayout, DirectoryContent, SideBar, SearchContent
+            appLayout, DirectoryContent, SearchContent
         },
         setup() {
             onBeforeMount(async() => {

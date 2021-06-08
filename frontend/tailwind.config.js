@@ -10,7 +10,7 @@ module.exports = {
                 icon: '#44A687',
                 my: '#d0f0c0',
             },
-        },
+        }
     },
     plugins: [
         plugin(function({ addVariant, e }) {

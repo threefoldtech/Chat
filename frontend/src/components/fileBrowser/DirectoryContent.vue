@@ -1,5 +1,5 @@
 <template>
-    <div class='h-full overflow-y-auto'>
+    <div class='h-full overflow-y-auto bg-white'>
         <FileDropArea @send-file='uploadFiles' class='h-full'>
             <table class='w-full box-border' :key='currentDirectory'>
                 <thead>
