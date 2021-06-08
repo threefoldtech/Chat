@@ -63,12 +63,22 @@
         <div
             v-if='selectedPaths.length > 0'
             class='mx-2 cursor-pointer'
-            @click='cutPasteFiles()'
+            @click='copyFiles()'
+        >
+             <span class='text-gray-400 hover:text-gray-500'>
+                <i class='fas fa-copy'></i>
+             </span>
+        </div>
+        <div
+            v-if='selectedPaths.length > 0'
+            class='mx-2 cursor-pointer'
+            @click='cutFiles()'
         >
              <span class='text-gray-400 hover:text-gray-500'>
                 <i class='fas fa-cut'></i>
              </span>
         </div>
+
 
         <div
             v-if='selectedPaths.length > 0'
@@ -80,25 +90,11 @@
         </span>
         </div>
         <div
-            v-if='selectedPaths.length > 0 || copiedFiles.length  > 0'
+            v-if='copiedFiles.length  > 0'
             class='mx-2 px-2 py-1 text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer flex fex-row'
             @click='copyPasteSelected'
         >
-            <div v-if='copiedFiles.length <= 0'><i class='fas fa-copy mr-1'></i></div>
-            <p>{{ copyStatus }}</p>
-            <div
-                @click.stop='clearClipboard'
-                v-if='copiedFiles.length
-                > 0'>
-                <i class='fas fill-current text-red-400 fa-window-close fa-1x ml-1'></i>
-            </div>
-        </div>
-        <div
-            v-if='cutFiles.length > 0'
-            class='mx-2 px-2 py-1 text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer flex fex-row'
-            @click='cutPasteFiles()'
-        >
-            <p>Paste {{cutFiles.length}} files </p>
+            <p>Paste {{copiedFiles.length}} file(s)</p>
             <div
                 @click.stop='clearClipboard'>
                 <i class='fas fill-current text-red-400 fa-window-close fa-1x ml-1'></i>
@@ -174,13 +170,12 @@
         deleteFiles,
         downloadFiles,
         copyPasteSelected,
-        copyStatus,
         copiedFiles,
         clearClipboard,
         renameFile,
         searchDir,
         searchDirValue,
-        searchResults, isDraggingFiles, moveFiles, cutFiles
+        searchResults, isDraggingFiles, moveFiles, selectedAction, Action
     } from '@/store/fileBrowserStore';
     import Dialog from '@/components/Dialog.vue';
     import Button from '@/components/Button.vue';
@@ -234,15 +229,13 @@
                 selectedPaths.value = [];
             };
 
-            async function cutPasteFiles() {
-                if (cutFiles.value.length > 0) {
-                    await moveFiles(currentDirectory.value, cutFiles.value.map(x => x.path))
-                    await clearClipboard()
-                    return
-                }
-                cutFiles.value = selectedPaths.value
-                selectedPaths.value = [];
-                return
+            async function cutFiles() {
+                selectedAction.value = Action.CUT
+                await copyPasteSelected()
+            }
+            async function copyFiles() {
+                selectedAction.value = Action.COPY
+                await copyPasteSelected()
             }
 
             return {
@@ -256,7 +249,6 @@
                 showRenameDialog,
                 downloadFiles,
                 copyPasteSelected,
-                copyStatus,
                 copiedFiles,
                 clearClipboard,
                 newName,
@@ -271,7 +263,7 @@
                 onDrop,
                 parts,
                 cutFiles,
-                cutPasteFiles
+                copyFiles
             };
         },
     });

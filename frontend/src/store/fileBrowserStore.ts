@@ -20,6 +20,11 @@ export enum FileType {
     Image
 }
 
+export enum Action {
+    CUT,
+    COPY,
+}
+
 export interface PathInfoModel extends Api.PathInfo {
     fileType: FileType;
 }
@@ -32,14 +37,13 @@ export const rootDirectory = '/';
 export const currentDirectory = ref<string>(rootDirectory);
 export const currentDirectoryContent = ref<PathInfoModel[]>([]);
 export const selectedPaths = ref<PathInfoModel[]>([]);
-export const copyStatus = ref<string>('Copy Selected');
 export const copiedFiles = ref<PathInfoModel[]>([]);
-export const cutFiles = ref<PathInfoModel[]>([]);
 export const currentSort = ref('name');
 export const currentSortDir = ref('asc');
 export const searchDirValue = ref<string>('');
 export const searchResults = ref<PathInfoModel[] | string>([]);
 export const isDraggingFiles = ref<boolean>(false);
+export const selectedAction = ref<Action>(Action.COPY);
 
 watch([currentDirectory], () => {
     updateContent();
@@ -158,24 +162,26 @@ export const copyPasteSelected = async () => {
     if (copiedFiles.value.length === 0) {
         copiedFiles.value = selectedPaths.value;
         selectedPaths.value = [];
-        copyStatus.value = `Paste ${copiedFiles.value.length} files`;
         return;
     }
-    //paste
-    const result = await Api.copyFiles(copiedFiles.value.map(x => x.path), currentDirectory.value);
-    if (result.status !== 200 && result.status !== 201)
-        throw new Error('Could not copy files');
 
-    copiedFiles.value = [];
-    selectedPaths.value = [];
-    copyStatus.value = `Copy Selected`;
+    //paste
+    if (selectedAction.value === Action.COPY) {
+        const result = await Api.copyFiles(copiedFiles.value.map(x => x.path), currentDirectory.value);
+        if (result.status !== 200 && result.status !== 201)
+            throw new Error('Could not copy files');
+    }
+    //paste/cut
+    if (selectedAction.value === Action.CUT) {
+        await moveFiles(currentDirectory.value, copiedFiles.value.map(x => x.path));
+    }
+    await clearClipboard();
     await updateContent();
 };
 
 export const clearClipboard = () => {
-    copyStatus.value = `Copy Selected`;
     copiedFiles.value = [];
-    cutFiles.value = [];
+    selectedPaths.value = [];
 };
 
 export const searchDir = async () => {
@@ -231,7 +237,7 @@ export const goBack = () => {
     const parts = currentDirectory.value.split('/');
     parts.pop();
     console.log(parts);
-    parts.length === 1 ?  currentDirectory.value = rootDirectory : currentDirectory.value = pathJoin(parts);
+    parts.length === 1 ? currentDirectory.value = rootDirectory : currentDirectory.value = pathJoin(parts);
 };
 
 export const selectItem = (item: PathInfoModel) => {
