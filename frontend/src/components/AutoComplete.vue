@@ -2,9 +2,9 @@
     <div class="relative w-full" @keydown.esc="showOptions = false">
         <input
             v-model="searchTerm"
-            @input="handleInput"
+            @focus="handleInput"
             :placeholder="placeholder"
-            ref="input"
+            v-focus
             tabindex="0"
             maxlength="50"
         />
@@ -28,10 +28,13 @@
                     v-for="(item, index) in searchResults()"
                     :key="index"
                     @click="handleClick(item)"
-                    class="px-3 py-2 cursor-pointer hover:bg-gray-200 capitalize"
+                    class="px-3 flex flex-row py-2 cursor-pointer hover:bg-gray-200 capitalize"
                 >
+                    <AvatarImg :id="item.id" alt="contact image" />
+                    <div class="flex-col mr-2">
                     <b>{{ item.id }}</b> <br />
                     <span class="truncate">{{ item.location }}</span>
+                    </div>
                 </li>
                 <li
                     v-if="!searchResults().length"
@@ -46,9 +49,10 @@
 
 <script lang="ts">
     import { Contact } from '@/types';
-    import { defineComponent, ref, computed } from 'vue';
-
+    import { defineComponent, ref, computed, onMounted } from 'vue';
+    import AvatarImg from '@/components/AvatarImg.vue';
     export default defineComponent({
+        components: { AvatarImg },
         props: {
             modelValue: {
                 type: String,
@@ -75,6 +79,7 @@
             },
         },
         emits: ['update:modelValue', 'clicked'],
+
         setup(props, { emit }) {
             const showOptions = ref(false);
             const chosenOption = ref('');
