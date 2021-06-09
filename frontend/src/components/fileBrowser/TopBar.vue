@@ -60,6 +60,25 @@
                 <i class='fas fa-download'></i>
              </span>
         </div>
+        <div
+            v-if='selectedPaths.length > 0'
+            class='mx-2 cursor-pointer'
+            @click='copyFiles()'
+        >
+             <span class='text-gray-400 hover:text-gray-500'>
+                <i class='fas fa-copy'></i>
+             </span>
+        </div>
+        <div
+            v-if='selectedPaths.length > 0'
+            class='mx-2 cursor-pointer'
+            @click='cutFiles()'
+        >
+             <span class='text-gray-400 hover:text-gray-500'>
+                <i class='fas fa-cut'></i>
+             </span>
+        </div>
+
 
         <div
             v-if='selectedPaths.length > 0'
@@ -71,16 +90,13 @@
         </span>
         </div>
         <div
-            v-if='selectedPaths.length > 0 || copiedFiles.length  > 0'
+            v-if='copiedFiles.length  > 0'
             class='mx-2 px-2 py-1 text-white font-bold bg-green-400 border-2 border-green-400 hover:text-green-400 hover:bg-white rounded-md cursor-pointer flex fex-row'
             @click='copyPasteSelected'
         >
-            <div v-if='copiedFiles.length <= 0'><i class='fas fa-copy mr-1'></i></div>
-            <p>{{ copyStatus }}</p>
+            <p>Paste {{copiedFiles.length}} file(s)</p>
             <div
-                @click.stop='clearClipboard'
-                v-if='copiedFiles.length
-                > 0'>
+                @click.stop='clearClipboard'>
                 <i class='fas fill-current text-red-400 fa-window-close fa-1x ml-1'></i>
             </div>
         </div>
@@ -108,7 +124,7 @@
                 Do you really want to delete {{ selectedPaths.length }} item(s)?
             </div>
             <div class='grid grid-cols-2 mt-2'>
-                <button @click='deleteFiles();showDeleteDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
+                <button @click='deleteFiles(selectedPaths);showDeleteDialog = false;' class='bg-red-500 p-2 text-white font-bold'>
                     YES
                 </button>
                 <button @click='showDeleteDialog = false' class='p-2'>
@@ -154,13 +170,12 @@
         deleteFiles,
         downloadFiles,
         copyPasteSelected,
-        copyStatus,
         copiedFiles,
         clearClipboard,
         renameFile,
         searchDir,
         searchDirValue,
-        searchResults, isDraggingFiles, moveFiles,
+        searchResults, isDraggingFiles, moveFiles, selectedAction, Action
     } from '@/store/fileBrowserStore';
     import Dialog from '@/components/Dialog.vue';
     import Button from '@/components/Button.vue';
@@ -174,7 +189,8 @@
             let showRenameDialog = ref(false);
             let newName = ref<string>('');
 
-            const parts = computed(() => currentDirectory.value.split("/"));
+            const parts = computed(() => currentDirectory.value.split('/'));
+
             function debounceSearch(event) {
                 clearTimeout(debounce);
                 debounce = setTimeout(() => {
@@ -213,6 +229,15 @@
                 selectedPaths.value = [];
             };
 
+            async function cutFiles() {
+                selectedAction.value = Action.CUT
+                await copyPasteSelected()
+            }
+            async function copyFiles() {
+                selectedAction.value = Action.COPY
+                await copyPasteSelected()
+            }
+
             return {
                 goToHome,
                 goBack,
@@ -224,7 +249,6 @@
                 showRenameDialog,
                 downloadFiles,
                 copyPasteSelected,
-                copyStatus,
                 copiedFiles,
                 clearClipboard,
                 newName,
@@ -237,7 +261,9 @@
                 onDragEnter,
                 onDragLeave,
                 onDrop,
-                parts
+                parts,
+                cutFiles,
+                copyFiles
             };
         },
     });

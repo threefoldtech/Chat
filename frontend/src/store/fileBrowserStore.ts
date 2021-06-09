@@ -20,6 +20,11 @@ export enum FileType {
     Image
 }
 
+export enum Action {
+    CUT,
+    COPY,
+}
+
 export interface PathInfoModel extends Api.PathInfo {
     fileType: FileType;
 }
@@ -32,13 +37,13 @@ export const rootDirectory = '/';
 export const currentDirectory = ref<string>(rootDirectory);
 export const currentDirectoryContent = ref<PathInfoModel[]>([]);
 export const selectedPaths = ref<PathInfoModel[]>([]);
-export const copyStatus = ref<string>('Copy Selected');
 export const copiedFiles = ref<PathInfoModel[]>([]);
 export const currentSort = ref('name');
 export const currentSortDir = ref('asc');
 export const searchDirValue = ref<string>('');
 export const searchResults = ref<PathInfoModel[] | string>([]);
 export const isDraggingFiles = ref<boolean>(false);
+export const selectedAction = ref<Action>(Action.COPY);
 
 watch([currentDirectory], () => {
     updateContent();
@@ -98,8 +103,8 @@ export const uploadFile = async (file: File, path = currentDirectory.value) => {
     await updateContent();
 };
 
-export const deleteFiles = async () => {
-    await Promise.all(selectedPaths.value.map(async f => {
+export const deleteFiles = async (list: PathInfoModel[]) => {
+    await Promise.all(list.map(async f => {
         const result = await Api.deleteFile(f.path);
         if (result.status !== 200 && result.status !== 201)
             throw new Error('Could not delete file');
@@ -137,7 +142,7 @@ export const goToHome = () => {
 };
 
 export const moveFiles = async (destination: string, items = selectedPaths.value.map(x => x.path)) => {
-    if(items.includes(destination)) {
+    if (items.includes(destination)) {
         createErrorNotification('Error while moving', 'Unable to move into itself');
         return;
     }
@@ -148,32 +153,35 @@ export const moveFiles = async (destination: string, items = selectedPaths.value
         return;
     }
 
-    createNotification("Move Successful", `Moved ${items.length} item(s) into ${destination}`, Status.Success);
+    createNotification('Move Successful', `Moved ${items.length} item(s) into ${destination}`, Status.Success);
     await updateContent();
-}
+};
 
 export const copyPasteSelected = async () => {
     //copy
     if (copiedFiles.value.length === 0) {
         copiedFiles.value = selectedPaths.value;
         selectedPaths.value = [];
-        copyStatus.value = `Paste ${copiedFiles.value.length} files`;
         return;
     }
-    //paste
-    const result = await Api.copyFiles(copiedFiles.value.map(x => x.path), currentDirectory.value);
-    if (result.status !== 200 && result.status !== 201)
-        throw new Error('Could not copy files');
 
-    copiedFiles.value = [];
-    selectedPaths.value = [];
-    copyStatus.value = `Copy Selected`;
+    //paste
+    if (selectedAction.value === Action.COPY) {
+        const result = await Api.copyFiles(copiedFiles.value.map(x => x.path), currentDirectory.value);
+        if (result.status !== 200 && result.status !== 201)
+            throw new Error('Could not copy files');
+    }
+    //paste/cut
+    if (selectedAction.value === Action.CUT) {
+        await moveFiles(currentDirectory.value, copiedFiles.value.map(x => x.path));
+    }
+    await clearClipboard();
     await updateContent();
 };
 
 export const clearClipboard = () => {
-    copyStatus.value = `Copy Selected`;
     copiedFiles.value = [];
+    selectedPaths.value = [];
 };
 
 export const searchDir = async () => {
@@ -228,7 +236,8 @@ export const goBack = () => {
     if (currentDirectory.value === rootDirectory) return;
     const parts = currentDirectory.value.split('/');
     parts.pop();
-    currentDirectory.value = pathJoin(parts);
+    console.log(parts);
+    parts.length === 1 ? currentDirectory.value = rootDirectory : currentDirectory.value = pathJoin(parts);
 };
 
 export const selectItem = (item: PathInfoModel) => {
@@ -240,11 +249,11 @@ export const deselectItem = (item: PathInfoModel) => {
 };
 
 export const equals = (item1: PathInfoModel, item2: PathInfoModel): boolean => {
-    if(!item1 || !item2) return false;
+    if (!item1 || !item2) return false;
     return item1.fullName === item2.fullName &&
         item1.isDirectory === item2.isDirectory &&
         item1.extension === item2.extension &&
-        item1.path === item2.path
+        item1.path === item2.path;
 };
 
 export const selectAll = () => {
