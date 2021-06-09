@@ -1,24 +1,30 @@
 <template>
-    <div class='bg-white h-full w-52'>
-        <div
-            @click='showCreateFolderDialog = true'
-            class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
-        >
-            <div class='mr-3 w-7'>
-                <i class="fas fa-folder-plus fa-2x text-accent"></i>
+    <button v-if="showPopUp" key="on" @click="showPopUp = false" class='bg-red-500 py-2 px-4 text-white rounded-full'>
+            x Close
+        </button>
+        <button v-else key="off" @click="showPopUp = true" class='bg-red-500 py-2 px-4 text-white rounded-full'>
+            + New
+        </button>
+    <div class='dropdownmenu' v-bind:class="{active: showPopUp}" v-if="showPopUp">
+            <div
+                @click='showCreateFolderDialog = true; showPopUp = false;'
+                class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
+            >
+                <div class='mr-3 w-7'>
+                    <i class="fas fa-folder-plus fa-2x text-accent"></i>
+                </div>
+                <span class='text-md text-gray-600'>New Folder</span>
             </div>
-            <span class='text-md text-gray-600'>New Folder</span>
-        </div>
-        <div
-            @click='showCreateFileDialog = true'
-            class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
-        >
-            <div class='mr-3 w-7'>
-                <i class="fas fa-file-upload fa-2x text-accent"></i>
+            <div
+                @click='showCreateFileDialog = true; showPopUp = false;'
+                class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
+            >
+                <div class='mr-3 w-7'>
+                    <i class="fas fa-file-upload fa-2x text-accent"></i>
+                </div>
+                <span class='text-md text-gray-600'>Upload Files</span>
             </div>
-            <span class='text-md text-gray-600'>Upload Files</span>
         </div>
-    </div>
     <Dialog :model-value='showCreateFolderDialog' @update-model-value='(val) => updateCreateFolderDialog(val)'>
         <template v-slot:title>
             <h1>Create folder</h1>
@@ -70,6 +76,11 @@
 
     export default defineComponent({
         name: 'SideBar',
+        data: function(){ 
+            return {
+                showPopUp: false
+            }
+        },
         components: {
             Button, Dialog, FileDropArea,
         },
@@ -136,5 +147,15 @@
 </script>
 
 <style scoped>
-
+    .dropdownmenu{
+        top: 100%;
+        position: absolute;
+        z-index: 10;
+        min-width: 165px;
+        margin-top: 0.5rem;
+        overflow-y: auto;
+        border-radius: 8px;
+        background-color: white;
+        border: 1px solid grey;
+    }
 </style>

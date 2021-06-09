@@ -99,13 +99,8 @@
         </div>
         <div class="red-btn">
         <div class='relative'>
-        <button v-if="show" key="on" @click="show = false" class='bg-red-500 py-2 px-4 text-white rounded-full'>
-            x Close
-        </button>
-        <button v-else key="off" @click="show = true" class='bg-red-500 py-2 px-4 text-white rounded-full'>
-            + New
-        </button>
-        <!-- dropdown -->
+        <SideBar/>
+        <!-- dropdown 
         <div class='dropdownmenu' v-bind:class="{active: show}" v-if="show">
             <div
                 @click='showCreateFolderDialog = true'
@@ -125,7 +120,7 @@
                 </div>
                 <span class='text-md text-gray-600'>Upload Files</span>
             </div>
-        </div>
+        </div>-->
         </div>
         </div>
         <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
@@ -198,15 +193,12 @@
     import Dialog from '@/components/Dialog.vue';
     import { showUserConfigDialog } from '@/services/dialogService';
     import Button from '@/components/Button.vue';
+    import SideBar from '@/components/fileBrowser/SideBar.vue';
 
     export default defineComponent({
         name: 'TopBar',
-        data: function(){ 
-            return {
-                show: false
-            }
-        },
-        components: { Button, jdialog: Dialog },
+        
+        components: { SideBar, Button, jdialog: Dialog },
         setup() {
             let debounce
             function debounceSearch(event) {
