@@ -98,30 +98,9 @@
         </span>
         </div>
         <div class="red-btn">
-        <div class='relative'>
-        <SideBar/>
-        <!-- dropdown 
-        <div class='dropdownmenu' v-bind:class="{active: show}" v-if="show">
-            <div
-                @click='showCreateFolderDialog = true'
-                class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
-            >
-                <div class='mr-3 w-7'>
-                    <i class="fas fa-folder-plus fa-2x text-accent"></i>
-                </div>
-                <span class='text-md text-gray-600'>New Folder</span>
+            <div class='relative'>
+                <AddButton/>
             </div>
-            <div
-                @click='showCreateFileDialog = true'
-                class='flex flex-row p-4 items-center w-full hover:bg-gray-200 cursor-pointer'
-            >
-                <div class='mr-3 w-7'>
-                    <i class="fas fa-file-upload fa-2x text-accent"></i>
-                </div>
-                <span class='text-md text-gray-600'>Upload Files</span>
-            </div>
-        </div>-->
-        </div>
         </div>
         <jdialog v-model='showDeleteDialog' @update-model-value="showDeleteDialog = false" noActions class='max-w-10'>
             <template v-slot:title class='center'>
@@ -193,12 +172,12 @@
     import Dialog from '@/components/Dialog.vue';
     import { showUserConfigDialog } from '@/services/dialogService';
     import Button from '@/components/Button.vue';
-    import SideBar from '@/components/fileBrowser/SideBar.vue';
+    import AddButton from '@/components/fileBrowser/AddButton.vue';
 
     export default defineComponent({
         name: 'TopBar',
         
-        components: { SideBar, Button, jdialog: Dialog },
+        components: { AddButton, Button, jdialog: Dialog },
         setup() {
             let debounce
             function debounceSearch(event) {

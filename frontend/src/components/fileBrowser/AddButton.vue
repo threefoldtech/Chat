@@ -75,7 +75,7 @@
     import Button from '@/components/Button.vue';
 
     export default defineComponent({
-        name: 'SideBar',
+        name: 'AddButton',
         data: function(){ 
             return {
                 showPopUp: false
