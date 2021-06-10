@@ -6,10 +6,17 @@ if test -f "$FILE"; then
     exec yggdrasil -useconffile $FILE -logto /var/log/yggdrasil/yggdrasil.log >> /var/log/yggdrasil/yggdrasil.log &
 fi
 
+cd /backend
+yarn
+yarn run migrate
+if [ $? -eq 0 ]
+then
+  yarn dev &
+  cd /frontend && yarn && yarn dev &
+else
+  echo "Migrations failed"
+  mv /var/tmp/error-nginx.conf /etc/nginx/conf.d/default.conf
+fi
+
 nginx
-
-cd /backend && yarn && yarn dev &
-cd /frontend && yarn && yarn dev &
-
-
 tail -f /dev/null

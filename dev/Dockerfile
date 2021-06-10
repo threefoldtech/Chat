@@ -25,8 +25,9 @@ COPY --from=builder /tmp/dumb-init    /usr/bin/
 RUN mkdir /var/log/yggdrasil
 
 COPY ./dev/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./public/error /usr/share/nginx/error
+COPY ./error-nginx.conf /var/tmp/error-nginx.conf
 RUN rm -f /etc/nginx/sites-enabled/default
-
 
 RUN curl -sL https://deb.nodesource.com/setup_15.x | bash -
 RUN apt install -y nodejs

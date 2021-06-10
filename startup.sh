@@ -6,11 +6,15 @@ if test -f "$FILE"; then
     exec yggdrasil -useconffile $FILE -logto /var/log/yggdrasil/yggdrasil.log >> /var/log/yggdrasil/yggdrasil.log &
 fi
 
-nginx
-
 cd /backend
-pm2 start dist/migrator/migrator.js &
-pm2 start dist/src/index.js &
+node dist/migrator/migrator.js
+if [ $? -eq 0 ]
+then
+  pm2 start dist/src/index.js &
+else
+  echo "Migrations failed"
+  mv /var/tmp/error-nginx.conf /etc/nginx/conf.d/default.conf
+fi
 
-
+nginx
 tail -f /dev/null

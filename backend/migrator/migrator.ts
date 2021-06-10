@@ -39,6 +39,7 @@ const persistMigrations = (data: IMigration[]): void => {
 
         console.log(`Migration: ${file}`);
         try {
+            throw new Error("bla")
             console.log(`Migration started`);
             await migration.up();
             migrations.push({
