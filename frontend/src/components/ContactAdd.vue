@@ -127,10 +127,15 @@
             const contactAdd = () => {
                 try {
                     let userId = usernameAdd.value;
-                    if(!userId) { return; }
+                    console.log(userId);
+                    if(!userId) {
+                        usernameAddError.value = 'Cannot add empty user!';
+                        return;
+                    }
                     if (!possibleUsers.value.find(pu => pu.id === userId)) {
                         usernameAddError.value = 'Not able to find DigitalTwin of this user';
-                        // return;
+                        //remove this return for testing
+                        return;
                     }
                     const { chats } = usechatsState();
                     if (chats.value.filter(chat => !chat.isGroup).find(chat => <string>chat.chatId == userId)) {
@@ -139,7 +144,6 @@
                     }
                     const { addContact } = useContactsActions();
                     addContact(userId, userAddLocation.value);
-                    console.log(userId);
                     usernameAdd.value = '';
                     contactAddError.value = '';
                     emit('closeDialog');
