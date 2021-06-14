@@ -263,4 +263,11 @@ router.get('/files/search', requiresAuthentication, async (req: express.Request,
     res.status(StatusCodes.CREATED);
 });
 
+router.post('/files/share', requiresAuthentication, async(req: express.Request, resp: express.Response) => {
+    const path = req.body.path;
+    const user = req.body.user;
+    const permissions = req.body.permissions;
+    
+});
+
 export default router;

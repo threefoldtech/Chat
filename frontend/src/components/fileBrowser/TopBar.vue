@@ -45,6 +45,14 @@
         <div
             v-if='selectedPaths.length === 1'
             class='mx-2 cursor-pointer'
+        >
+            <span class='text-gray-400 hover:text-gray-500'>
+                <i class='fas fa-share-alt'></i>
+            </span>
+        </div>
+        <div
+            v-if='selectedPaths.length === 1'
+            class='mx-2 cursor-pointer'
             @click='showRenameDialog = true; newName = selectedPaths[0].name'
         >
             <span class='text-gray-400 hover:text-gray-500'>
