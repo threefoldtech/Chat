@@ -131,7 +131,6 @@ app.use(function (req, res, next) {
       for (var alias in config.info.wikis){
         var u = req.url.replace('/info/', '')
         var s = u.split("/")
-        console.log(s[0])
         if (s[0] == alias){
           info = config.info.wikis[s[0]]
           found = true
@@ -145,6 +144,10 @@ app.use(function (req, res, next) {
       info = Object.assign({}, info) 
       info.subPath = true
     }
+  }
+  
+  if (!info){
+    return res.status(404).render('sites/404.mustache')
   }
   req.info = info
   req.info.host = host
@@ -161,8 +164,14 @@ app.use((req, res, next) => {
     return
   }
   var info = req.info
+  
   var requirePassword = false
   var threebotConnect = false
+  
+  if(!info.acls){
+    return res.status(404).render('sites/404.mustache')
+  }
+
   if (Object.keys(info.acls.secrets).length !== 0){
     requirePassword = true
     req.session.requirePassword = true

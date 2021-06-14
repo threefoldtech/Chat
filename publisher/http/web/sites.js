@@ -17,27 +17,27 @@ async function rewriteRoles(content, info){
 
     var mainDomains = info.domains
     var mainRepo  = info.repo
-       
-    if (info.host == 'localhost' || info.host == '127.0.0.1'){
-        for(var item in config.info.domains){
-            var site = config.info.domains[item]
-            var isWebsite = site.isWebSite
     
-            var prefix = ""
     
-            if(mainDomains.includes(item) || site.repo == mainRepo){
-                prefix = "/"
-            }else if(isWebsite){
-                prefix = `/${site.alias}`
-            }else{
-                prefix = `/info/${site.alias}`
-            }  
-            content = content.replace(new RegExp(`https://${item}/`, "g"), `${host}${prefix}`)
-            content = content.replace(new RegExp(`https://${item}`, "g"), `${host}${prefix}`)
-            content = content.replace(new RegExp(`http://${item}/`, "g"), `${host}${prefix}`)
-            content = content.replace(new RegExp(`http://${item}`, "g"), `${host}${prefix}`)
-        }
-    }else{
+    for(var item in config.info.domains){
+        var site = config.info.domains[item]
+        var isWebsite = site.isWebSite
+
+        var prefix = ""
+
+        if(mainDomains.includes(item) || site.repo == mainRepo){
+            prefix = "/"
+        }else if(isWebsite){
+            prefix = `/${site.alias}`
+        }else{
+            prefix = `/info/${site.alias}`
+        }  
+        content = content.replace(new RegExp(`https://${item}/`, "g"), `${host}${prefix}`)
+        content = content.replace(new RegExp(`https://${item}`, "g"), `${host}${prefix}`)
+        content = content.replace(new RegExp(`http://${item}/`, "g"), `${host}${prefix}`)
+        content = content.replace(new RegExp(`http://${item}`, "g"), `${host}${prefix}`)
+    }
+    if (info.host != 'localhost' && info.host != '127.0.0.1'){
         var site = config.info.domains[info.host]
         var isWebsite = site.isWebSite
         content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
