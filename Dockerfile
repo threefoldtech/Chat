@@ -50,6 +50,8 @@ COPY --from=builder /tmp/dumb-init    /usr/bin/
 RUN mkdir /var/log/yggdrasil
 
 COPY --from=frontend_builder /app/dist /usr/share/nginx/html
+COPY ./public/error /usr/share/nginx/error
+COPY ./error-nginx.conf /var/tmp/error-nginx.conf
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=backend_builder /app/ /backend
 
