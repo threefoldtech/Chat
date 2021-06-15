@@ -2,7 +2,7 @@ import { sign, verify } from 'jsonwebtoken';
 import { getPrivateKey } from '../store/keyStore';
 import { config } from '../config/config';
 
-export const createJwtToken = (data: any, exp: number,) => {
+export const createJwtToken = (data: any, exp?: number | string) => {
     const privateKey = getPrivateKey();
     return sign({
         data: data

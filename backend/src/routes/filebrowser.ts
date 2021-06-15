@@ -26,6 +26,7 @@ import { config } from '../config/config';
 import { uuidv4 } from '../common';
 import * as fs from 'fs';
 import AdmZip from "adm-zip"
+import { createShare, getShare } from '../service/fileShareService';
 
 const router = Router();
 
@@ -264,10 +265,26 @@ router.get('/files/search', requiresAuthentication, async (req: express.Request,
 });
 
 router.post('/files/share', requiresAuthentication, async(req: express.Request, resp: express.Response) => {
-    const path = req.body.path;
-    const user = req.body.user;
-    const permissions = req.body.permissions;
-    
+    const path = req.body.path as string | undefined;
+    const userId = req.body.userId as string | undefined;
+    const isPublic = req.body.isPublic as boolean | undefined;
+    const writable = req.body.writable as boolean | undefined;
+
+    if (!path)
+        throw new HttpError(StatusCodes.BAD_REQUEST, 'No path specified');
+
+    if(!userId && isPublic === undefined)
+        throw new HttpError(StatusCodes.BAD_REQUEST, 'No user specified');
+
+    if(writable && isPublic)
+        throw new HttpError(StatusCodes.BAD_REQUEST, 'No public writable files');
+
+    const token = createShare(path, userId, isPublic, writable);
+
+});
+
+router.get('/files/share', async(req: express.Request, resp: express.Response) => {
+
 });
 
 export default router;
