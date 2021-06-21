@@ -9,5 +9,6 @@ export const calculateBaseUrl = userId => {
 };
 
 export const calcExternalResourceLink = location => {
-    return `${window.location.origin}/getExternalResource?resource=${location}`;
+    location = location.replace("[201:bc4a:fd82:5db8:7403:ebbf:37df:f3c0]", "127.0.0.1:3010")
+    return `${window.location.origin}/api/getExternalResource?resource=${location}`;
 };

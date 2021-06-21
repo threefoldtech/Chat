@@ -6,10 +6,10 @@ if test -f "$FILE"; then
     exec yggdrasil -useconffile $FILE -logto /var/log/yggdrasil/yggdrasil.log >> /var/log/yggdrasil/yggdrasil.log &
 fi
 
-nginx
+#nginx
 
-cd /backend && yarn && yarn dev &
-cd /frontend && yarn && yarn dev &
+cd /publisher && npm install && node server.js &
+#cd /frontend && yarn && yarn dev &
 
 
 tail -f /dev/null

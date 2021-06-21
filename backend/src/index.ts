@@ -19,30 +19,25 @@ const corsOptions: CorsOptions = {
     origin: '*',
     optionsSuccessStatus: 200,
 };
-
-const app: Application = express();
-const httpServer: http.Server = http.createServer(app);
-
-startSocketIo(httpServer);
-
-app.use(
-    morgan('short', {
-        stream: {
-            write: (text: string) => {
-                httpLogger.http(text);
+const main = (app: Application) => {
+    //const httpServer: http.Server = http.createServer(app);
+    app.use(
+        morgan('short', {
+            stream: {
+                write: (text: string) => {
+                    httpLogger.http(text);
+                },
             },
-        },
-    }),
-);
-app.use(errorMiddleware);
+        }),
+    );
+    // app.use(errorMiddleware);
 
-app.use(cors(corsOptions));
+    // app.use(cors(corsOptions));
 
 // app.enable('trust proxy');
-app.set('trust proxy', 1);
+    app.set('trust proxy', 1);
 
-app.use(
-    session({
+    const sessionConf = {
         name: 'sessionId',
         secret: 'secretpassphrase',
         resave: false,
@@ -53,27 +48,45 @@ app.use(
             httpOnly: false,
             secure: false,
         },
-    }),
-);
+    };
 
-app.use(bodyParser.raw());
-app.use(bodyParser.urlencoded({ limit: '100mb', extended: false }));
-app.use(bodyParser.json({ limit: '100mb' }));
+    // app.use(bodyParser.raw());
+    // app.use(bodyParser.urlencoded({ limit: '100mb', extended: false }));
+    // app.use(bodyParser.json({ limit: '100mb' }));
 
-app.use(
-    fileupload({
-        useTempFiles: true,
-        parseNested: true,
-    }),
-);
+    // app.use(
+    //     fileupload({
+    //         useTempFiles: true,
+    //         parseNested: true,
+    //     }),
+    // );
 
-app.use('/api/', routes);
+    app.use('/api/',
+        errorMiddleware,
+        cors(corsOptions),
+        session(sessionConf),
+        fileupload({
+            useTempFiles: true,
+            parseNested: true,
+        }),
+        bodyParser.raw(),
+        bodyParser.urlencoded({
+            limit: '100mb',
+            extended: false,
+        }),
+        bodyParser.json({ limit: '100mb' }),
+        routes);
 //Reading data
-initKeys();
-initUserData();
-initTokens();
-initYggdrasil();
+    initKeys();
+    initUserData();
+    initTokens();
+    initYggdrasil();
 
-httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
-    logger.info( 'go to http://localhost:' + (process.env.PORT || 3000));
-});
+    // httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
+    //     logger.info('go to http://localhost:' + (process.env.PORT || 3000));
+    // });
+};
+export {
+    main as mainDigitalTwin,
+    startSocketIo as socketDigitalTwin
+};

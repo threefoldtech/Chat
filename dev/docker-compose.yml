@@ -1,47 +1,26 @@
 version: "3"
 
 services:
-  bob-digitaltwin:
-    container_name: bob-chat
+  jensmeire-digitaltwin:
+    container_name: jensmeire-chat
     build:
       context: ../
       dockerfile: ./dev/Dockerfile
     restart: always
     environment:
-      - USER_ID=bob
+      - USER_ID=jensmeire
       - ENVIRONMENT=development
     volumes:
       - ../frontend:/frontend
       - ../backend:/backend
-      - ./appdata:/appdata
+      - ../publisher:/publisher
+      - ~/.publisher:/root/.publisher
+      - /appdata:/appdata
       # - ./dev/logs:/var/log/
       # - ./dev/logs:/var/log
-
-    networks:
-      - chatnet
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun
-
-  alice-digitaltwin:
-    container_name: alice-chat
-    build:
-      context: ../
-      dockerfile: ./dev/Dockerfile
-    restart: always
-    environment:
-      - USER_ID=alice
-      - ENVIRONMENT=development
-    volumes:
-      - ../frontend:/frontend
-      - ../backend:/backend
-      - ./appdata1:/appdata
-      # - ./dev/logs:/var/log/
-      # - ./dev/logs:/var/log
-
+    ports:
+      - "443:443"
+      - "80:3000"
     networks:
       - chatnet
     sysctls:

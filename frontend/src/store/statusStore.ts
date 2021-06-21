@@ -17,6 +17,7 @@ export const fetchStatus = async (digitalTwinId: DtId) => {
     if (digitalTwinId == user.id) {
         location = `${window.location.origin}${locationApiEndpoint}`;
     } else {
+        console.log("test", watchingUsers);
         location = calcExternalResourceLink(
             `http://[${
                 watchingUsers[<string>digitalTwinId].location
@@ -34,7 +35,6 @@ export const startFetchStatusLoop = async (contact: Contact) => {
     if (watchingUsers.find(wu => wu === contact.id)) {
         return;
     }
-    watchingUsers.push(contact.id);
     watchingUsers[<string>contact.id] = {
         location: contact.location,
     };

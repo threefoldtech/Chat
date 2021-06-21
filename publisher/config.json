@@ -22,11 +22,12 @@
     },
 
     "threebot": {
-        "passPhrase" : "analyst wrist friend quick person embrace spell bacon congress gorilla price figure mind camp vanish enrich large rhythm space garden arrive doctor poverty special"
+        "passPhrase" : "analyst wrist friend quick person embrace spell bacon congress gorilla price figure mind camp vanish enrich large rhythm space garden arrive doctor poverty special",
+        "enableDigitalTwin": true
     },
 
     "nodejs":{
-        "production": false
+        "production": true
     },
 
     "info": {}

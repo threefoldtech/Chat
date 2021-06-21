@@ -56,7 +56,7 @@ async function process(){
     c.sites = []
 
     for(item in letsencrypt){
-        if(item == "localhost" || item == "127.0.0.1"){
+        if(item == "localhost" || item == "127.0.0.1" || item == "0.0.0.0"){
             continue
         }
 
