@@ -1,5 +1,5 @@
 <template>
-    <div class=" overflow-y-auto" ref="messageBox" @scroll="handleScroll" @click="logKAK">
+    <div class=" overflow-y-auto" ref="messageBox" @scroll="handleScroll">
         <div class="relative w-full mt-8 px-4">
             <div v-if="chatInfo.isLoading" class="flex flex-col justify-center items-center w-full">
                 <Spinner />
@@ -34,7 +34,6 @@
     import { computed, onMounted, onUnmounted, ref } from 'vue';
     import { findLastIndex } from 'lodash';
     import { isFirstMessage, isLastMessage, messageBox, showDivider } from '@/services/messageHelperService';
-    import { Chat, QuoteBodyType } from '@/types';
     import { usechatsActions } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
     import Spinner from '@/components/Spinner.vue';
@@ -60,18 +59,6 @@
             const lastReadByMe = computed(() => {
                 return findLastIndex(props.chat.messages, message => props.chat.read[<string>user.id] === message.id);
             });
-            const logKAK = async () => {
-                props.chat.messages.forEach((element) => {
-                    if (element.type === "QUOTE") {
-                        console.log((element.body as QuoteBodyType).quotedMessage.id);
-                    }
-                });
-                // props.chat.messages.forEach((element) => {
-                //     if (element.type === "QUOTE" && messageId === (element.body as QuoteBodyType).quotedMessage.id) {
-                //         console.log(element);
-                //     }
-                // });
-            };
             const handleScroll = async e => {
                 let element = messageBox.value;
                 const oldScrollHeight = element.scrollHeight;
@@ -102,7 +89,6 @@
                 showDivider,
                 messageBox,
                 handleScroll,
-                logKAK,
                 chatInfo: computed(() => getChatInfo(<string>props.chat.chatId)),
             };
         },
