@@ -90,6 +90,14 @@ app.use(function (req, res, next) {
       return res.status(404).render('sites/404.mustache')
     }
   }
+
+  // @todo: replace with proper redirection in config
+  if (req.url == '/legal.md' || req.url == '/legal' || req.url == '/info/threefold/legal.md' || req.url == '/info/threefold/legal'){
+    res.writeHead(302, {
+      'Location': req.url.replace('legal', 'legal__legal')
+    });
+    return res.end();
+  }
   
   if(req.url.startsWith('/login')){
     var suburl = req.query.next.replace(/^\/|\/$/g, ''); //replace lading, trailing slash
