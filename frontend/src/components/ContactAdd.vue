@@ -127,14 +127,12 @@
             const contactAdd = () => {
                 try {
                     let userId = usernameAdd.value;
-                    console.log(userId);
                     if(!userId) {
                         usernameAddError.value = 'Cannot add empty user!';
                         return;
                     }
                     if (!possibleUsers.value.find(pu => pu.id === userId)) {
                         usernameAddError.value = 'Not able to find DigitalTwin of this user';
-                        //remove this return for testing
                         return;
                     }
                     const { chats } = usechatsState();

@@ -177,6 +177,7 @@
 
             const deleteMessage = message => {
                 //@todo: show dialog
+                console.log("=============================");
                 const updatedMessage: Message<StringMessageType> = {
                     id: message.id,
                     from: message.from,
