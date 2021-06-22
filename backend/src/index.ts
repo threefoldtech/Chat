@@ -73,7 +73,3 @@ initKeys();
 initUserData();
 initTokens();
 initYggdrasil();
-
-httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
-    logger.info( 'go to http://localhost:' + (process.env.PORT || 3000));
-});
