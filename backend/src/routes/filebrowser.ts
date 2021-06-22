@@ -19,7 +19,6 @@ import { HttpError } from '../types/errors/httpError';
 import { StatusCodes } from 'http-status-codes';
 import { DirectoryContent, DirectoryDto, FileDto, PathInfo } from '../types/dtos/fileDto';
 import { UploadedFile } from 'express-fileupload';
-import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
 import { createJwtToken, verifyJwtToken } from '../service/jwtService';
 import { isBlocked, Permission, Token, TokenData } from '../store/tokenStore';
 import syncRequest from 'sync-request';
@@ -35,7 +34,7 @@ interface FileToken extends TokenData {
     file: string;
 }
 
-router.get('/directories/content', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.get('/directories/content' , async (req: express.Request, res: express.Response) => {
     let p = req.query.path;
     if (!p || typeof p !== 'string') p = '/';
     const path = new Path(p);
@@ -46,7 +45,7 @@ router.get('/directories/content', requiresAuthentication, async (req: express.R
     res.json(await readDir(path, { withFileTypes: true }));
 });
 
-router.get('/directories/info', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.get('/directories/info' , async (req: express.Request, res: express.Response) => {
     let p = req.query.path;
     if (!p || typeof p !== 'string') p = '/';
     const path = new Path(p);
@@ -57,7 +56,7 @@ router.get('/directories/info', requiresAuthentication, async (req: express.Requ
     return getFormattedDetails(path);
 });
 
-router.post('/directories', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.post('/directories' , async (req: express.Request, res: express.Response) => {
     const dto = req.body as DirectoryDto;
     if (!dto.path) dto.path = '/';
     if (!dto.name) dto.name = 'New Folder';
@@ -73,7 +72,7 @@ router.post('/directories', requiresAuthentication, async (req: express.Request,
     } as DirectoryContent);
 });
 
-router.get('/files/info', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.get('/files/info' , async (req: express.Request, res: express.Response) => {
     let p = req.query.path;
     if (!p || typeof p !== 'string')
         throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
@@ -94,7 +93,7 @@ router.get('/files/info', requiresAuthentication, async (req: express.Request, r
     res.status(StatusCodes.OK);
 });
 
-router.post('/files', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.post('/files' , async (req: express.Request, res: express.Response) => {
     const files = req.files.newFiles as UploadedFile[] | UploadedFile;
     const dto = req.body as FileDto;
     if (!dto.path) dto.path = '/';
@@ -118,14 +117,14 @@ router.post('/files', requiresAuthentication, async (req: express.Request, res: 
     res.status(StatusCodes.CREATED);
 });
 
-router.delete('/files', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.delete('/files' , async (req: express.Request, res: express.Response) => {
     const pathClass = new Path(req.body.filepath);
     const result = await removeFile(pathClass);
     res.json(result);
     res.status(StatusCodes.CREATED);
 });
 
-router.get('/files', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.get('/files' , async (req: express.Request, res: express.Response) => {
     let p = req.query.path;
     if (!p || typeof p !== 'string')
         throw new HttpError(StatusCodes.BAD_REQUEST, 'File not found');
@@ -240,7 +239,7 @@ router.put('/files/rename', async (req, res) => {
     res.status(StatusCodes.CREATED);
 });
 
-router.get('/files/search', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.get('/files/search' , async (req: express.Request, res: express.Response) => {
     let term = req.query.searchTerm;
     let dir = req.query.currentDir;
     if (!dir || typeof dir !== 'string')

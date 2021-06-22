@@ -4,7 +4,6 @@ import { persistChat } from '../service/dataService';
 import axios from 'axios';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import { getFullIPv6ApiLocation } from '../service/urlService';
-import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
 
 const router = Router();
 

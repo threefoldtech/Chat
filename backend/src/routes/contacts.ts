@@ -17,15 +17,14 @@ import { uuidv4 } from '../common';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import { getMyLocation } from '../service/locationService';
 import { appendSignatureToMessage } from '../service/keyService';
-import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
 
 const router = Router();
 
-router.get('/', requiresAuthentication, (req: express.Request, res: express.Response) => {
+router.get('/' , (req: express.Request, res: express.Response) => {
     res.json(contacts);
 });
 
-router.post('/', requiresAuthentication, async (req: express.Request, res: express.Response) => {
+router.post('/' , async (req: express.Request, res: express.Response) => {
     const con = req.body;
     const contact = new Contact(con.id, con.location);
 

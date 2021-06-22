@@ -1,13 +1,11 @@
 import express, { Application } from 'express';
-import http from 'http';
 import bodyParser from 'body-parser';
 import fileupload from 'express-fileupload';
 import cors, { CorsOptions } from 'cors';
 import session from 'express-session';
-import { startSocketIo } from './service/socketService';
 import routes from './routes';
 import morgan from 'morgan';
-import { logger, httpLogger } from './logger';
+import { httpLogger } from './logger';
 import { initKeys } from './store/keyStore';
 import { initUserData } from './store/user';
 import errorMiddleware from './middlewares/errorHandlingMiddleware';
@@ -21,9 +19,6 @@ const corsOptions: CorsOptions = {
 };
 
 const app: Application = express();
-const httpServer: http.Server = http.createServer(app);
-
-startSocketIo(httpServer);
 
 app.use(
     morgan('short', {
@@ -73,7 +68,3 @@ initKeys();
 initUserData();
 initTokens();
 initYggdrasil();
-
-httpServer.listen((process.env.PORT || 3000) as number, 'localhost', () => {
-    logger.info( 'go to http://localhost:' + (process.env.PORT || 3000));
-});
