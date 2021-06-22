@@ -1,6 +1,7 @@
 const TfgridApiClient = require('tfgrid-api-client')
 
-const url = 'wss://explorer.devnet.grid.tf/ws'
+// const url = 'wss://explorer.devnet.grid.tf/ws'
+const url = 'wss://substrate01.threefold.io'
 const botipv6 = '200:b57d:d1f0:aad3:71f3:bf:232:9c4'
 let mnemo = 'maid major gossip speak thank disagree blame museum slide canvas trash submit'
 
