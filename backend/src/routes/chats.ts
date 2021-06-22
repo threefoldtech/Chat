@@ -8,12 +8,13 @@ import {
 import { getChat, persistChat } from '../service/dataService';
 import { sendEventToConnectedSockets } from '../service/socketService';
 import { config } from '../config/config';
+import { requiresAuthentication } from '../middlewares/authenticationMiddleware';
 import { HttpError } from '../types/errors/httpError';
 import { StatusCodes } from 'http-status-codes';
 
 const router = Router();
 
-router.post('/', (req: express.Request, res: express.Response) => {
+router.post('/', requiresAuthentication, (req: express.Request, res: express.Response) => {
     if (req.query.id) {
         console.log('accepting', req.query.id);
         //Flow to add contact request to contacts
@@ -28,7 +29,7 @@ router.post('/', (req: express.Request, res: express.Response) => {
     }
 });
 
-router.get('/', (req: express.Request, res: express.Response) => {
+router.get('/', requiresAuthentication, (req: express.Request, res: express.Response) => {
     let limit = parseInt(<string | undefined>req.query.limit);
     limit = limit > 100 ? 100 : limit;
 
@@ -37,12 +38,12 @@ router.get('/', (req: express.Request, res: express.Response) => {
 });
 
 //@TODO will need to use this later
-router.get('/chatRequests', (req: express.Request, res: express.Response) => {
+router.get('/chatRequests', requiresAuthentication, (req: express.Request, res: express.Response) => {
     const returnChats = getChatRequests();
     res.json(returnChats);
 });
 
-router.get('/:chatId', (req: express.Request, res: express.Response) => {
+router.get('/:chatId', requiresAuthentication, (req: express.Request, res: express.Response) => {
     const chat = getChat(req.params.chatId);
     if (!chat.contacts.some(x => x.id !== config.userid)) {
         throw new HttpError(StatusCodes.FORBIDDEN);

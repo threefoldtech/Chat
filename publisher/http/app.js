@@ -8,70 +8,16 @@ const cors = require('cors');
 const sites = require('./web/sites')
 const threebot = require('./web/threebot')
 const admin = require('./api/admin')
-const twin = require('./twin/src/routes/index.js')
+
 var morgan = require('morgan')
 
 var path = require('path')
 var rfs = require('rotating-file-stream') 
 const bodyParser = require('body-parser');
-const errorMiddleware = require('./twin/src/middlewares/errorHandlingMiddleware')
-const fileupload = require('express-fileupload')
-const logger = require('./twin/src/logger.js')
-const keystore = require('./twin/src/store/keyStore');
-const user = require('./twin/src/store/user')
-require('./twin/src/utils/extensions')
-const tokens = require('./twin/src/store/tokenStore');
-const yggdrasil = require('./twin/src/service/yggdrasilService')
+
 
 let app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  morgan('short', {
-      stream: {
-          write: (text) => {
-            logger.httpLogger.http(text);
-          },
-      },
-  }),
-);
-
-app.use(errorMiddleware.default);
-
-// app.enable('trust proxy');
-app.set('trust proxy', 1);
-
-app.use(
-  session({
-      name: 'sessionId',
-      secret: 'secretpassphrase',
-      resave: false,
-      saveUninitialized: false,
-      proxy: true,
-      cookie: {
-          path: '/',
-          httpOnly: false,
-          secure: false,
-      },
-  }),
-);
-
-app.use(bodyParser.raw());
-app.use(bodyParser.urlencoded({ limit: '100mb', extended: false }));
-app.use(bodyParser.json({ limit: '100mb' }));
-
-app.use(
-  fileupload({
-      useTempFiles: true,
-      parseNested: true,
-  }),
-);
-
-app.use('/api/', twin.default);
-//Reading data
-keystore.initKeys();
-user.initUserData();
-tokens.initTokens();
-yggdrasil.initYggdrasil();
 
 // Session
 var sess = {
@@ -326,6 +272,6 @@ app.use(express.json());
 app.use(threebot)
 app.use("/admin", admin)
 app.use(sites);
-app.use(cors({origin: '*', optionsSuccessStatus: 200}));
+app.use(cors());
 
 module.exports = app

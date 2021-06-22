@@ -10,8 +10,6 @@ const dnsserver = require("./servers/dns")
 var rewrite = require('./rewrite')
 
 var letsencrypt = require('./letsencrypt')
-const {startSocketIo} = require("./http/twin/src/service/socketService");
-const http = require('http')
 
 var inited = false
 
@@ -126,14 +124,12 @@ async function main(){
 
     if (!config.nodejs.production){
       var port = config.http.port
-      server = http.createServer(app);
-      startSocketIo(server);
-      server.listen(port, "localhost", () => {	
+      server = app.listen(port, "localhost", () => {	
         console.log(chalk.green(`✓ (HTTP Server) : http://localhost:${port}`));
       })
     }else{
 
-      server = require('greenlock-express').init({
+      require('greenlock-express').init({
         packageRoot: __dirname,
         // contact for security and critical bug notices
         maintainerEmail: "hamdy.a.farag@gmail.com",
@@ -144,8 +140,7 @@ async function main(){
     })
     // Serves on 80 and 443
     // Get's SSL certificates magically!
-    startSocketIo(server);
-    server.serve(app);
+    .serve(app);
     }
 
    
