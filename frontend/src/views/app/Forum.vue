@@ -14,7 +14,7 @@
             appLayout,
         },
         setup({}, ctx) {
-            let forumUrl = 'https://browser.staging.jimber.io/?browsercontrols=true#https://forum.threefold.io/';
+            let forumUrl = 'https://browser.staging.jimber.io/?browsercontrols=false#https://forum.threefold.io/';
             return {
                 forumUrl,
             };

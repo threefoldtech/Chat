@@ -24,7 +24,7 @@
             })
 
             function browse() {
-                iframeUrl.value = `https://browser.staging.jimber.io/?browsercontrols=true#www.google.com`;
+                iframeUrl.value = `https://browser.staging.jimber.io/?browsercontrols=true#https://duckduckgo.com/`;
                 console.log(iframeUrl.value);
             }
 
