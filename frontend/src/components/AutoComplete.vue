@@ -3,6 +3,7 @@
         <input
             v-model="searchTerm"
             @focus="handleInput"
+            @input="handleInput"
             :placeholder="placeholder"
             v-focus
             tabindex="0"

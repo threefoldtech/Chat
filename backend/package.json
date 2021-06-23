@@ -5,7 +5,8 @@
     "scripts": {
         "dev": "concurrently \"tsc --watch\" \"nodemon dist/src/index.js\"",
         "serve": "concurrently \"tsc --watch\" \"nodemon dist/src/index.js\"",
-        "build": "tsc"
+        "build": "tsc",
+        "migrate": "tsc && node ./dist/migrator/migrator.js"
     },
     "dependencies": {
         "@threefoldjimber/threefold_login": "^1.4.0",
