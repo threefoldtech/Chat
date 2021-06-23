@@ -37,6 +37,7 @@
     import { usechatsActions } from '@/store/chatStore';
     import { useScrollActions } from '@/store/scrollStore';
     import Spinner from '@/components/Spinner.vue';
+    import { Chat } from '@/types';
 
     export default {
         name: 'MessageBox',
