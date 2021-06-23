@@ -1,8 +1,9 @@
 import { getShareConfig, persistShareConfig } from './dataService';
-import user from '../routes/user';
 import { uuidv4 } from '../common';
 import { createJwtToken } from './jwtService';
-import { Permission } from '../store/tokenStore';
+import { Permission, TokenData } from '../store/tokenStore';
+import { ShareError, ShareErrorType } from '../types/errors/shareError';
+import { Path } from '../utils/files';
 
 interface ShareInterface {
     isPublic: boolean;
@@ -18,13 +19,13 @@ export interface FileSharesInterface {
     }
 }
 
-export interface ShareTokenData {
+export interface ShareTokenData extends TokenData {
     id: string;
     userId: string;
 }
 
-export interface ShareWithIdInterface extends ShareInterface{
-    id: string
+export interface ShareWithIdInterface extends ShareInterface {
+    id: string;
 }
 
 function epoch(date: Date = new Date()) {
@@ -113,12 +114,6 @@ export const deleteShare = (config: FileSharesInterface, path: string, userId?: 
     config[index].shares = config[index].shares.filter(x => !userId ? !x.isPublic : x.userId !== userId);
 };
 
-
-
-const createPublicShare = (path: string, expiration = 15 * 60 * 1000) => {
-
-};
-
 export const createShare = (path: string, userId: string | undefined, isPublic: boolean , writable: boolean) => {
     const config = getShareConfig();
     const share = getShare(config, path, undefined);
@@ -131,9 +126,34 @@ export const createShare = (path: string, userId: string | undefined, isPublic: 
             userId: userId,
         });
 
+    const permissions = [Permission.FileBrowserRead];
+    if(writable)
+        permissions.push(Permission.FileBrowserWrite);
+
+    persistShareConfig(config);
     return createJwtToken({
         id: result.id,
-        userId: result.userId
+        userId: result.userId,
+        permissions: permissions
     } as ShareTokenData)
 }
 
+export const getShareFromToken = (tokenData: ShareTokenData) => {
+    const config = getShareConfig();
+    const shareConfig = config[tokenData.id];
+    if(!shareConfig)
+        throw new ShareError(ShareErrorType.ShareNotFound);
+
+    const share = shareConfig.shares.find(x => x.userId === tokenData.userId);
+    if(!share)
+        throw new ShareError(ShareErrorType.ShareNotFound);
+
+    if(share.expiration && share.expiration < epoch())
+        throw new ShareError(ShareErrorType.ShareExpired);
+
+    return {
+        ...share,
+        id: tokenData.id,
+        path: shareConfig.path
+    };
+}

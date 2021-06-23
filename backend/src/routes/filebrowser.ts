@@ -25,8 +25,8 @@ import syncRequest from 'sync-request';
 import { config } from '../config/config';
 import { uuidv4 } from '../common';
 import * as fs from 'fs';
-import AdmZip from "adm-zip"
-import { createShare, getShare } from '../service/fileShareService';
+import AdmZip from 'adm-zip';
+import { createShare, getShare, getShareFromToken, ShareTokenData } from '../service/fileShareService';
 
 const router = Router();
 
@@ -219,7 +219,7 @@ router.post('/files/copy', requiresAuthentication, async (req: express.Request, 
         throw  new HttpError(StatusCodes.BAD_REQUEST, 'No destinationpath specified');
 
     console.log(data);
-    console.log(destinationPath)
+    console.log(destinationPath);
 
     const result = await Promise.all(data.map(async (source: string) => copyWithRetry(new Path(source), new Path(destinationPath))));
     res.json(result);
@@ -264,7 +264,7 @@ router.get('/files/search', requiresAuthentication, async (req: express.Request,
     res.status(StatusCodes.CREATED);
 });
 
-router.post('/files/share', requiresAuthentication, async(req: express.Request, resp: express.Response) => {
+router.post('/files/share', requiresAuthentication, async (req: express.Request, res: express.Response) => {
     const path = req.body.path as string | undefined;
     const userId = req.body.userId as string | undefined;
     const isPublic = req.body.isPublic as boolean | undefined;
@@ -273,17 +273,38 @@ router.post('/files/share', requiresAuthentication, async(req: express.Request, 
     if (!path)
         throw new HttpError(StatusCodes.BAD_REQUEST, 'No path specified');
 
-    if(!userId && isPublic === undefined)
+    if (!userId && isPublic === undefined)
         throw new HttpError(StatusCodes.BAD_REQUEST, 'No user specified');
 
-    if(writable && isPublic)
+    if (writable && isPublic)
         throw new HttpError(StatusCodes.BAD_REQUEST, 'No public writable files');
 
     const token = createShare(path, userId, isPublic, writable);
-
+    res.json({
+        token: token,
+    });
+    res.status(StatusCodes.OK);
 });
 
-router.get('/files/share', async(req: express.Request, resp: express.Response) => {
+router.get('/files/share', async (req: express.Request, resp: express.Response) => {
+    const token = req.query.token;
+    if (!token || typeof token !== 'string')
+        throw new HttpError(StatusCodes.UNAUTHORIZED, 'No valid token provided');
+
+    if (isBlocked(token))
+        throw new HttpError(StatusCodes.FORBIDDEN, 'Provided token is blocked');
+
+    const [payload, error] = verifyJwtToken<Token<ShareTokenData>>(token);
+    if (error)
+        throw new HttpError(StatusCodes.UNAUTHORIZED, error.message);
+    if (!payload || !payload.data || payload.data.permissions.indexOf(Permission.FileBrowserRead) === -1)
+        throw new HttpError(StatusCodes.UNAUTHORIZED, 'No permission for reading file');
+
+    if(!payload.data.userId || !payload.data.id)
+        throw new HttpError(StatusCodes.UNAUTHORIZED, 'Token does not contain file location');
+
+    const share = getShareFromToken(payload.data);
+    const path = getSh
 
 });
 
