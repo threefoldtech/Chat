@@ -9,6 +9,7 @@ import Callback from '@/views/Callback.vue';
 import Unauthorised from '@/views/Unauthorised.vue';
 import EditFile from '@/views/app/EditFile.vue';
 import { isUserAuthenticated } from '@/store/userStore';
+import PageNotFound from '@/views/PageNotFound.vue';
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -68,6 +69,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'videoroom',
         path: '/videoroom/:id',
         component: VideoRoom,
+    },
+    {
+        name: '404',
+        path: '/:pathMatch(.*)*',
+        component: PageNotFound
     },
 ];
 
