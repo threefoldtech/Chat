@@ -2,6 +2,8 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '@/views/Home.vue';
 import FileBrowser from '@/views/app/FileBrowser.vue';
 import VideoRoom from '@/views/app/VideoRoom.vue';
+import Forum from '@/views/app/Forum.vue';
+import Browser from '@/views/app/Browser.vue';
 import Basic from '@/layout/Basic.vue';
 import Chat from '@/views/app/Chat.vue';
 import Single from '@/views/app/Single.vue';
@@ -64,6 +66,16 @@ const routes: Array<RouteRecordRaw> = [
             back: 'filebrowser',
             requiresAuth: true,
         }
+    },
+    {
+        name: 'forum',
+        path: '/forum',
+        component: Forum,
+    },
+    {
+        name: 'browser',
+        path: '/browser',
+        component: Browser,
     },
     {
         name: 'videoroom',
