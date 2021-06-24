@@ -231,6 +231,7 @@ app.use((req, res, next) => {
   var threebotConnect = false
   
   if(!info.acls){
+
     return res.status(404).render('sites/404.mustache')
   }
 
@@ -297,7 +298,6 @@ image = "https://raw.githubusercontent.com/threefoldfoundation/www_threefold_io/
 
 //ACLS
 app.use((req, res, next) => {
-  
   if(req.session.authorized && !req.url.startsWith('/logout')){
     var info = req.info
     if(req.session.authorization_mechanism == 'password'){

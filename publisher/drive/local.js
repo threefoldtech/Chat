@@ -28,11 +28,16 @@ obj.promises =  {
     readdir: async function(dirpath){
         return fs.readdirSync(path.join(obj.base, dirpath));
     },
-    readFile: async function(filepath, encoding){
-        if (encoding == 'binary'){
-            return fs.readFileSync(path.join(obj.base, filepath))
+    readFile: async function(filepath, encoding, web){
+        var fp = path.normalize(path.join(obj.base, filepath)).replace(/^(\.\.(\/|\\|$))+/, '');
+        if (web && !fp.startsWith(obj.base)){
+                throw new Error("Invalid path")
         }
-        return fs.readFileSync(path.join(obj.base, filepath), encoding)
+
+        if (encoding == 'binary'){
+            return fs.readFileSync(fp)
+        }
+        return fs.readFileSync(fp, encoding)
     },
 }
 

@@ -134,7 +134,7 @@ async function handleWebsiteFile(req, res, info){
             entry = await driveObj.promises.stat(filepath)
         }
 
-        var content = await  driveObj.promises.readFile(filepath, encoding);
+        var content = await  driveObj.promises.readFile(filepath, encoding, true);
         if(encoding != 'binary')
             content = await(rewriteRoles(content, info))
         return res.send(content)
@@ -223,7 +223,7 @@ async function handleWikiFile(req, res, info){
     var entry = null
     try {
         entry = await driveObj.promises.stat(filepath)
-        var content = await  driveObj.promises.readFile(filepath, encoding);
+        var content = await  driveObj.promises.readFile(filepath, encoding, true);
         if(encoding != 'binary')
             content = await(rewriteRoles(content, info))
         return res.send(content)
@@ -341,7 +341,7 @@ router.get('/', asyncHandler(async (req, res) =>  {
      try {
          entry = await driveObj.promises.stat(filepath)
          
-         var content = await  driveObj.promises.readFile(filepath, 'utf8');
+         var content = await  driveObj.promises.readFile(filepath, 'utf8', true);
          content = await(rewriteRoles(content, info))
          return res.send(content)
      } catch (e) {
@@ -405,7 +405,7 @@ router.get('/:path', asyncHandler(async (req, res) =>  {
         var entry = null
         try {
             entry = await driveObj.promises.stat(filepath)
-            var content = await  driveObj.promises.readFile(filepath, 'utf8');
+            var content = await  driveObj.promises.readFile(filepath, 'utf8', true);
             content = await rewriteRoles(content, info)
             return res.send(content)
         } catch (e) {
@@ -431,7 +431,7 @@ router.get('/:path', asyncHandler(async (req, res) =>  {
             var entry = null
             try {
                 entry = await driveObj.promises.stat(filepath)
-                var content = await  driveObj.promises.readFile(filepath, 'utf8');
+                var content = await  driveObj.promises.readFile(filepath, 'utf8', true);
                 return res.send(content)
             } catch (e) {
                 logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
@@ -464,7 +464,7 @@ router.get('/info/:wiki', asyncHandler(async (req, res) =>  {
     var entry = null
     try {
         entry = await driveObj.promises.stat(filepath)
-        var content = await  driveObj.promises.readFile(filepath, 'utf8');
+        var content = await  driveObj.promises.readFile(filepath, 'utf8', true);
         return res.send(content)
     } catch (e) {
         logger.error(`${req.method} - ${e.message}  - ${req.originalUrl} - ${req.ip}`);
@@ -508,7 +508,7 @@ router.get('/info/:wiki/errors', asyncHandler(async (req, res) => {
     try {
         entry = await driveObj.promises.stat(filepath)
 
-        var content = await  driveObj.promises.readFile(filepath, 'utf-8');
+        var content = await  driveObj.promises.readFile(filepath, 'utf-8', true) ;
         
         var data = JSON.parse(content)
         var errors = {
