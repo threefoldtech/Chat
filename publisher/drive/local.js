@@ -30,7 +30,9 @@ obj.promises =  {
     },
     readFile: async function(filepath, encoding, web){
         var fp = path.normalize(path.join(obj.base, filepath)).replace(/^(\.\.(\/|\\|$))+/, '');
-        if (web && !fp.startsWith(obj.base)){
+        var staticpath =  path.normalize(path.join(obj.base, '..', 'static')).replace(/^(\.\.(\/|\\|$))+/, '');
+       
+        if (web && !fp.startsWith(obj.base) && !fp.startsWith(staticpath)){
                 throw new Error("Invalid path")
         }
 
