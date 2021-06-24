@@ -20,7 +20,7 @@ async function process(drive, dir){
     var sitegroups = {}
 
     try{
-        var data = await  drive.promises.readFile(configfilepath, 'utf8');
+        var data = await  drive.promises.readFile(configfilepath, 'utf8', false);
         data = JSON.parse(data)
         
         for(var i=0; i <data.length; i++){
@@ -85,7 +85,7 @@ async function process(drive, dir){
         if(!isWebSite){
             try{
                 var defpath = path.join(dir, 'defs.json')
-                var defdata = await  drive.promises.readFile(defpath, 'utf8');
+                var defdata = await  drive.promises.readFile(defpath, 'utf8', false);
                 defInfo = JSON.parse(defdata)
                 for(var k=0; k< defInfo.defs.length; k++){
                     var obj = defInfo.defs[k]

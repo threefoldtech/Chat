@@ -52,7 +52,7 @@ router.get('/drive/:id/*', asyncHandler(async (req, res) => {
         files.sort()
         return res.json({"files": files})
     }else{
-        var content = await  driveObj.promises.readFile(filepath, 'utf8');
+        var content = await  driveObj.promises.readFile(filepath, 'utf8', true);
         return res.send(content)
     }
 
