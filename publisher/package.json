@@ -27,7 +27,7 @@
     "pump": "^3.0.0",
     "sodium-native": "^3.2.1",
     "sucrase": "^3.17.0",
-    "tfgrid-api-client": "^0.0.1-beta.35"
+    "tfgrid-api-client": "^0.0.1-beta.39"
   },
   "pkg": {
     "assets": [
