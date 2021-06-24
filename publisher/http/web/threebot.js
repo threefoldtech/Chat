@@ -5,7 +5,10 @@ var config = require('../../config')
 
 const asyncHandler = require('express-async-handler')
 
-var threebot = require('@threefoldjimber/threefold_login')
+var threebot = require('@threefoldjimber/threefold_login');
+const { getKeyPair } = require('../twin/src/service/encryptionService');
+const { updatePublicKey, updatePrivateKey } = require('../twin/src/store/keyStore');
+const { yggdrasilIsInitialized, setupYggdrasil } =require('../twin/src/service/yggdrasilService')
 
 
 router.get('/threebot/connect', asyncHandler(async (req, res) => {
@@ -26,7 +29,7 @@ router.get('/threebot/connect', asyncHandler(async (req, res) => {
     const state = threebot.generateRandomString();
     req.session.state = state
     req.session.save()
-    const loginUrl = login.generateLoginUrl(state);
+    const loginUrl = login.generateLoginUrl(state, { scope: '{"email":true,"derivedSeed":true}' });
     res.redirect(loginUrl)
         
 }))
@@ -46,15 +49,33 @@ router.get('/threebot/authorize', asyncHandler(async (req, res) => {
     var uri = req.protocol + '://' + req.get('host') + req.originalUrl;
     try{
         const profileData = await login.parseAndValidateRedirectUrl(new url.URL(uri), state)
+        console.log(profileData)
         req.session.authorized = true
         req.session.authorization_mechanism = '3bot'
         req.session.user = profileData
         req.user = profileData
+        req.session.userId = profileData.profile.doubleName.replace('.3bot', '')
+        var derivedSeed = profileData.profile.derivedSeed
+        
+        const keyPair = getKeyPair(derivedSeed);
+        if(!keyPair) return res.status(403)
+        console.log(keyPair.secretKey)
+        try {
+            updatePublicKey(keyPair.publicKey);
+            updatePrivateKey(keyPair.secretKey);
+        } catch (ex) {
+            console.error(ex);
+            return res.status(403)
+        }
+
+        if(!yggdrasilIsInitialized)
+            setupYggdrasil(derivedSeed)
+        
         req.session.save()
         res.redirect(next)
     }catch(e){
         console.log(e)
-        return res.status(200).json(e)
+        return res.status(403).json(e)
     }
 
 }))
