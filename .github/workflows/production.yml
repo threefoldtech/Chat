@@ -36,5 +36,4 @@ jobs:
           echo "threefoldjimber/digitaltwin:${{ github.sha }}" > '/etc/digitaltwin/version.txt'
           echo Removing all existing chat containers / volumes.
           docker rm -f $(docker ps --filter "name=-chat" -q)
-          docker volume rm $(docker volume ls --filter "name=chat_storage_" -q)
           echo Completed.
