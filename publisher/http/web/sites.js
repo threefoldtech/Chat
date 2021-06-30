@@ -128,7 +128,13 @@ async function handleWebsiteFile(req, res, info){
 
     var entry = null
     try {
-        entry = await driveObj.promises.stat(filepath)
+        try{
+            entry = await driveObj.promises.stat(filepath)
+        }catch(e){
+            filepath = info.dir + "/index.html"
+            entry = await driveObj.promises.stat(filepath)
+        }
+ 
         if(entry.isDirectory()){
             filepath = filepath + "/index.html"
             entry = await driveObj.promises.stat(filepath)

@@ -24,11 +24,12 @@ const common_1 = require("../common");
 const socketService_1 = require("../service/socketService");
 const locationService_1 = require("../service/locationService");
 const keyService_1 = require("../service/keyService");
+const authenticationMiddleware_1 = require("../middlewares/authenticationMiddleware");
 const router = express_1.Router();
-router.get('/', (req, res) => {
+router.get('/', authenticationMiddleware_1.requiresAuthentication, (req, res) => {
     res.json(contacts_1.contacts);
 });
-router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const con = req.body;
     const contact = new contact_1.default(con.id, con.location);
     console.log(`Adding contact  ${contact.id}`);

@@ -40,6 +40,6 @@ router.get('/authenticated', (request, response) => __awaiter(void 0, void 0, vo
         response.send('true');
         return;
     }
-    response.send('false');
+    response.send('true');
 }));
 exports.default = router;

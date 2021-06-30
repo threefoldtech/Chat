@@ -5,10 +5,11 @@ const chatService_1 = require("../service/chatService");
 const dataService_1 = require("../service/dataService");
 const socketService_1 = require("../service/socketService");
 const config_1 = require("../config/config");
+const authenticationMiddleware_1 = require("../middlewares/authenticationMiddleware");
 const httpError_1 = require("../types/errors/httpError");
 const http_status_codes_1 = require("http-status-codes");
 const router = express_1.Router();
-router.post('/', (req, res) => {
+router.post('/', authenticationMiddleware_1.requiresAuthentication, (req, res) => {
     if (req.query.id) {
         console.log('accepting', req.query.id);
         //Flow to add contact request to contacts
@@ -22,18 +23,18 @@ router.post('/', (req, res) => {
         return;
     }
 });
-router.get('/', (req, res) => {
+router.get('/', authenticationMiddleware_1.requiresAuthentication, (req, res) => {
     let limit = parseInt(req.query.limit);
     limit = limit > 100 ? 100 : limit;
     const chats = chatService_1.getAcceptedChatsWithPartialMessages(limit);
     res.json(chats);
 });
 //@TODO will need to use this later
-router.get('/chatRequests', (req, res) => {
+router.get('/chatRequests', authenticationMiddleware_1.requiresAuthentication, (req, res) => {
     const returnChats = chatService_1.getChatRequests();
     res.json(returnChats);
 });
-router.get('/:chatId', (req, res) => {
+router.get('/:chatId', authenticationMiddleware_1.requiresAuthentication, (req, res) => {
     const chat = dataService_1.getChat(req.params.chatId);
     if (!chat.contacts.some(x => x.id !== config_1.config.userid)) {
         throw new httpError_1.HttpError(http_status_codes_1.StatusCodes.FORBIDDEN);

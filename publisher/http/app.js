@@ -163,7 +163,7 @@ app.use(function (req, res, next) {
     }
     else if (splitted.length == 1){
       alias = splitted[0]
-      info = config.info.website[alias]
+      info = config.info.websites[alias]
     }else{
       if(splitted[0] == 'info'){
         alias = splitted[1].replace("#", "")

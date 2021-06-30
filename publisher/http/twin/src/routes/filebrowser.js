@@ -35,6 +35,7 @@ const express_1 = require("express");
 const files_1 = require("../utils/files");
 const httpError_1 = require("../types/errors/httpError");
 const http_status_codes_1 = require("http-status-codes");
+const authenticationMiddleware_1 = require("../middlewares/authenticationMiddleware");
 const jwtService_1 = require("../service/jwtService");
 const tokenStore_1 = require("../store/tokenStore");
 const sync_request_1 = __importDefault(require("sync-request"));
@@ -43,7 +44,7 @@ const common_1 = require("../common");
 const fs = __importStar(require("fs"));
 const AdmZip = require('adm-zip');
 const router = express_1.Router();
-router.get('/directories/content', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/directories/content', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let p = req.query.path;
     if (!p || typeof p !== 'string')
         p = '/';
@@ -54,7 +55,7 @@ router.get('/directories/content', (req, res) => __awaiter(void 0, void 0, void 
         throw new httpError_1.HttpError(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Path is not a directory');
     res.json(yield files_1.readDir(path, { withFileTypes: true }));
 }));
-router.get('/directories/info', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/directories/info', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let p = req.query.path;
     if (!p || typeof p !== 'string')
         p = '/';
@@ -64,7 +65,7 @@ router.get('/directories/info', (req, res) => __awaiter(void 0, void 0, void 0, 
         throw new httpError_1.HttpError(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Path is not a directory');
     return files_1.getFormattedDetails(path);
 }));
-router.post('/directories', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/directories', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const dto = req.body;
     if (!dto.path)
         dto.path = '/';
@@ -81,7 +82,7 @@ router.post('/directories', (req, res) => __awaiter(void 0, void 0, void 0, func
         isFile: false,
     });
 }));
-router.get('/files/info', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/files/info', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let p = req.query.path;
     if (!p || typeof p !== 'string')
         throw new httpError_1.HttpError(http_status_codes_1.StatusCodes.BAD_REQUEST, 'File not found');
@@ -95,7 +96,7 @@ router.get('/files/info', (req, res) => __awaiter(void 0, void 0, void 0, functi
         }, 24 * 60 * 60) }));
     res.status(http_status_codes_1.StatusCodes.OK);
 }));
-router.post('/files', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/files', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const files = req.files.newFiles;
     const dto = req.body;
     if (!dto.path)
@@ -118,13 +119,13 @@ router.post('/files', (req, res) => __awaiter(void 0, void 0, void 0, function* 
     res.json(result);
     res.status(http_status_codes_1.StatusCodes.CREATED);
 }));
-router.delete('/files', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete('/files', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const pathClass = new files_1.Path(req.body.filepath);
     const result = yield files_1.removeFile(pathClass);
     res.json(result);
     res.status(http_status_codes_1.StatusCodes.CREATED);
 }));
-router.get('/files', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/files', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let p = req.query.path;
     if (!p || typeof p !== 'string')
         throw new httpError_1.HttpError(http_status_codes_1.StatusCodes.BAD_REQUEST, 'File not found');
@@ -218,7 +219,7 @@ router.put('/files/rename', (req, res) => __awaiter(void 0, void 0, void 0, func
     res.json(result);
     res.status(http_status_codes_1.StatusCodes.CREATED);
 }));
-router.get('/files/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/files/search', authenticationMiddleware_1.requiresAuthentication, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let term = req.query.searchTerm;
     let dir = req.query.currentDir;
     if (!dir || typeof dir !== 'string')
