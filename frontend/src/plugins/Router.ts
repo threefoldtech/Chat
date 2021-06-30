@@ -14,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
         name: 'Home',
-        component: Home,
+        redirect: '/chat'
     },
     {
         path: '/callback',

@@ -13,6 +13,7 @@
     "dns2": "^1.4.2",
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
+    "express-fileupload": "^1.2.1",
     "express-session": "^1.17.1",
     "greenlock-express": "^4.0.3",
     "hyperdrive": "^10.19.1",
