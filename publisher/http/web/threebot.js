@@ -49,7 +49,6 @@ router.get('/threebot/authorize', asyncHandler(async (req, res) => {
     var uri = req.protocol + '://' + req.get('host') + req.originalUrl;
     try{
         const profileData = await login.parseAndValidateRedirectUrl(new url.URL(uri), state)
-        console.log(profileData)
         req.session.authorized = true
         req.session.authorization_mechanism = '3bot'
         req.session.user = profileData
@@ -59,7 +58,6 @@ router.get('/threebot/authorize', asyncHandler(async (req, res) => {
         
         const keyPair = getKeyPair(derivedSeed);
         if(!keyPair) return res.status(403)
-        console.log(keyPair.secretKey)
         try {
             updatePublicKey(keyPair.publicKey);
             updatePrivateKey(keyPair.secretKey);

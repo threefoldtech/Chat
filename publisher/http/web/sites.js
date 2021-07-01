@@ -36,6 +36,7 @@ async function rewriteRoles(content, info){
             content = content.replace(new RegExp(`https://${item}`, "g"), `${host}${prefix}`)
             content = content.replace(new RegExp(`http://${item}/`, "g"), `${host}${prefix}`)
             content = content.replace(new RegExp(`http://${item}`, "g"), `${host}${prefix}`)
+            content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
         }
     }else{
         var site = config.info.domains[info.host]
@@ -125,13 +126,13 @@ async function handleWebsiteFile(req, res, info){
         encoding = 'binary'
         res.type('application/zip')
     }
-
     var entry = null
     try {
         try{
             entry = await driveObj.promises.stat(filepath)
         }catch(e){
             filepath = info.dir + "/index.html"
+
             entry = await driveObj.promises.stat(filepath)
         }
  
@@ -410,7 +411,15 @@ router.get('/:path', asyncHandler(async (req, res) =>  {
         
         var entry = null
         try {
-            entry = await driveObj.promises.stat(filepath)
+            try{
+                entry = await driveObj.promises.stat(filepath)
+            }catch(e){
+                if(info.subPath){
+                   filepath = `${dir}/index.html`
+                    entry = await driveObj.promises.stat(filepath)
+                }
+            }
+            
             var content = await  driveObj.promises.readFile(filepath, 'utf8', true);
             content = await rewriteRoles(content, info)
             return res.send(content)

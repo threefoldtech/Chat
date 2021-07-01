@@ -136,7 +136,7 @@ app.use(function (req, res, next) {
   var info = null
 
   if(host == 'localhost'){
-    info = config.info.websites['threefold'] || config.info.wikis['threefold']
+    info = config.info.websites['digitaltwin']
   }
   else{
     info = config.info.domains[host]
@@ -158,21 +158,32 @@ app.use(function (req, res, next) {
     var alias = ""
     var splitted = suburl.split("/")
     alias = splitted[0]
-    if (suburl == ""){
+    
+    if(host == 'localhost'){
+      info = config.info.websites['digitaltwin']
+    }else{
       info = config.info.domains[host]
-    }
-    else if (splitted.length == 1){
+    } 
+
+    if (splitted.length == 1){
       alias = splitted[0]
-      info = config.info.websites[alias]
+      if(config.info.websites[alias]){
+        info = config.info.websites[alias]
+      }
     }else{
       if(splitted[0] == 'info'){
         alias = splitted[1].replace("#", "")
-        info = config.info.wikis[alias]
+        if(config.info.websites[alias]){
+          info = config.info.websites[alias]
+        }
       }else{
         alias = splitted[0]
-        info = config.info.website[alias]
+        if(config.info.websites[alias]){
+          info = config.info.websites[alias]
+        }
       }
     }
+
       if (!info){
         return res.status(404).render('sites/404.mustache')
       }
