@@ -36,12 +36,15 @@ async function rewriteRoles(content, info){
             content = content.replace(new RegExp(`https://${item}`, "g"), `${host}${prefix}`)
             content = content.replace(new RegExp(`http://${item}/`, "g"), `${host}${prefix}`)
             content = content.replace(new RegExp(`http://${item}`, "g"), `${host}${prefix}`)
-            content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
+            if(site.alias == "digitaltwin"){
+                content = content.replace(new RegExp(`/${site.alias}/`, "g"), "/")
+            }
+            
         }
     }else{
         var site = config.info.domains[info.host]
         var isWebsite = site.isWebSite
-        content = content.replace(new RegExp(`${site.alias}/`, "g"), "")
+        content = content.replace(new RegExp(`/${site.alias}/`, "g"), "/")
     }
 
     // fix pdf & zip files in wikis
