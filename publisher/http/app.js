@@ -8,20 +8,13 @@ const cors = require('cors');
 const sites = require('./web/sites')
 const threebot = require('./web/threebot')
 const admin = require('./api/admin')
-const twin = require('./twin/src/routes/index.js')
 var morgan = require('morgan')
 
 var path = require('path')
 var rfs = require('rotating-file-stream') 
 const bodyParser = require('body-parser');
-const errorMiddleware = require('./twin/src/middlewares/errorHandlingMiddleware')
 const fileupload = require('express-fileupload')
-const logger = require('./twin/src/logger.js')
-const keystore = require('./twin/src/store/keyStore');
-const user = require('./twin/src/store/user')
-require('./twin/src/utils/extensions')
-const tokens = require('./twin/src/store/tokenStore');
-const yggdrasil = require('./twin/src/service/yggdrasilService')
+const {initAll, httpLogger, errorMiddleware, routes } = require("@threefoldjimber/digitaltwin-backend")
 
 let app = express()
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -29,13 +22,13 @@ app.use(
   morgan('short', {
       stream: {
           write: (text) => {
-            logger.httpLogger.http(text);
+            httpLogger.http(text);
           },
       },
   }),
 );
 
-app.use(errorMiddleware.default);
+app.use(errorMiddleware);
 
 // app.enable('trust proxy');
 app.set('trust proxy', 1);
@@ -66,12 +59,9 @@ app.use(
   }),
 );
 
-app.use('/api/', twin.default);
+app.use('/api/', routes);
 //Reading data
-keystore.initKeys();
-user.initUserData();
-tokens.initTokens();
-yggdrasil.initYggdrasil();
+initAll();
 
 // Session
 var sess = {

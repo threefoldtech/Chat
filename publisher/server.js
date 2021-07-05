@@ -10,7 +10,7 @@ const dnsserver = require("./servers/dns")
 var rewrite = require('./rewrite')
 
 var letsencrypt = require('./letsencrypt')
-const {startSocketIo} = require("./http/twin/src/service/socketService");
+const {startSocketIo} = require("@threefoldjimber/digitaltwin-backend")
 const http = require('http')
 
 var inited = false
