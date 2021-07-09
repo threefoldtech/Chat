@@ -2,6 +2,8 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Home from '@/views/Home.vue';
 import FileBrowser from '@/views/app/FileBrowser.vue';
 import VideoRoom from '@/views/app/VideoRoom.vue';
+import Forum from '@/views/app/Forum.vue';
+import Browser from '@/views/app/Browser.vue';
 import Basic from '@/layout/Basic.vue';
 import Chat from '@/views/app/Chat.vue';
 import Single from '@/views/app/Single.vue';
@@ -9,6 +11,7 @@ import Callback from '@/views/Callback.vue';
 import Unauthorised from '@/views/Unauthorised.vue';
 import EditFile from '@/views/app/EditFile.vue';
 import { isUserAuthenticated } from '@/store/userStore';
+import PageNotFound from '@/views/PageNotFound.vue';
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -65,9 +68,24 @@ const routes: Array<RouteRecordRaw> = [
         }
     },
     {
+        name: 'forum',
+        path: '/forum',
+        component: Forum,
+    },
+    {
+        name: 'browser',
+        path: '/browser',
+        component: Browser,
+    },
+    {
         name: 'videoroom',
         path: '/videoroom/:id',
         component: VideoRoom,
+    },
+    {
+        name: '404',
+        path: '/:pathMatch(.*)*',
+        component: PageNotFound
     },
 ];
 
