@@ -6,9 +6,13 @@ var config = require('../../config')
 const asyncHandler = require('express-async-handler')
 
 var threebot = require('@threefoldjimber/threefold_login');
-const { getKeyPair } = require('../twin/src/service/encryptionService');
-const { updatePublicKey, updatePrivateKey } = require('../twin/src/store/keyStore');
-const { yggdrasilIsInitialized, setupYggdrasil } =require('../twin/src/service/yggdrasilService')
+const {
+    updatePublicKey,
+    updatePrivateKey,
+    yggdrasilIsInitialized,
+    setupYggdrasil,
+    getKeyPair
+} = require("@threefoldjimber/digitaltwin-backend")
 
 
 router.get('/threebot/connect', asyncHandler(async (req, res) => {
@@ -17,21 +21,21 @@ router.get('/threebot/connect', asyncHandler(async (req, res) => {
     const appId = req.headers.host
     var redirectUrl = '/threebot/authorize';
 
-    if (next){
+    if (next) {
         redirectUrl = redirectUrl + `?next=${next}`
     }
 
-    const login = new threebot.ThreefoldLogin( threeFoldAPIHost,
-                                appId,
-                                config.threebot.passPhrase,
-                                redirectUrl );
+    const login = new threebot.ThreefoldLogin(threeFoldAPIHost,
+        appId,
+        config.threebot.passPhrase,
+        redirectUrl);
     await login.init();
     const state = threebot.generateRandomString();
     req.session.state = state
     req.session.save()
-    const loginUrl = login.generateLoginUrl(state, { scope: '{"email":true,"derivedSeed":true}' });
+    const loginUrl = login.generateLoginUrl(state, {scope: '{"email":true,"derivedSeed":true}'});
     res.redirect(loginUrl)
-        
+
 }))
 
 router.get('/threebot/authorize', asyncHandler(async (req, res) => {
@@ -41,13 +45,13 @@ router.get('/threebot/authorize', asyncHandler(async (req, res) => {
     const redirectUrl = '/threebot/authorize';
     var next = req.query.next ? req.query.next : '/'
 
-    const login = new threebot.ThreefoldLogin( threeFoldAPIHost,
-                                appId,
-                                config.threebot.passPhrase,
-                                redirectUrl );
-    
+    const login = new threebot.ThreefoldLogin(threeFoldAPIHost,
+        appId,
+        config.threebot.passPhrase,
+        redirectUrl);
+
     var uri = req.protocol + '://' + req.get('host') + req.originalUrl;
-    try{
+    try {
         const profileData = await login.parseAndValidateRedirectUrl(new url.URL(uri), state)
         req.session.authorized = true
         req.session.authorization_mechanism = '3bot'
@@ -55,9 +59,9 @@ router.get('/threebot/authorize', asyncHandler(async (req, res) => {
         req.user = profileData
         req.session.userId = profileData.profile.doubleName.replace('.3bot', '')
         var derivedSeed = profileData.profile.derivedSeed
-        
+
         const keyPair = getKeyPair(derivedSeed);
-        if(!keyPair) return res.status(403)
+        if (!keyPair) return res.status(403)
         try {
             updatePublicKey(keyPair.publicKey);
             updatePrivateKey(keyPair.secretKey);
@@ -66,12 +70,12 @@ router.get('/threebot/authorize', asyncHandler(async (req, res) => {
             return res.status(403)
         }
 
-        if(!yggdrasilIsInitialized)
+        if (!yggdrasilIsInitialized)
             setupYggdrasil(derivedSeed)
-        
+
         req.session.save()
         res.redirect(next)
-    }catch(e){
+    } catch (e) {
         console.log(e)
         return res.status(403).json(e)
     }

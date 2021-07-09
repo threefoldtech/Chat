@@ -1,12 +1,21 @@
 {
-    "name": "socket-chat-example",
-    "version": "0.0.1",
+    "main": "dist/src/index.js",
+    "name": "@threefoldjimber/digitaltwin-backend",
+    "version": "1.0.3",
     "description": "Digitaltwin backend",
     "scripts": {
-        "dev": "concurrently \"tsc --watch\" \"nodemon dist/src/index.js\"",
-        "serve": "concurrently \"tsc --watch\" \"nodemon dist/src/index.js\"",
+        "prepublish": "tsc -d --declarationDir dist/lib --declarationMap ",
+        "prepack": "tsc -d --declarationDir dist/lib --declarationMap ",
+        "dev": "concurrently \"tsc --watch\" \"nodemon dist/src/server.js\"",
+        "serve": "concurrently \"tsc --watch\" \"nodemon dist/src/server.js\"",
         "build": "tsc"
     },
+    "publishConfig": {
+        "access": "public"
+    },
+    "files": [
+        "dist/**/*"
+    ],
     "dependencies": {
         "@threefoldjimber/threefold_login": "^1.4.0",
         "@types/express-fileupload": "^1.1.6",

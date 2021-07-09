@@ -1,6 +1,7 @@
 import express from 'express';
 import { HttpError } from '../types/errors/httpError';
 import { StatusCodes } from 'http-status-codes';
+import {config} from "../config/config";
 
 /**
  * Handles authentication check
@@ -16,7 +17,7 @@ export const requiresAuthentication  = (
     response: express.Response,
     next: express.NextFunction
 ): express.Response | void => {
-    if (!request?.session?.userId && process.env.ENVIRONMENT !== 'development') {
+    if ( process.env.ENVIRONMENT !== 'development' && request?.session?.userId !== config.userid) {
         throw new HttpError(StatusCodes.UNAUTHORIZED)
     }
 
