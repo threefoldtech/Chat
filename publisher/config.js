@@ -10,6 +10,10 @@ async function load(){
         config.publishtools.root = await utils.resolvePath(config.publishtools.root)
         config.hyperdrive.path = await utils.resolvePath(config.hyperdrive.path)
         config.nodejs.production = process.env.NODE_ENV == 'production'
+
+        var ssl = process.env.ENABLE_SSL || ''
+        config.nodejs.ssl = ssl.toLowerCase() == 'true' || false
+        
         if(config.nodejs.production){
             var passPhrase = process.env.THREEBOT_PHRASE
             var secret = process.env.SECRET

@@ -45,15 +45,18 @@ async function init(){
       // so no need here
       if(inited){
         if (config.nodejs.production){
-          require('greenlock-express').init({
-            packageRoot: __dirname,
-            // contact for security and critical bug notices
-            maintainerEmail: "hamdy.a.farag@gmail.com",
-            // where to look for configuration
-            configDir: './greenlock.d',
-            // whether or not to run at cloudscale
-            cluster: false
-          })
+          //reload ssl
+          if(config.nodejs.ssl){
+            require('greenlock-express').init({
+              packageRoot: __dirname,
+              // contact for security and critical bug notices
+              maintainerEmail: "hamdy.a.farag@gmail.com",
+              // where to look for configuration
+              configDir: './greenlock.d',
+              // whether or not to run at cloudscale
+              cluster: false
+            })
+          }
         }
       }
       
@@ -65,34 +68,33 @@ async function init(){
       console.log(e)
       config.info = old_config
 
+      
       if (config.nodejs.production){
-        require('greenlock-express').init({
-          packageRoot: __dirname,
-          // contact for security and critical bug notices
-          maintainerEmail: "hamdy.a.farag@gmail.com",
-          // where to look for configuration
-          configDir: './greenlock.d',
-          // whether or not to run at cloudscale
-          cluster: false
-        })
+        // reload ssl
+        if(config.nodejs.ssl){
+          require('greenlock-express').init({
+            packageRoot: __dirname,
+            // contact for security and critical bug notices
+            maintainerEmail: "hamdy.a.farag@gmail.com",
+            // where to look for configuration
+            configDir: './greenlock.d',
+            // whether or not to run at cloudscale
+            cluster: false
+          })
+        }
       }
-
       if(!inited){
         throw new Error(e)
       }
-
       console.log("An error happened during an attempt to reload configuration")
       console.log("One or more sites/wikis may contain malformed .domains, .repo, .roles, .acls files")
       console.log("going back to to old configuration")
       console.log(e)
-    }
-
-    
+    } 
 
 }
 
 async function main(){
-  
     var cleanup = await init().catch((e)=>{console.log(e);process.exit(0)})
 
     if(config.dns.enabled){
@@ -104,6 +106,8 @@ async function main(){
       console.log(chalk.green(`✓ (DNS Server) : ${config.dns.port}`));
       dnsserver.listen(config.dns.port);
     }
+
+    console.log(config.nodejs.ssl)
 
     // HTTP(s) Server
     var server = null
@@ -132,23 +136,32 @@ async function main(){
         console.log(chalk.green(`✓ (HTTP Server) : http://localhost:${port}`));
       })
     }else{
-
-      server = require('greenlock-express').init({
-        packageRoot: __dirname,
-        // contact for security and critical bug notices
-        maintainerEmail: "hamdy.a.farag@gmail.com",
-        // where to look for configuration
-        configDir: './greenlock.d',
-        // whether or not to run at cloudscale
-        cluster: false
-    })
-    // Serves on 80 and 443
-    // Get's SSL certificates magically!
-    startSocketIo(server);
-    server.serve(app);
+      // greenlock/letsencrypt ssl production server
+      if (config.nodejs.ssl){
+        server = require('greenlock-express').init({
+          packageRoot: __dirname,
+          // contact for security and critical bug notices
+          maintainerEmail: "hamdy.a.farag@gmail.com",
+          // where to look for configuration
+          configDir: './greenlock.d',
+          // whether or not to run at cloudscale
+          cluster: false
+      })
+        // Serves on 80 and 443
+        // Get's SSL certificates magically!
+        startSocketIo(server);
+        server.serve(app);
+      }else{
+        // production without ssl
+        console.log("here")
+        var port = 80
+        server = http.createServer(app);
+        startSocketIo(server);
+        server.listen(port, "localhost", () => {	
+          console.log(chalk.green(`✓ (HTTP Server) : http://localhost`));
+        })
+      }
     }
-
-   
-    }
+  }
 
 main()
