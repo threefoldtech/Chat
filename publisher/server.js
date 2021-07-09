@@ -128,7 +128,7 @@ async function main(){
       var port = config.http.port
       server = http.createServer(app);
       startSocketIo(server);
-      server.listen(port, "localhost", () => {	
+      server.listen(port, "0.0.0.0", () => {
         console.log(chalk.green(`✓ (HTTP Server) : http://localhost:${port}`));
       })
     }else{

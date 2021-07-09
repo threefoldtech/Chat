@@ -1,7 +1,10 @@
 FROM golang:alpine as builder
 
 ENV DUMB_INIT_VERSION=1.2.2 \
-    YGGDRASIL_VERSION=0.3.15
+    YGGDRASIL_VERSION=0.3.15 \
+    NODE_ENV="production" \
+    SECRET="ecc000ad-635f-4afb-9723-19448ca01e62" \
+    THREEBOT_PHRASE="system sunset never robot news immune deputy away release mandate poverty elite wall vendor beyond wisdom offer gap great suspect flag narrow enjoy around"
 
 RUN set -ex \
  && apk --no-cache add \
@@ -23,9 +26,6 @@ COPY --from=builder /src/yggdrasil    /usr/bin/
 COPY --from=builder /src/yggdrasilctl /usr/bin/
 COPY --from=builder /tmp/dumb-init    /usr/bin/
 RUN mkdir /var/log/yggdrasil
-
-COPY ./dev/nginx.conf /etc/nginx/conf.d/default.conf
-RUN rm -f /etc/nginx/sites-enabled/default
 
 
 RUN curl -sL https://deb.nodesource.com/setup_15.x | bash -
